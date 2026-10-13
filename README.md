@@ -7,6 +7,7 @@
 | `api/` | backend משותף (fresnel-api): מודול shob ומודול vandamme | שו״ב + ואן דאם |
 | `web-vandamme/` | frontend של ניהול אירוע | ואן דאם |
 | `web-shob/` | frontend של השו״ב | שו״ב |
+| `mobile/` | אפליקציית ניהול אירוע מובייל | מובייל (בן נתנזון) |
 | `db/` | `schema.sql` ו-migrations, schema `fresnel` | ואן דאם |
 
 ## עקרונות
