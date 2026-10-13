@@ -1,5 +1,5 @@
-# Fill in GitLab usernames once the project exists.
-/web-vandamme/   @TODO-vandamme
+# GitLab matches these emails to the users' accounts. Replace @TODO-shob with the שו"ב team lead.
+/web-vandamme/   edentolkin04@gmail.com
 /web-shob/       @TODO-shob
-/db/             @TODO-vandamme
-/api/            @TODO-vandamme @TODO-shob
+/db/             edentolkin04@gmail.com
+/api/            edentolkin04@gmail.com ben.nathanzon@gmail.com @TODO-shob
