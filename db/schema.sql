@@ -1,13 +1,11 @@
--- Van Damme (event management) – section DB schema, v0.2 (2026-10-12)
+-- Van Damme (event management) – section DB schema, v0.3 (2026-10-14)
 -- Lives in the section DB of מדור Fresnel (מדור תמונת מצב: שו"ב, Van Damme, mobile), schema "fresnel" (one schema for the whole section).
--- Stores events, actions, approvals, chat and an audit log.
--- Anyone who can open an event can write in its chat; there is no participant list.
+-- Stores events, the actions documented in them, and an audit log.
 -- Items are NOT stored here, not even their ids: an event's items are fetched live from
 -- Anomalies by the event's origin_ref_id (anomaly/narrative id). Items follow item.v1.
 -- User ids are the Keycloak/Mirage subject (text). Names and job titles come from Mirage.
--- v0.2: aligned with the Figma screens – documented actions, a two-stage approval
--- (field, then HQ) followed by publication, chat attachments, reopening.
--- The "ניטור אירוע" panel shows the event's items from Anomalies; Akinator chats are not stored here.
+-- v0.3 (spec change 14/10): no chat, no approvals. Actions only document what was already done.
+-- The event screen has an Akinator tab; Akinator conversations are not stored here.
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;       -- title search on the event lists
 
@@ -40,7 +38,7 @@ CREATE TABLE event (
   severity         text NOT NULL DEFAULT 'medium'
                    CHECK (severity IN ('low', 'medium', 'high', 'critical')),
   status           text NOT NULL DEFAULT 'open'
-                   CHECK (status IN ('open', 'in_progress', 'awaiting_approval', 'closed')),
+                   CHECK (status IN ('open', 'in_progress', 'closed')),     -- in_progress once an action is documented
   -- where it came from: an anomaly or a narrative from Anomalies (via the שו"ב), or opened by hand
   origin_kind      text NOT NULL CHECK (origin_kind IN ('anomaly', 'narrative', 'manual')),
   origin_ref_id    text,                         -- anomaly/narrative id in Anomalies; the key for fetching
@@ -68,119 +66,50 @@ CREATE TRIGGER event_updated_at BEFORE UPDATE ON event
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 ------------------------------------------------------------------------------
--- action_type: the action bank. 'other' takes a free description.
+-- action_type: the action bank, chosen from a dropdown. With 'other' the title says what was done.
 ------------------------------------------------------------------------------
 CREATE TABLE action_type (
-  code               text PRIMARY KEY,
-  label_he           text NOT NULL,
-  requires_approval  boolean NOT NULL DEFAULT false,
-  active             boolean NOT NULL DEFAULT true,
-  sort_order         smallint NOT NULL DEFAULT 0
+  code        text PRIMARY KEY,
+  label_he    text NOT NULL,
+  active      boolean NOT NULL DEFAULT true
 );
 
--- Draft bank, taken from the names in the Figma screens. Only the spokesperson message needs
--- approval (decided 2026-10-12). The rest is to confirm with the client.
-INSERT INTO action_type (code, label_he, requires_approval, sort_order) VALUES
-  ('official_response',  'הודעת דו"צ',            true,  10),
-  ('consultation',       'התייעצות',              false, 20),
-  ('reporter_contact',   'תיאום עם כתב',          false, 30),
-  ('external_contact',   'פנייה לגורם חיצוני',     false, 40),
-  ('field_collection',   'איסוף מידע מהשטח',       false, 50),
-  ('source_analysis',    'ניתוח מקורות',           false, 60),
-  ('fact_check',         'בדיקת אמינות מידע',      false, 70),
-  ('monitor',            'מעקב אחר התפתחות',       false, 80),
-  ('other',              'אחר',                   false, 99);
+-- Draft bank, taken from the names in the Figma screens. To confirm with the client.
+INSERT INTO action_type (code, label_he) VALUES
+  ('official_response',  'הודעת דו"צ'),
+  ('consultation',       'התייעצות'),
+  ('reporter_contact',   'תיאום עם כתב'),
+  ('external_contact',   'פנייה לגורם חיצוני'),
+  ('field_collection',   'איסוף מידע מהשטח'),
+  ('source_analysis',    'ניתוח מקורות'),
+  ('fact_check',         'בדיקת אמינות מידע'),
+  ('monitor',            'מעקב אחר התפתחות'),
+  ('other',              'אחר');
 
 ------------------------------------------------------------------------------
--- action: an action documented inside an event ("פעולות שבוצעו").
--- A regular action is recorded after it was done. A spokesperson message
--- (official_response) goes through approval and then publication.
+-- action: an action documented inside an event ("פעולות שבוצעו"), after it was done.
+-- No approvals and no workflow. A mistaken entry is soft-deleted, so the record stays.
 ------------------------------------------------------------------------------
 CREATE TABLE action (
   action_id      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id       uuid NOT NULL REFERENCES event,
   action_type    text NOT NULL REFERENCES action_type,
   title          text NOT NULL CHECK (title <> '' AND char_length(title) <= 100),
-  description    text CHECK (char_length(description) <= 500),   -- "תיאור קצר" of a regular action
-  content        text CHECK (char_length(content) <= 2000),      -- the message text, for official_response
-  status         text NOT NULL DEFAULT 'done'
-                 CHECK (status IN ('done',                 -- regular action, documented
-                                   'awaiting_approval',    -- message waiting for the current approval stage
-                                   'rejected',             -- message sent back; can be fixed and resent
-                                   'approved',             -- every stage approved, not yet published
-                                   'published',            -- "ההודעה פורסמה"
-                                   'cancelled')),
+  description    text CHECK (char_length(description) <= 500),   -- "תיאור קצר", optional
   performed_by   text NOT NULL,                  -- "בוצע על ידי"
   performed_at   timestamptz NOT NULL DEFAULT now(),
-  published_by   text,
-  published_at   timestamptz,
-  publish_note   text,                           -- e.g. "ההודעה פורסמה בכל הערוצים"
   updated_at     timestamptz NOT NULL DEFAULT now(),
-  CHECK (action_type <> 'official_response' OR coalesce(content, '') <> ''),
-  CHECK (action_type = 'official_response' OR coalesce(description, '') <> ''),
-  CHECK ((status = 'published') = (published_at IS NOT NULL AND published_by IS NOT NULL))
+  deleted_at     timestamptz,
+  deleted_by     text,
+  CHECK ((deleted_at IS NULL) = (deleted_by IS NULL))
 );
-CREATE INDEX action_event_idx ON action (event_id, performed_at);
-CREATE INDEX action_pending_idx ON action (status) WHERE status = 'awaiting_approval';
+CREATE INDEX action_event_idx ON action (event_id, performed_at) WHERE deleted_at IS NULL;
 CREATE TRIGGER action_updated_at BEFORE UPDATE ON action
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 ------------------------------------------------------------------------------
--- action_approval: one row per stage decision. A message passes 'field' (אישור שטח)
--- and then 'hq' (אישור מטה). A rejection sends it back; the next submission starts
--- again at 'field', so an action can have several rows per stage.
-------------------------------------------------------------------------------
-CREATE TABLE action_approval (
-  approval_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  action_id         uuid NOT NULL REFERENCES action,
-  stage             text NOT NULL CHECK (stage IN ('field', 'hq')),
-  content_snapshot  text NOT NULL,               -- the exact text that was approved or rejected
-  requested_by      text NOT NULL,
-  requested_at      timestamptz NOT NULL DEFAULT now(),
-  decision          text CHECK (decision IN ('approved', 'rejected')),   -- NULL while pending
-  decided_by        text,                        -- must hold that stage's approver role in Mirage
-  decided_at        timestamptz,
-  note              text,                        -- e.g. "תקין, ניתן להעביר לאישור מטה"
-  client            text CHECK (client IN ('web', 'mobile')),            -- where the decision was made
-  CHECK ((decision IS NULL) = (decided_by IS NULL) AND (decision IS NULL) = (decided_at IS NULL)),
-  CHECK (decided_by IS NULL OR decided_by <> requested_by),             -- no self-approval
-  CHECK (decision IS DISTINCT FROM 'rejected' OR coalesce(note, '') <> '')  -- a rejection says why
-);
--- One open request per action at a time
-CREATE UNIQUE INDEX action_approval_pending_uq ON action_approval (action_id) WHERE decision IS NULL;
-CREATE INDEX action_approval_inbox_idx ON action_approval (stage, requested_at) WHERE decision IS NULL;
-
-------------------------------------------------------------------------------
--- chat_message: the chat inside an event
-------------------------------------------------------------------------------
-CREATE TABLE chat_message (
-  message_id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id             uuid NOT NULL REFERENCES event,
-  author_id            text NOT NULL,
-  body                 text NOT NULL DEFAULT '',  -- may be empty when the message is only an attachment
-  reply_to_message_id  uuid REFERENCES chat_message,
-  client               text NOT NULL DEFAULT 'web' CHECK (client IN ('web', 'mobile')),
-  created_at           timestamptz NOT NULL DEFAULT now(),
-  edited_at            timestamptz,
-  deleted_at           timestamptz               -- soft delete: the message stays for the debrief
-);
-CREATE INDEX chat_event_idx ON chat_message (event_id, created_at);
-
--- Files attached to a chat message (the paperclip). The file is in object storage, not in the DB.
-CREATE TABLE chat_attachment (
-  attachment_id  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  message_id     uuid NOT NULL REFERENCES chat_message,
-  file_name      text NOT NULL,
-  content_type   text NOT NULL,
-  size_bytes     bigint NOT NULL CHECK (size_bytes > 0),
-  storage_uri    text NOT NULL,                  -- s3://... in the section's bucket
-  uploaded_at    timestamptz NOT NULL DEFAULT now()
-);
-CREATE INDEX chat_attachment_message_idx ON chat_attachment (message_id);
-
-------------------------------------------------------------------------------
 -- event_log: append-only audit trail of every change. It feeds the timeline in the
--- closed-event view (פתיחת אירוע ... סגירת אירוע) and, with the chat, the debrief.
+-- closed-event view (פתיחת אירוע ... סגירת אירוע) and the debrief.
 ------------------------------------------------------------------------------
 CREATE TABLE event_log (
   log_id      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -189,8 +118,7 @@ CREATE TABLE event_log (
   kind        text NOT NULL CHECK (kind IN (
                 'event_created', 'event_updated', 'event_status_changed',
                 'event_closed', 'event_reopened',
-                'action_created', 'action_updated', 'action_cancelled',
-                'approval_requested', 'approval_decided', 'action_published')),
+                'action_created', 'action_updated', 'action_deleted')),
   actor_id    text NOT NULL,                     -- user id, or 'system'
   from_value  text,
   to_value    text,
