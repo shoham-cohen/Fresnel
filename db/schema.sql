@@ -71,21 +71,20 @@ CREATE TRIGGER event_updated_at BEFORE UPDATE ON event
 CREATE TABLE action_type (
   code        text PRIMARY KEY,
   label_he    text NOT NULL,
-  active      boolean NOT NULL DEFAULT true,
-  sort_order  smallint NOT NULL DEFAULT 0
+  active      boolean NOT NULL DEFAULT true
 );
 
 -- Draft bank, taken from the names in the Figma screens. To confirm with the client.
-INSERT INTO action_type (code, label_he, sort_order) VALUES
-  ('official_response',  'הודעת דו"צ',            10),
-  ('consultation',       'התייעצות',              20),
-  ('reporter_contact',   'תיאום עם כתב',          30),
-  ('external_contact',   'פנייה לגורם חיצוני',     40),
-  ('field_collection',   'איסוף מידע מהשטח',       50),
-  ('source_analysis',    'ניתוח מקורות',           60),
-  ('fact_check',         'בדיקת אמינות מידע',      70),
-  ('monitor',            'מעקב אחר התפתחות',       80),
-  ('other',              'אחר',                   99);
+INSERT INTO action_type (code, label_he) VALUES
+  ('official_response',  'הודעת דו"צ'),
+  ('consultation',       'התייעצות'),
+  ('reporter_contact',   'תיאום עם כתב'),
+  ('external_contact',   'פנייה לגורם חיצוני'),
+  ('field_collection',   'איסוף מידע מהשטח'),
+  ('source_analysis',    'ניתוח מקורות'),
+  ('fact_check',         'בדיקת אמינות מידע'),
+  ('monitor',            'מעקב אחר התפתחות'),
+  ('other',              'אחר');
 
 ------------------------------------------------------------------------------
 -- action: an action documented inside an event ("פעולות שבוצעו"), after it was done.
@@ -96,7 +95,7 @@ CREATE TABLE action (
   event_id       uuid NOT NULL REFERENCES event,
   action_type    text NOT NULL REFERENCES action_type,
   title          text NOT NULL CHECK (title <> '' AND char_length(title) <= 100),
-  description    text NOT NULL CHECK (description <> '' AND char_length(description) <= 500),  -- "תיאור קצר"
+  description    text CHECK (char_length(description) <= 500),   -- "תיאור קצר", optional
   performed_by   text NOT NULL,                  -- "בוצע על ידי"
   performed_at   timestamptz NOT NULL DEFAULT now(),
   updated_at     timestamptz NOT NULL DEFAULT now(),
