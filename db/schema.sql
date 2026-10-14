@@ -58,15 +58,12 @@ CREATE TABLE narrative (
   embedding      vector(1024),                   -- the narrative in vector space, for natural-language search.
                                                  -- Same model and dimension as Artemis embeddings (Cohere / BGE-M3, both 1024).
   payload        jsonb NOT NULL DEFAULT '{}',    -- the message as Anomalies sent it, for fields not mapped to columns
-  received_at    timestamptz NOT NULL DEFAULT now(),
-  updated_at     timestamptz NOT NULL DEFAULT now()
+  received_at    timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX narrative_list_idx ON narrative (detected_at DESC);                                -- "כל ההתראות", history
 CREATE INDEX narrative_anomaly_idx ON narrative (detected_at DESC) WHERE is_anomaly;
 CREATE INDEX narrative_title_trgm_idx ON narrative USING gin (title gin_trgm_ops);              -- search by topic / word
 CREATE INDEX narrative_embedding_idx ON narrative USING hnsw (embedding vector_cosine_ops);      -- natural-language search
-CREATE TRIGGER narrative_updated_at BEFORE UPDATE ON narrative
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 ------------------------------------------------------------------------------
 -- event: one row per event opened on a narrative in the שו"ב, or sent by the simulation system.
