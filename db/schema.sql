@@ -1,4 +1,4 @@
--- Fresnel section DB schema (שו"ב + Van Damme), v0.5 (2026-10-14)
+-- Fresnel section DB schema (שו"ב + Van Damme), v0.6 (2026-10-14)
 -- Lives in the section DB of מדור Fresnel (מדור תמונת מצב: שו"ב, Van Damme, mobile), schema "fresnel" (one schema for the whole section).
 -- Stores every narrative Anomalies sends (written by the שו"ב), the events opened on them,
 -- the actions documented in events, and an audit log.
@@ -14,8 +14,14 @@
 -- a narrative with is_anomaly = true (recommended to open an event on). An event points to its
 -- narrative instead of origin_kind / origin_ref_id. Narratives carry an embedding for
 -- natural-language search.
+-- v0.6: no duplicated fields. An event always has a narrative and takes its title, summary,
+-- arena and detection time from it. No events opened by hand, no owner_id, no category.
+-- Engagement counts (posts, views, shares, sources) change all the time, so they are
+-- fetched live from Anomalies and not stored.
+-- Enum convention: English codes in the DB with a CHECK; Hebrew labels live only in the
+-- shared UI constants. A list that changes at runtime (the action bank) is a code table.
 
-CREATE EXTENSION IF NOT EXISTS pg_trgm;       -- title search on the event lists
+CREATE EXTENSION IF NOT EXISTS pg_trgm;       -- title search (narrative titles)
 CREATE EXTENSION IF NOT EXISTS vector;        -- pgvector, narrative embeddings
 
 CREATE SCHEMA IF NOT EXISTS fresnel;
@@ -39,20 +45,16 @@ END $$;
 ------------------------------------------------------------------------------
 -- narrative: every narrative Anomalies sends to the שו"ב. Owned and written by the שו"ב.
 -- Columns beyond the id, flag and embedding follow the שו"ב screens and are to confirm with Anomalies.
+-- The event screen reads its title, description, arena and detection time from here.
 ------------------------------------------------------------------------------
 CREATE TABLE narrative (
   narrative_id   text PRIMARY KEY,               -- the narrative id in Anomalies; also the key for fetching its items
-  title          text NOT NULL,                  -- "נושא ההתראה"
-  summary        text,                           -- the line under the title
+  title          text NOT NULL,                  -- "נושא ההתראה"; also the event title
+  summary        text,                           -- the line under the title; also the event description
   is_anomaly     boolean NOT NULL DEFAULT false, -- Anomalies recommends opening an event on it
   arena          text CHECK (arena IN ('IL', 'ARAB', 'INTL')),   -- same codes as item.v1
-  category       text,                           -- בטחוני / מדיני / הסברה / פנים / אחר
   location_name  text,                           -- "מיקום", e.g. גבול הצפון
-  detected_at    timestamptz NOT NULL,           -- when Anomalies detected it
-  post_count     bigint,                         -- "כמות פרסומים"
-  view_count     bigint,                         -- "סה"כ צפיות"
-  share_count    bigint,                         -- "סה"כ שיתופים"
-  source_count   bigint,                         -- "כמות מקורות"
+  detected_at    timestamptz NOT NULL,           -- when Anomalies detected it; also "זיהוי האירוע"
   embedding      vector(1024),                   -- the narrative in vector space, for natural-language search.
                                                  -- Same model and dimension as Artemis embeddings (Cohere / BGE-M3, both 1024).
   payload        jsonb NOT NULL DEFAULT '{}',    -- the message as Anomalies sent it, for fields not mapped to columns
@@ -67,25 +69,20 @@ CREATE TRIGGER narrative_updated_at BEFORE UPDATE ON narrative
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 ------------------------------------------------------------------------------
--- event: one row per event opened on a narrative in the שו"ב, sent by the simulation system, or opened by hand
+-- event: one row per event opened on a narrative in the שו"ב, or sent by the simulation system.
+-- Title, description, arena and detection time come from the narrative (no duplicates).
 ------------------------------------------------------------------------------
 CREATE TABLE event (
   event_id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  title            text NOT NULL CHECK (title <> ''),
-  description      text,                         -- "תיאור כללי"
-  arena            text NOT NULL CHECK (arena IN ('IL', 'ARAB', 'INTL')),   -- same codes as item.v1
+  narrative_id     text NOT NULL REFERENCES narrative,   -- the narrative it was opened on; its items come from
+                                                 -- Anomalies by this id. A simulation event points to the original narrative.
   severity         text NOT NULL DEFAULT 'medium'
                    CHECK (severity IN ('low', 'medium', 'high', 'critical')),
   status           text NOT NULL DEFAULT 'open'
                    CHECK (status IN ('open', 'in_progress', 'closed')),     -- in_progress once an action is documented
-  narrative_id     text REFERENCES narrative,    -- the narrative it was opened on; its items come from Anomalies
-                                                 -- by this id. NULL when opened by hand (no items).
-                                                 -- A simulation event points to the original narrative.
   is_simulation    boolean NOT NULL DEFAULT false,   -- sent by the simulation system ("תרגילית"), not the שו"ב.
                                                  -- Gets its own event_id, returned in the create response.
-  detected_at      timestamptz,                  -- "זיהוי האירוע": when Anomalies detected it
-  owner_id         text NOT NULL,                -- who handles the event
-  created_by       text NOT NULL,                -- "נפתח על ידי": who turned it into an event in the שו"ב
+  created_by       text NOT NULL,                -- "נפתח על ידי": who opened it in the שו"ב
   created_at       timestamptz NOT NULL DEFAULT now(),
   updated_at       timestamptz NOT NULL DEFAULT now(),   -- "עדכון אחרון"
   closed_at        timestamptz,                  -- cleared on reopen; the history stays in event_log
@@ -99,11 +96,10 @@ CREATE TABLE event (
 -- Simulation events are left out: they reuse past narratives, and the same one can be
 -- sent again for another training run.
 CREATE UNIQUE INDEX event_open_narrative_uq ON event (narrative_id)
-  WHERE status <> 'closed' AND narrative_id IS NOT NULL AND NOT is_simulation;
+  WHERE status <> 'closed' AND NOT is_simulation;
 CREATE INDEX event_narrative_idx ON event (narrative_id);                      -- "is there an event on this narrative?"
 CREATE INDEX event_board_idx ON event (is_simulation, status, created_at DESC);   -- open list / closed list, per אמת / תרגילית
 CREATE INDEX event_closed_idx ON event (is_simulation, closed_at DESC) WHERE status = 'closed';  -- closed list date filter
-CREATE INDEX event_title_trgm_idx ON event USING gin (title gin_trgm_ops);    -- "חיפוש לפי כותרת"
 CREATE TRIGGER event_updated_at BEFORE UPDATE ON event
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
