@@ -24,6 +24,15 @@
 
 פיגמה: https://www.figma.com/design/kk7LQbGpv8rm9OAYr7fTG8 (המסכים עדיין מציגים צאט ואישורים – האפיון למעלה גובר).
 
+## DB מקומי
+צריך Docker Desktop. ה-DB מגיע עם pgvector, וה-schema מ-`db/schema.sql` רץ אוטומטית בהפעלה הראשונה.
+
+```bash
+docker compose up -d
+```
+
+חיבור: `postgresql://fresnel:fresnel@localhost:5433/fresnel` (פורט 5433, כדי לא להתנגש ב-PostgreSQL מקומי על 5432). אחרי שינוי ב-schema: `docker compose down -v` ואז שוב `up -d`.
+
 ## עקרונות
 - כל job ב-CI רץ רק כשמשהו השתנה בתיקייה שלו.
 - כל צוות מאשר שינויים בתיקייה שלו (CODEOWNERS).
