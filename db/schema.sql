@@ -1,4 +1,4 @@
--- Fresnel section DB schema (שו"ב + Van Damme), v0.6 (2026-10-14)
+-- Fresnel section DB schema (שו"ב + Van Damme), v0.7 (2026-10-15)
 -- Lives in the section DB of מדור Fresnel (מדור תמונת מצב: שו"ב, Van Damme, mobile), schema "fresnel" (one schema for the whole section).
 -- Stores every narrative Anomalies sends (written by the שו"ב), the events opened on them,
 -- the actions documented in events, and an audit log.
@@ -20,6 +20,10 @@
 -- fetched live from Anomalies and not stored.
 -- Enum convention: English codes in the DB with a CHECK; Hebrew labels live only in the
 -- shared UI constants. A list that changes at runtime (the action bank) is a code table.
+-- v0.7: simulation goes through the שו"ב. Osher's simulation system sends narratives to the
+-- שו"ב, which stores them with narrative.is_simulation = true and opens events on them like
+-- any other narrative. event.is_simulation is gone (it would duplicate the narrative's flag);
+-- an event is a simulation event when its narrative is. One open event per narrative, always.
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;       -- title search (narrative titles)
 CREATE EXTENSION IF NOT EXISTS vector;        -- pgvector, narrative embeddings
@@ -43,7 +47,8 @@ BEGIN
 END $$;
 
 ------------------------------------------------------------------------------
--- narrative: every narrative Anomalies sends to the שו"ב. Owned and written by the שו"ב.
+-- narrative: every narrative Anomalies (real) or the simulation system (תרגילית) sends to the שו"ב.
+-- Owned and written by the שו"ב.
 -- Columns beyond the id, flag and embedding follow the שו"ב screens and are to confirm with Anomalies.
 -- The event screen reads its title, description, arena and detection time from here.
 ------------------------------------------------------------------------------
@@ -52,6 +57,8 @@ CREATE TABLE narrative (
   title          text NOT NULL,                  -- "נושא ההתראה"; also the event title
   summary        text,                           -- the line under the title; also the event description
   is_anomaly     boolean NOT NULL DEFAULT false, -- Anomalies recommends opening an event on it
+  is_simulation  boolean NOT NULL DEFAULT false, -- sent by the simulation system ("תרגילית"), not Anomalies.
+                                                 -- The אמת / תרגילית switch filters narratives and events by it.
   arena          text CHECK (arena IN ('IL', 'ARAB', 'INTL')),   -- same codes as item.v1
   location_name  text,                           -- "מיקום", e.g. גבול הצפון
   detected_at    timestamptz NOT NULL,           -- when Anomalies detected it; also "זיהוי האירוע"
@@ -60,25 +67,23 @@ CREATE TABLE narrative (
   payload        jsonb NOT NULL DEFAULT '{}',    -- the message as Anomalies sent it, for fields not mapped to columns
   received_at    timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX narrative_list_idx ON narrative (detected_at DESC);                                -- "כל ההתראות", history
-CREATE INDEX narrative_anomaly_idx ON narrative (detected_at DESC) WHERE is_anomaly;
+CREATE INDEX narrative_list_idx ON narrative (is_simulation, detected_at DESC);                 -- "כל ההתראות", history, per אמת / תרגילית
+CREATE INDEX narrative_anomaly_idx ON narrative (is_simulation, detected_at DESC) WHERE is_anomaly;
 CREATE INDEX narrative_title_trgm_idx ON narrative USING gin (title gin_trgm_ops);              -- search by topic / word
 CREATE INDEX narrative_embedding_idx ON narrative USING hnsw (embedding vector_cosine_ops);      -- natural-language search
 
 ------------------------------------------------------------------------------
--- event: one row per event opened on a narrative in the שו"ב, or sent by the simulation system.
--- Title, description, arena and detection time come from the narrative (no duplicates).
+-- event: one row per event opened on a narrative in the שו"ב (real or simulation).
+-- Title, description, arena, detection time and the simulation flag come from the narrative (no duplicates).
 ------------------------------------------------------------------------------
 CREATE TABLE event (
   event_id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   narrative_id     text NOT NULL REFERENCES narrative,   -- the narrative it was opened on; its items come from
-                                                 -- Anomalies by this id. A simulation event points to the original narrative.
+                                                 -- Anomalies by this id. Simulation if the narrative is.
   severity         text NOT NULL DEFAULT 'medium'
                    CHECK (severity IN ('low', 'medium', 'high', 'critical')),
   status           text NOT NULL DEFAULT 'open'
                    CHECK (status IN ('open', 'in_progress', 'closed')),     -- in_progress once an action is documented
-  is_simulation    boolean NOT NULL DEFAULT false,   -- sent by the simulation system ("תרגילית"), not the שו"ב.
-                                                 -- Gets its own event_id, returned in the create response.
   created_by       text NOT NULL,                -- "נפתח על ידי": who opened it in the שו"ב
   created_at       timestamptz NOT NULL DEFAULT now(),
   updated_at       timestamptz NOT NULL DEFAULT now(),   -- "עדכון אחרון"
@@ -89,14 +94,12 @@ CREATE TABLE event (
   CHECK (status <> 'closed' OR (closed_by IS NOT NULL AND closure_summary IS NOT NULL))
 );
 
--- At most one open real event per narrative, so the שו"ב cannot open it twice.
--- Simulation events are left out: they reuse past narratives, and the same one can be
--- sent again for another training run.
-CREATE UNIQUE INDEX event_open_narrative_uq ON event (narrative_id)
-  WHERE status <> 'closed' AND NOT is_simulation;
+-- At most one open event per narrative, so the שו"ב cannot open it twice.
+-- Each simulation send is its own narrative row, so simulations need no exception.
+CREATE UNIQUE INDEX event_open_narrative_uq ON event (narrative_id) WHERE status <> 'closed';
 CREATE INDEX event_narrative_idx ON event (narrative_id);                      -- "is there an event on this narrative?"
-CREATE INDEX event_board_idx ON event (is_simulation, status, created_at DESC);   -- open list / closed list, per אמת / תרגילית
-CREATE INDEX event_closed_idx ON event (is_simulation, closed_at DESC) WHERE status = 'closed';  -- closed list date filter
+CREATE INDEX event_board_idx ON event (status, created_at DESC);               -- open list / closed list (join narrative for אמת / תרגילית)
+CREATE INDEX event_closed_idx ON event (closed_at DESC) WHERE status = 'closed';  -- closed list date filter
 CREATE TRIGGER event_updated_at BEFORE UPDATE ON event
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
