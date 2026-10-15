@@ -1,23 +1,24 @@
 # Local PostgreSQL for the Fresnel section, with pgvector (needed by narrative.embedding).
+# Setup:  copy .env.example to .env and set POSTGRES_PASSWORD (.env is git-ignored)
 # Start:  docker compose up -d
 # Reset:  docker compose down -v   (drops the data; the schema is re-applied on the next start)
-# Host port 5433, so it does not clash with a PostgreSQL already installed on 5432.
+# Host port 5433 by default, so it does not clash with a PostgreSQL already installed on 5432.
 services:
   db:
     image: pgvector/pgvector:pg16
     container_name: fresnel-db
     environment:
-      POSTGRES_USER: fresnel
-      POSTGRES_PASSWORD: fresnel
-      POSTGRES_DB: fresnel
+      POSTGRES_USER: ${POSTGRES_USER:-fresnel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-fresnel}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - fresnel-db-data:/var/lib/postgresql/data
       # Applied once, when the data volume is created
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fresnel -d fresnel"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 10
