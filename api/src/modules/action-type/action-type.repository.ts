@@ -4,15 +4,15 @@ import { Repository } from 'typeorm';
 import { ActionType } from '../../entities';
 
 @Injectable()
-export class ActionTypesRepository {
+export class ActionTypeRepository {
   constructor(
     @InjectRepository(ActionType)
-    private readonly repo: Repository<ActionType>,
+    private readonly actionTypeOrmRepository: Repository<ActionType>,
   ) {}
 
   findActive(): Promise<ActionType[]> {
     // "other" goes last in the dropdown; the rest are sorted by their Hebrew label.
-    return this.repo
+    return this.actionTypeOrmRepository
       .createQueryBuilder('t')
       .where('t.active')
       .orderBy(`t.code = 'other'`)
