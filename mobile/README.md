@@ -60,7 +60,7 @@ adb shell am start -W -a android.intent.action.VIEW -d "fresnel://events/demo/ac
 src/
   app/                    # routes בלבד (expo-router). כל קובץ הוא מסך
     _layout.tsx           # providers, ומעבר בין כניסה לאפליקציה
-    (auth)/login.tsx      # כניסה (SSO)
+    login.tsx             # כניסה (SSO)
     (app)/_layout.tsx     # Stack וכותרות
     (app)/index.tsx       # בית: אירועים פתוחים
     (app)/profile.tsx
