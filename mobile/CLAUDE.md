@@ -77,7 +77,7 @@ mobile/
   src/
     app/                              # routes בלבד (expo-router). כל קובץ הוא מסך
       _layout.tsx                     # providers (Query, Auth) ו-Stack.Protected לפי התחברות
-      (auth)/login.tsx                # כניסה (SSO)
+      login.tsx                       # כניסה (SSO)
       (app)/_layout.tsx               # Stack, כותרות, אייקון פרופיל
       (app)/index.tsx                 # בית: פתוחים, חיפוש
       (app)/profile.tsx
