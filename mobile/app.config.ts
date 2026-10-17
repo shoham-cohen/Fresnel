@@ -7,9 +7,9 @@ import type { ExpoConfig } from 'expo/config';
 // The Android package must match the app registered in Firebase (google-services.json).
 const ANDROID_PACKAGE = 'com.fresnel.mobile';
 const IOS_BUNDLE_ID = 'com.fresnel.mobile';
-
 // From `eas init`. Needed for Expo push tokens. Not a secret.
-const EAS_PROJECT_ID = '';
+const EAS_PROJECT_ID = '7f7941cb-550f-4dd2-a39b-826ea3a35ddf';
+
 
 // google-services.json from Firebase, committed next to this file.
 const googleServicesFile = existsSync('./google-services.json')
@@ -19,6 +19,7 @@ const googleServicesFile = existsSync('./google-services.json')
 const config: ExpoConfig = {
   name: 'Fresnel',
   slug: 'fresnel-mobile',
+  owner: 'bennat676s-team',
   scheme: 'fresnel',
   version: '0.1.0',
   orientation: 'portrait',
