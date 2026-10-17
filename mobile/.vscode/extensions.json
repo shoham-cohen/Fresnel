@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "expo.vscode-expo-tools",
+    "usernamehw.errorlens",
+    "yoavbls.pretty-ts-errors",
+    "gitlab.gitlab-workflow"
+  ]
+}
