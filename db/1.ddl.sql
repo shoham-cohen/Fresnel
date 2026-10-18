@@ -1,4 +1,4 @@
--- Fresnel section DB schema (שו"ב + Van Damme), v0.6 (2026-10-14)
+-- Fresnel section DB schema (שו"ב + Van Damme + mobile), v0.7 (2026-10-18)
 -- Lives in the section DB of מדור Fresnel (מדור תמונת מצב: שו"ב, Van Damme, mobile), schema "fresnel" (one schema for the whole section).
 -- Stores every narrative Anomalies sends (written by the שו"ב), the events opened on them,
 -- the actions documented in events, and an audit log.
@@ -18,6 +18,8 @@
 -- arena and detection time from it. No events opened by hand, no owner_id, no category.
 -- Engagement counts (posts, views, shares, sources) change all the time, so they are
 -- fetched live from Anomalies and not stored.
+-- v0.7 (spec v8, 16/10): device_token for mobile Push. Push goes through Expo's push service
+-- (expo-server-sdk), so the server keeps one Expo token per phone, the same on Android and iOS.
 -- Enum convention: English codes in the DB with a CHECK; Hebrew labels live only in the
 -- shared UI constants. A list that changes at runtime (the action bank) is a code table.
 
@@ -164,3 +166,20 @@ CREATE TABLE event_log (
 CREATE INDEX event_log_event_idx ON event_log (event_id, at);
 CREATE TRIGGER event_log_append_only BEFORE UPDATE OR DELETE ON event_log
   FOR EACH ROW EXECUTE FUNCTION forbid_change();
+
+------------------------------------------------------------------------------
+-- device_token: the phones registered for Push (POST /devices, DELETE /devices/{token}). Owned by Marconi.
+-- One row per Expo push token. A new real event is pushed to the phones of every user in its arena;
+-- the user's arena comes from Mirage, so the sender looks phones up by user_id.
+-- A token Expo rejects (DeviceNotRegistered) is deleted.
+------------------------------------------------------------------------------
+CREATE TABLE device_token (
+  device_id      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        text NOT NULL,                  -- the Keycloak/Mirage subject
+  platform       text NOT NULL CHECK (platform IN ('android', 'ios')),
+  push_token     text NOT NULL UNIQUE            -- ExponentPushToken[...], from getExpoPushTokenAsync
+                 CHECK (push_token LIKE 'ExponentPushToken[%]'),
+  created_at     timestamptz NOT NULL DEFAULT now(),
+  last_seen_at   timestamptz NOT NULL DEFAULT now()   -- refreshed on every POST /devices with the same token
+);
+CREATE INDEX device_token_user_idx ON device_token (user_id);   -- the phones of the arena's users

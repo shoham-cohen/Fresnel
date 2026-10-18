@@ -1,5 +1,5 @@
 -- Dev seed data for the local DB only. Never run on PreProd or Prod.
--- Wipes narrative, event, action and event_log, then inserts sample data.
+-- Wipes narrative, event, action, event_log and device_token, then inserts sample data.
 -- Times are relative to now(), so the data always looks fresh.
 -- Embeddings are random: good for testing the column and index, meaningless for search.
 --
@@ -8,7 +8,7 @@
 BEGIN;
 SET search_path = fresnel, public;
 
-TRUNCATE event_log, action, event, narrative RESTART IDENTITY;
+TRUNCATE event_log, action, event, narrative, device_token RESTART IDENTITY;
 
 ------------------------------------------------------------------------------
 -- narrative: 10 narratives, 6 of them anomalies
@@ -167,5 +167,16 @@ FROM event WHERE status = 'closed';
 ALTER TABLE event DISABLE TRIGGER event_updated_at;
 UPDATE event e SET updated_at = (SELECT max(at) FROM event_log l WHERE l.event_id = e.event_id);
 ALTER TABLE event ENABLE TRIGGER event_updated_at;
+
+------------------------------------------------------------------------------
+-- device_token: registered phones. handler1 has two (Android and iPhone), trainee1 one that was
+-- not seen for weeks. The tokens are fake, so Expo rejects them as DeviceNotRegistered.
+------------------------------------------------------------------------------
+INSERT INTO device_token (device_id, user_id, platform, push_token, created_at, last_seen_at) VALUES
+  ('00000000-0000-0000-0000-0000000000d1', 'vandamme.handler1', 'android', 'ExponentPushToken[dev-handler1-android]', now() - interval '5 days',  now() - interval '10 minutes'),
+  ('00000000-0000-0000-0000-0000000000d2', 'vandamme.handler1', 'ios',     'ExponentPushToken[dev-handler1-ios]',     now() - interval '3 days',  now() - interval '2 hours'),
+  ('00000000-0000-0000-0000-0000000000d3', 'vandamme.handler2', 'ios',     'ExponentPushToken[dev-handler2-ios]',     now() - interval '4 days',  now() - interval '1 day'),
+  ('00000000-0000-0000-0000-0000000000d4', 'vandamme.handler3', 'android', 'ExponentPushToken[dev-handler3-android]', now() - interval '2 days',  now() - interval '30 minutes'),
+  ('00000000-0000-0000-0000-0000000000d5', 'vandamme.trainee1', 'android', 'ExponentPushToken[dev-trainee1-android]', now() - interval '30 days', now() - interval '21 days');
 
 COMMIT;
