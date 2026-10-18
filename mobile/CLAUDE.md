@@ -5,7 +5,7 @@
 **לא ממציאים:** שדה, endpoint או התנהגות שלא מופיעים כאן, ב-`db/1.ddl.sql`, בקוד של `api/` או באפיונים מסומנים כשאלה פתוחה. לא מנחשים.
 **Expo SDK 58.** ה-API של Expo משתנה בין גרסאות. לפני קוד שנוגע ב-Expo, קוראים את `AGENTS.md` ואת התיעוד של v58, ולא סומכים על הזיכרון.
 
-> **עדכון 18.10 (22:00): ה-Data Lake הוא Nexus API v1** (צוות טל בן שושן). REST עם Bearer token, דפדוף ב-cursor, ו-`realityId` (0 אמת, 1 תרגילית). **אין בו סינון לפי נרטיב, אין חיפוש טקסט במבזקים ואין סכומים לנרטיב.** לכן `stats` מחושב אצלנו מהמבזקים, ו-`items` מחזיר `nextCursor` ולא `total`. ⬜ איך מוצאים את המבזקים של נרטיב. פירוט בסעיף Data Lake.
+> **עדכון 18.10 (23:00): Data Lake.** המבזקים מגיעים מ-**Nexus API v1** (צוות טל בן שושן). **רשימת ה-`item_id` של כל נרטיב נשמרת ב-DB שלנו על ידי שחר** (מדורון, יחד עם הנרטיב). אנחנו קוראים אותה לפי `event_id`, ומביאים את המבזקים מ-Nexus לפי הרשימה (טל מוסיף בקשה לפי רשימת מזהים). ב-Nexus אין סכומים לנרטיב, ולכן ארבעת הנתונים המצטברים (פרסומים, צפיות, שיתופים ותגובות) מחושבים אצלנו מ-100 המבזקים האחרונים, ומשמשים גם את השו״ב. פירוט בסעיף Data Lake.
 
 > **עדכון 18.10 (ערב):**
 > - **אין socket.** כל הרענון במשיכה מחזורית (polling) עם TanStack Query. אין Gateway בשרת ואין socket באפליקציה. פירוט בסעיף "זמנים".
@@ -49,8 +49,8 @@
 - **אירוע (`event`):** נפתח על נרטיב. אין אירוע בלי נרטיב ואין אירוע ידני. לכל היותר אירוע אמיתי אחד פתוח לנרטיב. **`event` ו-`narrative` הן שתי טבלאות נפרדות, בלי `event_view`.** ה-API מחבר ביניהן.
 - **סטטוס:** `open` (נפתח ולא נגעו בו) → `in_progress` (תועדה לפחות פעולה אחת, תגית "בטיפול") → `closed` (נסגר עם סיכום). פתיחה מחדש רק מהווב.
 - **תרגילית (`is_simulation`):** אירוע ששלח אושר על נרטיב קיים, עם `event_id` חדש. **בווב בלבד. במובייל לא ב-MVP.**
-- **מבזק (item):** פורמט `item.v1`, עם מזהה מורכב (`0:telegram:12345`). **לא נשמר אצלנו**, אפילו לא המזהה. נשלף בכל הצגה מה-**Data Lake** (Nexus API, צוות טל בן שושן). ⬜ איך מוצאים את המבזקים של נרטיב.
-- **נתונים מצטברים:** סה״כ פרסומים, צפיות ושיתופים, ומקורות עיקריים. **מחושבים אצלנו מהמבזקים** בכל הצגה (ב-Nexus אין סכומים לנרטיב), ולא נשמרים.
+- **מבזק (item):** פורמט `item.v1`, עם מזהה מורכב (`0:telegram:12345`). **רק רשימת המזהים של כל נרטיב נשמרת אצלנו** (שחר מושך אותה מדורון). התוכן לא נשמר, ונשלף בכל הצגה מה-**Data Lake** (Nexus API, צוות טל בן שושן) לפי הרשימה.
+- **נתונים מצטברים:** ארבעה נתונים: פרסומים, צפיות, שיתופים (`reposts`) ותגובות (`replies` ו-`quotes`), ועוד מקורות עיקריים. **מחושבים אצלנו מ-100 המבזקים האחרונים** בכל הצגה (ב-Nexus אין סכומים לנרטיב), ולא נשמרים. אותה בקשה משמשת את הטלפון, הווב והשו״ב.
 - **גזרה:** `IL` / `ARAB` / `INTL`. גזרת האירוע מהנרטיב. גזרת המשתמש **ממיראז׳** (מזהה + גזרה אחת). כל משתמש רואה רק את הגזרה שלו. **זו ההרשאה היחידה במערכת.**
 - **פעולה:** תיעוד של משהו שכבר בוצע. סוג מהבנק (`action_type`), כותרת עד 100 (חובה, לא ריקה), תיאור עד 500 (רשות). **מחיקה רכה, רק על ידי מי שביצע.**
 - **Oracle:** מערכת חיצונית (מודל שפה) שמוטמעת בתמונת המצב. אנחנו לא שולחים לה בקשות ולא שומרים שיחות. במובייל: WebView.
@@ -140,15 +140,14 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 ### ה-routes שלנו (מודול `mobile` ב-`api/`)
 | route | מה | משימה |
 |---|---|---|
-| `GET /api/events/:id/stats` | `{ posts, views, shares, topSources: [{ platform, count }], partial, asOf }`, מחושב מהמבזקים ב-Nexus. `topSources` עד 3 פלטפורמות. `null` לשדה חסר, אף פעם לא 0. `partial: true` כשלא כל המבזקים נספרו | MAR-06 |
-| `GET /api/events/:id/items?cursor=&limit=20` | `{ items: [{ itemId, platform, url, title, contentText, authorName, sourceId, publishedAt }], nextCursor }`, מהחדש לישן. דפדוף ב-cursor כמו ב-Nexus, ו-`nextCursor: null` בסוף. אין `total` ואין חיפוש | MAR-09 |
+| `GET /api/events/:id/stats`, `GET /api/narratives/:id/stats` | `{ posts, views, shares, comments, topSources: [{ platform, count }], basedOn, totalItems, asOf }`, מחושב מ-100 המבזקים האחרונים של הנרטיב. `basedOn` כמה נספרו, `totalItems` כמה ברשימה. `null` לשדה חסר, אף פעם לא 0. ה-route של הנרטיב בשביל השו״ב | MAR-06 |
+| `GET /api/events/:id/items?page=&pageSize=20` | `{ items: [{ itemId, platform, url, title, contentText, authorName, sourceId, publishedAt }], total, page, pageSize }`, מהחדש לישן. `total` הוא אורך רשימת המזהים. בלי חיפוש (החיפוש בטלפון, על מה שנטען) | MAR-09 |
 | `GET /api/events/:id/timeline` | `[{ kind, at, actorId, action? }]`, מהחדש לישן. `kind` הוא `action`, `event_created` או `event_reopened`. `action` הוא `{ actionId, actionType, actionTypeLabel, title, description, performedBy }`. בלי פעולות מחוקות | MAR-11 |
 | `GET /api/debrief/events?closedFrom=&page=&pageSize=` | הצעה: אירועי אמת סגורים עם שדות הנרטיב, חומרה, מי פתח וסגר, `closureSummary` והציר. ⬜ מול ניתאי | MAR-16 |
 | `POST /api/devices`, `DELETE /api/devices/:token` | `{ platform, pushToken }`. upsert על `push_token` ועדכון `last_seen_at`. טוקן שאינו `ExponentPushToken[...]` מחזיר 400. `user_id` מהמשתמש המאומת בלבד | MAR-17 |
 | `PushService.notifyNewEvent(eventId)` (פנימי) | משתמשי הגזרה ממיראז׳, הטלפונים שלהם לפי `user_id`, ושליחה דרך Expo | MAR-19 |
 
-- **Data Lake:** `stats` ו-`items` עוברים דרך ממשק אחד, `DataLakeClient`, מול Nexus (סעיף Data Lake). עד שיש גישה, מימוש מקומי מקובץ fixtures באותה צורה של Nexus.
-- **חריג לכלל הדפדוף:** `items` מדפדף ב-`cursor`/`limit` כמו Nexus, כי שם אין ספירה ואין עמודים.
+- **Data Lake:** `stats` ו-`items` עוברים דרך `NarrativeItemsService` (רשימת המזהים מה-DB, המבזקים מ-Nexus, מטמון של 60 שניות) ו-`DataLakeClient` (Nexus או fixtures באותה צורה). סעיף Data Lake.
 - **גזרה:** כל route שלנו על אירוע מחזיר 404 על אירוע שלא קיים ו-403 על אירוע מגזרה אחרת, לפי מנגנון האימות של שחר. עד שהוא ב-dev, משתמש קבוע מה-seed.
 
 ### ממשקים משותפים באפליקציה (קבועים מראש, כדי שאף אחד לא יחכה)
@@ -198,26 +197,35 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - **`action`:** `action_id`, `event_id`, `action_type`, `title` (≤100, חובה), `description` (≤500, רשות), `performed_by`, `performed_at`, `updated_at`, `deleted_at`/`deleted_by` (מחיקה רכה, **גם מהמובייל**, רק המבצע).
 - **`event_log`:** append-only. `kind`, `actor_id`, `from_value`, `to_value`, `details`, `client` (`web`/`mobile`/`system`), `at`.
 - **`device_token` (שלנו):** `device_id`, `user_id`, `platform` (`android`/`ios`), `push_token` (unique, עם CHECK לצורה `ExponentPushToken[...]`), `created_at`, `last_seen_at`. אינדקס על `user_id`. **אין גזרה.** טוקן שנכשל נמחק.
-- **לא נשמר אצלנו:** מבזקים, נתונים מצטברים, שיחות Oracle, משתמשים, שמות, תפקידים וגזרות (מיראז׳).
+- **לא נשמר אצלנו:** תוכן המבזקים (רק רשימת המזהים, אצל שחר), נתונים מצטברים, שיחות Oracle, משתמשים, שמות, תפקידים וגזרות (מיראז׳).
 - **נתוני פיתוח (`db/2.dml.sql`):** 110 נרטיבים, אירועי אמת (פתוח, בטיפול וסגור) ותרגילית, פעולות (אחת מחוקה), רשומות `event_log` וטלפונים רשומים ב-`device_token`. מנקה את הטבלאות בכל הרצה. **רק ל-DB המקומי.**
 
 ## Data Lake (Nexus API v1)
 המבזקים מגיעים מ-**Nexus**, ה-API של ה-Data Lake (צוות טל בן שושן). רק `api/` שלנו פונה אליו. הטלפון לא.
-- **אימות:** `Authorization: Bearer <token>`. הכתובת והטוקן במשתני סביבה של השרת (`DATA_LAKE_URL`, `DATA_LAKE_TOKEN`), וב-PreProd ו-Prod מ-Sealed Secrets. ברירת המחדל של Nexus היא פורט 3000, כמו `api/` שלנו, אז מקומית מריצים אותו על פורט אחר.
-- **אמת ותרגילית:** `realityId=0` (ברירת מחדל) לאמת, `realityId=1` לתרגילית, גם בבקשה לפריט בודד. המובייל תמיד `0`. ⬜ לוודא מול טל ואושר שתרגילית היא `1`.
-- **routes שאנחנו צריכים:**
-  - `GET /v1/items?limit=&cursor=&full=true&from=&to=&platform=...`: רשימה מהחדש לישן (`published_at`, ואז `item_id`). `limit` עד 100. מחזיר `{ items, nextCursor }`, ו-`nextCursor: null` בסוף. בלי `full=true` אין `content_text` ו-`author_name_raw`.
-  - `GET /v1/items/:id`: פריט מלא, כולל `source` (עם `arena`), `author` ו-`engagement` (הצילום האחרון: `views`, `likes`, `reposts`, `replies`, או `null`).
-- **שדות של מבזק שאנחנו משתמשים בהם:** `item_id`, `platform`, `url`, `title`, `content_text`, `author_name_raw`, `source_id`, `published_at`.
-- **מספרים גדולים מגיעים כמחרוזות** (למשל `engagement.views: "42300"`), ותאריכים כמחרוזות זמן. ממירים בשרת שלנו.
-- **שגיאות:** 400 (פרמטר או cursor לא תקין), 401 (טוקן), 404 (לא נמצא), 500, ו-503 (ה-DB שלהם לא מוכן). אצלנו כל כשל של Nexus הוא 502, חוץ מ-cursor לא תקין (400).
+
+**הזרימה:**
+1. שחר מושך מדורון כל נרטיב **עם רשימת ה-`item_id` שלו**, ושומר את הרשימה ב-DB. ⬜ איפה (עמודה ב-`narrative` או טבלה), עם review של עדן.
+2. אנחנו קוראים את הרשימה לפי `event_id` (דרך הנרטיב של האירוע), או לפי `narrative_id` בשביל השו״ב.
+3. מביאים את המבזקים מ-Nexus לפי הרשימה. ⬜ טל מוסיף בקשה לפי רשימת מזהים (בעמוד ה-API היא עוד לא מופיעה). עד אז `GET /v1/items/:id` לכל מזהה, עד 10 במקביל.
+4. ממיינים מהחדש לישן לפי `published_at`, ושומרים במטמון בזיכרון 60 שניות, כדי ש-`stats` ו-`items` לא ימשכו פעמיים.
+
+**`stats`:** מ-100 המבזקים האחרונים: `posts` (כמה מבזקים), `views` (סכום `engagement.views`), `shares` (סכום `engagement.reposts`), `comments` (סכום `engagement.replies` ו-`engagement.quotes`), ו-`topSources` (עד 3 פלטפורמות). כשיש יותר מ-100, המסך כותב "לפי 100 הפרסומים האחרונים". אם טל יוסיף סכומים לנרטיב, עוברים אליהם.
+
+**Nexus בקצרה:**
+- **אימות:** `Authorization: Bearer <API_TOKEN>`. לפי העמוד זה טוקן API קבוע של Nexus, לא טוקן משתמש של Keycloak. ⬜ לוודא מול טל. הכתובת והטוקן במשתני הסביבה של השרת (`DATA_LAKE_URL`, `DATA_LAKE_TOKEN`), וב-PreProd ו-Prod מ-Sealed Secrets.
+- **אמת ותרגילית:** `realityId=0` (ברירת מחדל) לאמת, `realityId=1` לתרגילית, גם בבקשה לפריט בודד. לפי האירוע. המובייל תמיד `0`.
+- **`GET /v1/items/:id`:** פריט מלא, כולל `source` (עם `arena`), `author` ו-`engagement` (הצילום האחרון: `views`, `likes`, `reposts`, `replies`, `quotes`, או `null`).
+- **שדות של מבזק שאנחנו משתמשים בהם:** `item_id`, `platform`, `url`, `title`, `content_text`, `author_name_raw`, `source_id`, `published_at`, ו-`engagement`.
+- **מספרים גדולים מגיעים כמחרוזות** (`"42300"`), ותאריכים כמחרוזות זמן. ממירים בשרת שלנו.
+- **שגיאות:** 400, 401 (טוקן), 404 (לא נמצא), 500, ו-503 (ה-DB שלהם לא מוכן). אצלנו כשל של Nexus הוא 502. מבזק שלא נמצא (404) פשוט לא מוצג.
 - **בריאות:** `GET /health/ready` (בלי טוקן).
-- **מה אין ב-Nexus:**
-  - ⬜ **סינון לפי נרטיב.** ב-`/v1/items` יש סינון לפי `platform`, `source`, `author`, `topic`, `entityId`, `lang`, `itemType`, `from` ו-`to`, אבל לא לפי `narrative_id`. לברר מול טל ודורון איך מוצאים את המבזקים של נרטיב (רשימת `item_id` בנרטיב, topic או collection query, או סינון חדש). **חוסם את החיבור האמיתי של MAR-06 ו-MAR-09.**
-  - **חיפוש טקסט במבזקים.** לכן ב-`items` שלנו אין `search`. ⬜ להחליט על שדה החיפוש בלשונית המקורות.
-  - **סכומים לנרטיב.** `GET /v1/stats/overview` מחזיר סכומים לכל ה-Data Lake בלבד. לכן `stats` מחושב אצלנו: מספר המבזקים, סכום `engagement.views`, סכום `engagement.reposts` (שיתופים ⬜), ועד 3 פלטפורמות. `engagement` רק מ-`/v1/items/:id`, ולכן מוגבלים ל-100 מבזקים, ומעבר לזה `partial: true`.
-  - **ספירה.** אין `total`, ולכן "מקורות מידע (N)" לוקח את N מ-`posts` של `stats`.
-- **עשירות (סיווג, embeddings, ישויות):** כרגע כבויה ב-Nexus, והשדות ריקים או `null`. לא משתמשים בהם.
+- **אין ב-Nexus חיפוש טקסט**, ולכן החיפוש בלשונית המקורות נעשה בטלפון, על המבזקים שכבר נטענו.
+- **עשירות (סיווג, embeddings, ישויות):** כבויה כרגע. לא משתמשים בה.
+
+**פיתוח מקומי:**
+- **ברירת המחדל:** `DATA_LAKE_MODE=local`. `DataLakeClient` קורא קובץ fixtures באותה צורה בדיוק של Nexus, עם רשימת מזהים לכל נרטיב מה-seed. לא צריך Nexus ולא טוקן.
+- **Nexus אמיתי מקומית:** ⬜ אם טל נותן image או repo עם נתוני פיתוח, מריצים אותו ב-Docker על פורט 3100 (ברירת המחדל שלו היא 3000, כמו `api/` שלנו), עם `DATA_LAKE_MODE=http` ו-`DATA_LAKE_URL=http://localhost:3100`. הטוקן הוא מה שמגדירים ל-Nexus בהרצה.
+- **אחרי שטל מעלה ל-deployment:** רק `DATA_LAKE_URL` ו-`DATA_LAKE_TOKEN`.
 
 ## Oracle (WebView)
 - `react-native-webview` כבר בשלד. ספרייה נייטיב: שינוי בה דורש בנייה מחדש של ה-dev client.
@@ -301,10 +309,10 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | מערכת / צוות | איש קשר | מה עובר |
 |---|---|---|
 | אנומליות | דורון קבאלה | נרטיבים לשו״ב |
-| Data Lake (Nexus API) | טל בן שושן | מבזקים `item.v1` ו-`engagement`, ל-`items` ול-`stats` שלנו. סינון לפי נרטיב ⬜ |
+| Data Lake (Nexus API) | טל בן שושן | מבזקים `item.v1` ו-`engagement` לפי רשימת מזהים, ל-`items` ול-`stats` שלנו. בקשה לפי רשימה ⬜ |
 | סימולציות | אושר | אירועי תרגילית על נרטיב קיים. ווב בלבד |
 | תחקור | ניתאי שער | אירועים סגורים עם סיכום וציר, מ-API שלנו. פורמט ⬜ |
-| שו״ב | שחר צברי | `narrative`, `POST /events` (קורא לשולח ה-Push שלנו), אימות וגזרה ([14]) |
+| שו״ב | שחר צברי | `narrative` ורשימת המזהים של המבזקים, `POST /events` (קורא לשולח ה-Push שלנו), אימות וגזרה ([14]). צורך את `stats` שלנו לנרטיב |
 | ואן דאם | עדן טולקין | אירועים, פעולות (כולל מחיקה), סגירה, `db/` |
 | Oracle | ⬜ | WebView בתמונת המצב |
 | Expo Push | בן (חשבון EAS) | Push ל-Android ול-iOS, מעל FCM ו-APNs |
@@ -320,8 +328,8 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - ⬜ **כניסה (מיראז׳):** כתובת העמוד, איך הוא מחזיר את המשתמש והטוקן לאפליקציה, מה השרת מצפה לקבל, ושם ותפקיד.
 - ⬜ **אימות בשרת (שחר, [14]):** איך המשתמש המאומת והגזרה נחשפים ל-routes שלנו.
 - ⬜ **Oracle:** כתובת, פרמטרי ההקשר, זיהוי המשתמש ב-WebView, אכיפת גזרה, התאמה לטלפון ו-RTL, ואיש קשר.
-- ⬜ **Data Lake (Nexus):** איך מוצאים את המבזקים של נרטיב (חוסם), האם יתווספו סכומים לנרטיב, האם שיתופים הם `reposts`, `realityId` של תרגילית, וכתובת וטוקן לכל סביבה. עד אז fixtures מקומיים.
-- ⬜ **חיפוש במקורות:** אין חיפוש טקסט ב-Nexus. להוריד מהמסך או לבקש מטל.
+- ⬜ **Data Lake:** איפה שחר שומר את רשימת המזהים של כל נרטיב, הבקשה של טל לפי רשימת מזהים, טוקן API ו-image להרצה מקומית, וכתובת לכל סביבה.
+- ⬜ **ארבעת הנתונים בשו״ב:** לוודא מול שחר שהם פרסומים, צפיות, שיתופים ותגובות.
 - ⬜ **Push לפי גזרה:** איך שואלים את מיראז׳ על כל משתמשי גזרה (חוסם את MAR-19).
 - ⬜ **עדן:** `isAnomaly` ברשימה, `GET /api/events/:id`, `POST` ו-`DELETE` של פעולות (כולל 403 למי שלא ביצע), ותיאום על `items` ו-`stats` (היו ב-VD-06).
 - ⬜ **תחקור:** מה ניתאי צריך (push או pull, שדות, תדירות).
