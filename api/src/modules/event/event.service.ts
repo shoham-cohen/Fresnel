@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Action } from '../../entities';
 import { EventListPage } from './dto/event-list-item';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventRepository } from './event.repository';
@@ -27,5 +28,19 @@ export class EventService {
       page,
       pageSize,
     };
+  }
+
+  async getActionsForEvent(eventId: string, isSimulation: boolean): Promise<Action[]> {
+    const event = await this.eventRepository.findEventById(eventId, isSimulation);
+
+    if (!event) {
+      throw new NotFoundException(`Event ${eventId} not found`);
+    }
+
+    if (event.status === 'closed') {
+      throw new NotFoundException(`Event ${eventId} is closed and actions are not available`);
+    }
+
+    return this.eventRepository.findActionsByEventId(eventId);
   }
 }

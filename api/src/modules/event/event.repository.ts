@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Event } from '../../entities';
+import { IsNull, Repository } from 'typeorm';
+import { Action, Event } from '../../entities';
 
 export interface FindActiveOptions {
   isSimulation: boolean;
@@ -15,6 +15,8 @@ export class EventRepository {
   constructor(
     @InjectRepository(Event)
     private readonly eventOrmRepository: Repository<Event>,
+    @InjectRepository(Action)
+    private readonly actionOrmRepository: Repository<Action>,
   ) {}
 
   // Open and in-progress events, newest first, with their narrative for the title.
@@ -34,6 +36,27 @@ export class EventRepository {
     }
 
     return query.getManyAndCount();
+  }
+
+  async findEventById(eventId: string, isSimulation: boolean): Promise<Event | null> {
+    return this.eventOrmRepository.findOne({
+      where: {
+        eventId,
+        isSimulation,
+      },
+    });
+  }
+
+  findActionsByEventId(eventId: string): Promise<Action[]> {
+    return this.actionOrmRepository.find({
+      where: {
+        eventId,
+        deletedAt: IsNull(),
+      },
+      order: {
+        performedAt: 'DESC',
+      },
+    });
   }
 }
 
