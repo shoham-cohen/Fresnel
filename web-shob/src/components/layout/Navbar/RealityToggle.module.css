@@ -1,0 +1,25 @@
+/* Figma: track 222×41 (132:58), thumb 107×37 (132:59). */
+.track {
+  display: flex;
+  gap: 2px;
+  inline-size: 222px;
+  block-size: 41px;
+  padding: 2px 3px;
+  border-radius: var(--radius-sm);
+  background: var(--color-toggle-track);
+}
+
+.option {
+  inline-size: 107px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-light);
+  cursor: pointer;
+}
+
+.option[aria-checked='true'] {
+  background: var(--color-toggle-thumb);
+  font-weight: var(--font-weight-semibold);
+}

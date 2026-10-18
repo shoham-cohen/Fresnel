@@ -1,0 +1,35 @@
+/*
+ * Design tokens for Palantir.
+ *
+ * Every value here comes from Figma: file "מדור פרנל", page "מערכת שו״ב",
+ * frame "mainPage" (node 132:52). The file defines no Figma variables yet, so
+ * these are the raw values used in that frame.
+ *
+ * Don't add a value that isn't in Figma. If a design needs one, ask the
+ * designer to add it in Figma first, then mirror it here.
+ */
+:root {
+  /* Colors */
+  --color-page-bg: #ffffff; /* mainPage background */
+  --color-header-bg: #d9d9d9; /* Rectangle 10 (132:53) */
+  --color-toggle-track: #9a9a9a; /* reality / Rectangle 11 (132:58) */
+  --color-toggle-thumb: #d9d9d9; /* reality / Rectangle 12 (132:59) */
+  --color-text-primary: #000000;
+
+  /* Typography */
+  --font-family-base: 'Rubik', sans-serif;
+  --font-weight-light: 300;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-size-sm: 16px; /* reality labels, user name */
+  --font-size-md: 21px; /* nav item, inactive */
+  --font-size-lg: 23px; /* nav item, active */
+  --font-size-xl: 28px; /* PALANTIR wordmark */
+  --line-height-base: normal;
+
+  /* Radii */
+  --radius-sm: 5px; /* reality toggle track and thumb */
+
+  /* Sizes */
+  --size-header-height: 79px;
+}
