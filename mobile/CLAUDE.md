@@ -5,7 +5,7 @@
 **לא ממציאים:** שדה, endpoint או התנהגות שלא מופיעים כאן, ב-`db/1.ddl.sql`, בקוד של `api/` או באפיונים מסומנים כשאלה פתוחה. לא מנחשים.
 **Expo SDK 58.** ה-API של Expo משתנה בין גרסאות. לפני קוד שנוגע ב-Expo, קוראים את `AGENTS.md` ואת התיעוד של v58, ולא סומכים על הזיכרון.
 
-> **עדכון 18.10 (23:00): Data Lake.** המבזקים מגיעים מ-**Nexus API v1** (צוות טל בן שושן). **רשימת ה-`item_id` של כל נרטיב נשמרת ב-DB שלנו על ידי שחר** (מדורון, יחד עם הנרטיב). אנחנו קוראים אותה לפי `event_id`, ומביאים את המבזקים מ-Nexus לפי הרשימה (טל מוסיף בקשה לפי רשימת מזהים). ב-Nexus אין סכומים לנרטיב, ולכן ארבעת הנתונים המצטברים (פרסומים, צפיות, שיתופים ותגובות) מחושבים אצלנו מ-100 המבזקים האחרונים, ומשמשים גם את השו״ב. פירוט בסעיף Data Lake.
+> **עדכון 18.10 (23:00): Data Lake.** המבזקים מגיעים מ-**Nexus API v1** (צוות טל בן שושן). **רשימת ה-`item_id` של כל נרטיב נשמרת בעמודה בטבלת `narrative` על ידי שחר** (מדורון, יחד עם הנרטיב). אנחנו קוראים אותה לפי `event_id`, ומביאים את המבזקים מ-Nexus לפי הרשימה (טל מוסיף בקשה לפי רשימת מזהים). ב-Nexus אין סכומים לנרטיב, ולכן ארבעת הנתונים המצטברים (פרסומים, צפיות, שיתופים ותגובות) מחושבים אצלנו מ-100 המבזקים האחרונים, ומשמשים גם את השו״ב. פירוט בסעיף Data Lake.
 
 > **עדכון 18.10 (ערב):**
 > - **אין socket.** כל הרענון במשיכה מחזורית (polling) עם TanStack Query. אין Gateway בשרת ואין socket באפליקציה. פירוט בסעיף "זמנים".
@@ -120,6 +120,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 ## חוזים
 
 **כל קריאה מהטלפון שולחת header `X-Client: mobile`.** השרת כותב אותו ל-`event_log.client` (ברירת המחדל ב-DB היא `web`). זה בתוך `apiFetch`.
+**ה-UI צורך את רוב הבקשות בבק. חלקן שלנו, וחלקן של עדן ושחר.** בכל משימת פרונט ב-GitHub יש טבלה "בקשות בבק שהמסך צורך", עם הבעלים והמצב.
 **כללי החוזה (לפי הקוד הקיים ב-`api/`):** כל ה-routes תחת `/api`. JSON ב-camelCase (`eventId`, `createdAt`). דפדוף ב-`page` (מ-1) ו-`pageSize`, חיפוש ב-`search`, ורשימה מחזירה `{ items, total, page, pageSize }`.
 
 ### מה אנחנו צורכים
@@ -128,6 +129,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | `GET /api/events?isSimulation=false&search=&page=&pageSize=20` | הפתוחים (`open` + `in_progress`), מהחדש לישן. מחזיר `{ items: [{ eventId, title, status, severity, createdAt }], total, page, pageSize }`. **המובייל תמיד שולח `isSimulation=false`.** ⬜ חסר `isAnomaly` | עדן (VD-03, ב-dev) |
 | `GET /api/events/:id` | כרטיס האירוע, כולל שדות הנרטיב (`summary`, `arena`, `detectedAt`, `isAnomaly`), `createdBy`, `updatedAt` ו-`status`. ⬜ עוד לא ב-dev | עדן (VD-03) |
 | `GET /api/action-types` | הבנק הפעיל: `[{ code, labelHe, active }]` | עדן (ב-dev) |
+| `GET /api/events/:id/actions?isSimulation=` | הפעולות שלא נמחקו, מהחדש לישן (`actionId`, `actionTypeCode`, `title`, `description`, `performedBy`, `performedAt`). 404 על אירוע סגור. הטלפון לא קורא לו ישירות: ה-`timeline` שלנו בנוי מעליו | עדן (VD-05, PR #52, עוד לא ממוזג) |
 | `POST /api/events/:id/actions` | `{ actionType, title, description? }`. מעביר `open` ל-`in_progress`. 409 על אירוע סגור. ⬜ עוד לא ב-dev | עדן (VD-05) |
 | `DELETE /api/actions/:id` | מחיקה רכה. 403 אם המשתמש לא המבצע ⬜ | עדן (VD-05) |
 | `POST /api/events/:id/close` | `{ closureSummary }` חובה, בלי מגבלת אורך. 409 אם כבר סגור | עדן (VD-04) |
@@ -142,7 +144,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 |---|---|---|
 | `GET /api/events/:id/stats`, `GET /api/narratives/:id/stats` | `{ posts, views, shares, comments, topSources: [{ platform, count }], basedOn, asOf }`, `posts` הוא מספר כל המבזקים, והסכומים מ-100 האחרונים (`basedOn` כמה נספרו). `null` לשדה חסר, אף פעם לא 0. ה-route של הנרטיב בשביל השו״ב | MAR-06 |
 | `GET /api/events/:id/items?page=&pageSize=20` | `{ items: [{ itemId, platform, url, title, contentText, authorName, sourceId, publishedAt }], total, page, pageSize }`, מהחדש לישן. `total` הוא אורך רשימת המזהים. בלי חיפוש (החיפוש בטלפון, על מה שנטען) | MAR-09 |
-| `GET /api/events/:id/timeline` | `[{ kind, at, actorId, action? }]`, מהחדש לישן. `kind` הוא `action`, `event_created` או `event_reopened`. `action` הוא `{ actionId, actionType, actionTypeLabel, title, description, performedBy }`. בלי פעולות מחוקות | MAR-11 |
+| `GET /api/events/:id/timeline` | מעל הפעולות של עדן (`findActionsByEventId`), עם תווית הסוג ורשומות הלוג. `[{ kind, at, actorId, action? }]`, מהחדש לישן. `kind` הוא `action`, `event_created` או `event_reopened`. `action` הוא `{ actionId, actionType, actionTypeLabel, title, description, performedBy }`. בלי פעולות מחוקות | MAR-11 |
 | `GET /api/debrief/events?closedFrom=&page=&pageSize=` | הצעה: אירועי אמת סגורים עם שדות הנרטיב, חומרה, מי פתח וסגר, `closureSummary` והציר. ⬜ מול ניתאי | MAR-16 |
 | `POST /api/devices`, `DELETE /api/devices/:token` | `{ platform, pushToken }`. upsert על `push_token` ועדכון `last_seen_at`. טוקן שאינו `ExponentPushToken[...]` מחזיר 400. `user_id` מהמשתמש המאומת בלבד | MAR-17 |
 | `PushService.notifyNewEvent(eventId)` (פנימי) | משתמשי הגזרה ממיראז׳, הטלפונים שלהם לפי `user_id`, ושליחה דרך Expo | MAR-19 |
@@ -177,7 +179,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - אירוע שנסגר מהווב: נעלם מהבית במשיכה הבאה. אם המסך שלו פתוח, הכרטיס רואה `closed`, מציג "האירוע נסגר" וחוזר לבית.
 
 ## DB (PostgreSQL, schema `fresnel`, גרסה 0.7, לא סופית)
-- **`narrative`** (של השו״ב): `narrative_id` (text), `title`, `summary`, `is_anomaly`, `arena` (יכול להיות `NULL`), `location_name`, `detected_at`, `embedding`, `payload`, `received_at`.
+- **`narrative`** (של השו״ב): `narrative_id` (text), `title`, `summary`, `is_anomaly`, `arena` (יכול להיות `NULL`), `location_name`, `detected_at`, `embedding`, `payload`, `received_at`, ו-רשימת ה-`item_id` של המבזקים, בעמודה שהשו״ב מוסיף (⬜ השם לפי ה-migration של שחר).
 - **`event`:** `event_id`, `narrative_id`, `severity` (`low`/`medium`/`high`/`critical`), `status` (`open`/`in_progress`/`closed`), `is_simulation`, `created_by`, `created_at`, `updated_at`, `closed_at`, `closed_by`, `closure_summary` (בלי מגבלת אורך).
   - סגור ⇔ `closed_at`, ואז `closed_by` ו-`closure_summary` חובה.
   - unique חלקי: אירוע אמיתי לא סגור אחד לנרטיב. תרגילית לא בכלל.
@@ -204,7 +206,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 המבזקים מגיעים מ-**Nexus**, ה-API של ה-Data Lake (צוות טל בן שושן). רק `api/` שלנו פונה אליו. הטלפון לא.
 
 **הזרימה:**
-1. שחר מושך מדורון כל נרטיב **עם רשימת ה-`item_id` שלו**, ושומר את הרשימה ב-DB. ⬜ איפה (עמודה ב-`narrative` או טבלה), עם review של עדן.
+1. שחר מושך מדורון כל נרטיב **עם רשימת ה-`item_id` שלו**, ושומר את הרשימה בעמודה בטבלת `narrative`. ⬜ שם העמודה לפי ה-migration שלו (review של עדן).
 2. אנחנו קוראים את הרשימה לפי `event_id` (דרך הנרטיב של האירוע), או לפי `narrative_id` בשביל השו״ב.
 3. מביאים את המבזקים מ-Nexus לפי הרשימה. ⬜ טל מוסיף בקשה לפי רשימת מזהים (בעמוד ה-API היא עוד לא מופיעה). עד אז `GET /v1/items/:id` לכל מזהה, עד 10 במקביל.
 4. ממיינים מהחדש לישן לפי `published_at`, ושומרים במטמון בזיכרון 60 שניות, כדי ש-`stats` ו-`items` לא ימשכו פעמיים.
@@ -328,8 +330,8 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - ⬜ **כניסה (מיראז׳):** כתובת העמוד, איך הוא מחזיר את המשתמש והטוקן לאפליקציה, מה השרת מצפה לקבל, ושם ותפקיד.
 - ⬜ **אימות בשרת (שחר, [14]):** איך המשתמש המאומת והגזרה נחשפים ל-routes שלנו.
 - ⬜ **Oracle:** כתובת, פרמטרי ההקשר, זיהוי המשתמש ב-WebView, אכיפת גזרה, התאמה לטלפון ו-RTL, ואיש קשר.
-- ⬜ **Data Lake:** איפה שחר שומר את רשימת המזהים של כל נרטיב, הבקשה של טל לפי רשימת מזהים, טוקן API ו-image להרצה מקומית, וכתובת לכל סביבה.
-- ⬜ **ארבעת הנתונים בשו״ב:** לוודא מול שחר שהם פרסומים, צפיות, שיתופים ותגובות.
+- ⬜ **Data Lake:** שם העמודה ב-`narrative` עם רשימת המזהים, הבקשה של טל לפי רשימת מזהים, טוקן API ו-image להרצה מקומית, וכתובת לכל סביבה.
+- ⬜ **פעולות (עדן):** מיזוג PR #52, ו-export של `EventRepository` (או method ב-`EventService`) שמחזיר פעולות גם לאירוע סגור, בשביל ה-`timeline` והתחקור.
 - ⬜ **Push לפי גזרה:** איך שואלים את מיראז׳ על כל משתמשי גזרה (חוסם את MAR-19).
 - ⬜ **עדן:** `isAnomaly` ברשימה, `GET /api/events/:id`, `POST` ו-`DELETE` של פעולות (כולל 403 למי שלא ביצע), ותיאום על `items` ו-`stats` (היו ב-VD-06).
 - ⬜ **תחקור:** מה ניתאי צריך (push או pull, שדות, תדירות).
