@@ -15,8 +15,8 @@ services:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - fresnel-db-data:/var/lib/postgresql/data
-      # Applied once, when the data volume is created
-      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      # *.sql files in ./db run once, in name order, when the data volume is created
+      - ./db:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
