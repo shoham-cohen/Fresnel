@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "539838264846",
+    "project_id": "marconi-bb7c3",
+    "storage_bucket": "marconi-bb7c3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:539838264846:android:a8575b4e39fa825fde2e5f",
+        "android_client_info": {
+          "package_name": "com.fresnel.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv3yfoGo6IY8MVxFHBcNUa5Ul08ueceYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
