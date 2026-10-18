@@ -140,7 +140,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 ### ה-routes שלנו (מודול `mobile` ב-`api/`)
 | route | מה | משימה |
 |---|---|---|
-| `GET /api/events/:id/stats`, `GET /api/narratives/:id/stats` | `{ posts, views, shares, comments, topSources: [{ platform, count }], basedOn, totalItems, asOf }`, מחושב מ-100 המבזקים האחרונים של הנרטיב. `basedOn` כמה נספרו, `totalItems` כמה ברשימה. `null` לשדה חסר, אף פעם לא 0. ה-route של הנרטיב בשביל השו״ב | MAR-06 |
+| `GET /api/events/:id/stats`, `GET /api/narratives/:id/stats` | `{ posts, views, shares, comments, topSources: [{ platform, count }], basedOn, asOf }`, `posts` הוא מספר כל המבזקים, והסכומים מ-100 האחרונים (`basedOn` כמה נספרו). `null` לשדה חסר, אף פעם לא 0. ה-route של הנרטיב בשביל השו״ב | MAR-06 |
 | `GET /api/events/:id/items?page=&pageSize=20` | `{ items: [{ itemId, platform, url, title, contentText, authorName, sourceId, publishedAt }], total, page, pageSize }`, מהחדש לישן. `total` הוא אורך רשימת המזהים. בלי חיפוש (החיפוש בטלפון, על מה שנטען) | MAR-09 |
 | `GET /api/events/:id/timeline` | `[{ kind, at, actorId, action? }]`, מהחדש לישן. `kind` הוא `action`, `event_created` או `event_reopened`. `action` הוא `{ actionId, actionType, actionTypeLabel, title, description, performedBy }`. בלי פעולות מחוקות | MAR-11 |
 | `GET /api/debrief/events?closedFrom=&page=&pageSize=` | הצעה: אירועי אמת סגורים עם שדות הנרטיב, חומרה, מי פתח וסגר, `closureSummary` והציר. ⬜ מול ניתאי | MAR-16 |
@@ -209,7 +209,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 3. מביאים את המבזקים מ-Nexus לפי הרשימה. ⬜ טל מוסיף בקשה לפי רשימת מזהים (בעמוד ה-API היא עוד לא מופיעה). עד אז `GET /v1/items/:id` לכל מזהה, עד 10 במקביל.
 4. ממיינים מהחדש לישן לפי `published_at`, ושומרים במטמון בזיכרון 60 שניות, כדי ש-`stats` ו-`items` לא ימשכו פעמיים.
 
-**`stats`:** מ-100 המבזקים האחרונים: `posts` (כמה מבזקים), `views` (סכום `engagement.views`), `shares` (סכום `engagement.reposts`), `comments` (סכום `engagement.replies` ו-`engagement.quotes`), ו-`topSources` (עד 3 פלטפורמות). כשיש יותר מ-100, המסך כותב "לפי 100 הפרסומים האחרונים". אם טל יוסיף סכומים לנרטיב, עוברים אליהם.
+**`stats`:** `posts` הוא מספר כל המבזקים ברשימה. מ-100 המבזקים האחרונים: `views` (סכום `engagement.views`), `shares` (סכום `engagement.reposts`), `comments` (סכום `engagement.replies` ו-`engagement.quotes`), ו-`topSources` (עד 3 פלטפורמות). כשיש יותר מ-100, המסך כותב ליד הצפיות, השיתופים והתגובות "לפי 100 הפרסומים האחרונים". אם טל יוסיף סכומים לנרטיב, עוברים אליהם.
 
 **Nexus בקצרה:**
 - **אימות:** `Authorization: Bearer <API_TOKEN>`. לפי העמוד זה טוקן API קבוע של Nexus, לא טוקן משתמש של Keycloak. ⬜ לוודא מול טל. הכתובת והטוקן במשתני הסביבה של השרת (`DATA_LAKE_URL`, `DATA_LAKE_TOKEN`), וב-PreProd ו-Prod מ-Sealed Secrets.
