@@ -11,8 +11,11 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 
+import { ThemeProvider } from '@mui/material/styles';
+
 import { router } from '@/app/router';
-import { RealityProvider } from './contexts';
+import { RealityProvider } from '@/contexts';
+import { theme } from '@/theme';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -21,8 +24,10 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <RealityProvider>
-      <RouterProvider router={router} />
-    </RealityProvider>
+    <ThemeProvider theme={theme}>
+      <RealityProvider>
+        <RouterProvider router={router} />
+      </RealityProvider>
+    </ThemeProvider>
   </StrictMode>,
 );

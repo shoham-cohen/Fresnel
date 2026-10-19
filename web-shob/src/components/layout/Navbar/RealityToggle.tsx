@@ -1,7 +1,12 @@
 import { useState } from 'react';
+import Box from '@mui/material/Box';
+import ButtonBase from '@mui/material/ButtonBase';
 
-import styles from './RealityToggle.module.css';
 import type { Reality } from '@/types';
+
+import { styles } from './RealityToggle.styles';
+
+export type { Reality };
 
 const options: readonly { value: Reality; label: string }[] = [
   { value: 'real', label: 'אמת' },
@@ -18,21 +23,24 @@ export function RealityToggle() {
   const [reality, setReality] = useState<Reality>('real');
 
   return (
-    <div role="radiogroup" aria-label="מציאות" className={styles.track}>
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          role="radio"
-          aria-checked={reality === option.value}
-          className={styles.option}
-          onClick={() => {
-            setReality(option.value);
-          }}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+    <Box role="radiogroup" aria-label="מציאות" sx={styles.track}>
+      {options.map((option) => {
+        const isSelected = reality === option.value;
+        return (
+          <ButtonBase
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            onClick={() => {
+              setReality(option.value);
+            }}
+            sx={styles.option(isSelected)}
+          >
+            {option.label}
+          </ButtonBase>
+        );
+      })}
+    </Box>
   );
 }
