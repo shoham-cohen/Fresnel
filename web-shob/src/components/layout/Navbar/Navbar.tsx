@@ -1,8 +1,14 @@
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
+import Stack from '@mui/material/Stack';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import { NavLink } from 'react-router';
 
 import { navItems } from '@/routes/paths';
 
-import styles from './Navbar.module.css';
+import { styles } from './Navbar.styles';
 import { RealityToggle } from './RealityToggle';
 import { UserBadge } from './UserBadge';
 
@@ -14,25 +20,29 @@ export interface NavbarProps {
 /** App header. Figma: "מערכת שו״ב" › mainPage (132:52). */
 export function Navbar({ userName }: NavbarProps) {
   return (
-    <header className={styles.header}>
-      <span className={styles.wordmark}>Palantir</span>
+    <AppBar position="static" component="header" elevation={0} sx={styles.appBar}>
+      <Toolbar disableGutters sx={styles.toolbar}>
+        <Typography component="span" sx={styles.wordmark}>
+          Palantir
+        </Typography>
 
-      <nav aria-label="ניווט ראשי">
-        <ul className={styles.navList}>
-          {navItems.map((item) => (
-            <li key={item.path}>
-              <NavLink to={item.path} end className={styles.navLink}>
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+        <Box component="nav" aria-label="ניווט ראשי">
+          <Stack component="ul" direction="row" spacing="116px" sx={styles.navList}>
+            {navItems.map((item) => (
+              <Box component="li" key={item.path}>
+                <Link component={NavLink} to={item.path} end sx={styles.navLink}>
+                  {item.label}
+                </Link>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
 
-      <div className={styles.end}>
-        <RealityToggle />
-        <UserBadge userName={userName} />
-      </div>
-    </header>
+        <Box sx={styles.endSection}>
+          <RealityToggle />
+          <UserBadge userName={userName} />
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }
