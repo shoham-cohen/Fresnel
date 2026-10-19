@@ -20,7 +20,7 @@ export class FetchedNarrativeDto {
   @IsOptional()
   @IsArray()
   @IsEnum(Arena, { each: true })
-  arena: Arena[] | null;
+  arena: Arena[];
 
   @IsBoolean()
   isAnomaly: boolean;
