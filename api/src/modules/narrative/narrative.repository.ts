@@ -13,17 +13,18 @@ export class NarrativeRepository {
   ) {}
 
   findAll(startDate?: Date, endDate?: Date): Promise<Narrative[]> {
-    const where: FindOptionsWhere<Narrative> = {};
+    const operator: FindOptionsWhere<Narrative> = {};
+
     if (startDate && endDate) {
-      where.detectedAt = Between(startDate, endDate);
+      operator.detectedAt = Between(startDate, endDate);
     } else if (startDate) {
-      where.detectedAt = MoreThanOrEqual(startDate);
+      operator.detectedAt = MoreThanOrEqual(startDate);
     } else if (endDate) {
-      where.detectedAt = LessThanOrEqual(endDate);
+      operator.detectedAt = LessThanOrEqual(endDate);
     }
 
     return this.narrativeOrmRepository.find({
-      where,
+      where: operator,
       relations: { events: true },
     });
   }
