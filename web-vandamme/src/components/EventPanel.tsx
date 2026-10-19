@@ -1,6 +1,8 @@
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
+import { Box, Button } from '@mui/material';
+import EventCard from './EventPanel/EventCard';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
@@ -17,7 +19,8 @@ const Item = styled(Paper)(({ theme }) => ({
   }),
 }));
 
-export default function EventPanel() {
+
+export default function EventPanel( ) {
   return (
     <Grid
       container
@@ -29,25 +32,27 @@ export default function EventPanel() {
         flexGrow: 1,
       }}
     >
-      <Grid size={3} sx={{ height: '100%' , paddingTop:1 }}>
+
+      <Grid size={3} sx={{ height: '100%' }}>
         <Item>1</Item>
       </Grid>
       <Grid size={6} sx={{ height: '100%' }}>
-         <Grid size={12} sx={{ height: '15%', paddingTop:1 }}>
-        <Item>5</Item>
+         <Grid size={12} sx={{ height: '15%' }}>
+        <EventCard></EventCard>
       </Grid>
       <Grid size={12} sx={{ height: '85%',  paddingTop:3}}>
         <Item>6</Item>
       </Grid>
       </Grid>
-      <Grid size={3} sx={{ height: '100%',  paddingTop:1 }}>
-        <Grid size={12} sx={{ height: '40%' ,  }}>
+      <Grid size={3} sx={{ height: '100%' }}>
+        <Grid size={12} sx={{ height: '40%'  }}>
         <Item>3</Item>
       </Grid>
       <Grid size={12} sx={{ height: '60%', paddingTop:1}}>
         <Item>4</Item>
       </Grid>
       </Grid>
+      
     </Grid>
   );
 }
