@@ -10,6 +10,7 @@ import '@fontsource/rubik/500.css'
 import '@fontsource/rubik/700.css'
 import { theme } from './theme'
 import App from './App'
+import { EnvironmentProvider } from './Context/EnvironmentContext'
 
 const rtlCache = createCache({ key: 'muirtl', stylisPlugins: [prefixer, rtlPlugin] })
 
@@ -17,8 +18,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={theme}>
+        <EnvironmentProvider>
         <CssBaseline />
         <App />
+        </EnvironmentProvider>
       </ThemeProvider>
     </CacheProvider>
   </StrictMode>,
