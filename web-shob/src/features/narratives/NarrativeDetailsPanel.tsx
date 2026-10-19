@@ -97,21 +97,41 @@ export function NarrativeDetailsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const narrativeId = searchParams.get('narrativeId');
   const [narrative, setNarrative] = useState<NarrativeDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
   const colors = theme.palette;
 
   useEffect(() => {
     if (!narrativeId) {
+      setNarrative(null);
+      setIsLoading(false);
       return;
     }
 
     let isMounted = true;
-    void fetchNarrativeById(narrativeId).then((data) => {
-      if (isMounted) {
-        setNarrative(data);
-      }
-    });
+
+    setIsLoading(true);
+    setNarrative(null);
+
+    void fetchNarrativeById(narrativeId)
+      .then((data) => {
+        if (isMounted) {
+          setNarrative(data);
+        }
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to fetch narrative:', error);
+
+        if (isMounted) {
+          setNarrative(null);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
 
     return () => {
       isMounted = false;
@@ -173,6 +193,18 @@ export function NarrativeDetailsPanel() {
           <CloseIcon fontSize="medium" />
         </IconButton>
       </Box>
+
+      {isLoading && (
+        <Typography sx={{ mt: 2, textAlign: 'center' }}>
+          טוען נתונים...
+        </Typography>
+      )}
+
+      {!isLoading && narrativeId && !displayData && (
+        <Typography sx={{ mt: 2, textAlign: 'center' }}>
+          לא נמצאו נתונים עבור הנרטיב
+        </Typography>
+      )}
 
       {displayData && (
         <Box sx={{ mt: 1.5 }}>
