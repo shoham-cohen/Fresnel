@@ -1,7 +1,6 @@
 
 import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useEnvironment } from '../../Context/EnvironmentContext'
-import { useEffect } from 'react'
 
 type Environment = 'real' | 'simulation'
 
@@ -23,10 +22,12 @@ export default function EnvironmentToggle() {
       sx={{
         direction: 'rtl',
         height: 44,
-        border: '1px solid #47678b',
+        border: '1px solid',
+        borderColor: 'primary.main',
         borderRadius: '24px',
         p: '3px',
-        bgcolor: '#102b4c',
+        bgcolor: 'background.paper',
+        transition: 'background-color 0.2s ease, border-color 0.2s ease',
 
         '& .MuiToggleButtonGroup-grouped': {
           border: 0,
@@ -34,24 +35,24 @@ export default function EnvironmentToggle() {
           minWidth: 105,
           px: 3,
           py: 1,
-          color: '#fff',
+          color: 'text.primary',
           fontFamily: 'inherit',
           fontSize: '14px',
           fontWeight: 500,
           textTransform: 'none',
-          transition: 'background-color 0.2s ease',
+          transition: 'background-color 0.2s ease, color 0.2s ease',
 
           '&:hover': {
-            bgcolor: 'rgba(255,255,255,0.12)',
+            bgcolor: 'action.hover',
           },
 
           '&.Mui-selected': {
-            bgcolor: '#4b78ad',
-            color: '#fff',
+            bgcolor: 'primary.main',
+            color: 'background.default',
             fontWeight: 700,
 
             '&:hover': {
-              bgcolor: '#6090c5',
+              bgcolor: 'primary.dark',
             },
           },
         },
