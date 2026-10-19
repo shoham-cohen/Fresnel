@@ -1,0 +1,22 @@
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+
+    # fresnel-api; the path is passed as is, /api included
+    location /api/ {
+        proxy_pass ${API_URL};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Vite puts content hashes in asset names, so they can be cached for good
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
+}
