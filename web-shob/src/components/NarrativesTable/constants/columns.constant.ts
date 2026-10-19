@@ -1,6 +1,6 @@
 import type { SortKey } from '../interfaces/sort.interface';
 
-export const COLUMN_COUNT = 5;
+export const COLUMN_COUNT = 6;
 export const VIEWS_COUNT_MAX = 1_000_000;
 
 interface SortableColumn {

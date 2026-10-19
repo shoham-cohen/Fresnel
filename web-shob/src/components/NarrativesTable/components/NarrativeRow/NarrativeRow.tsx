@@ -1,10 +1,11 @@
+import { FlagIcon } from '@/icons/FlagIcon';
 import { styles } from './NarrativeRow.styles';
-import type { FC, KeyboardEvent } from 'react';
-import { COLUMN_STYLES, TOOLTIP_SLOT_PROPS } from '../../NarrativesTable.styles';
+import { memo, type FC, type KeyboardEvent } from 'react';
 import { formatDate, formatTime } from '@/lib/formatDateTime';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import { VIEWS_COUNT_MAX } from '../../constants/columns.constant';
-import { Box, Tooltip, TableRow, TableCell, Typography } from '@mui/material';
+import { COLUMN_STYLES, TOOLTIP_SLOT_PROPS } from '../../NarrativesTable.styles';
+import { Box, Tooltip, TableRow, TableCell, IconButton, Typography } from '@mui/material';
 
 const viewsFormat = new Intl.NumberFormat('he-IL');
 
@@ -13,19 +14,23 @@ interface NarrativeRowProps {
   rowNumber: number;
   narrative: Narrative;
   onSelect?: (narrative: Narrative) => void;
+  onToggleFlag?: (narrative: Narrative) => void;
 }
 
-export const NarrativeRow: FC<NarrativeRowProps> = ({
+const NarrativeRowComponent: FC<NarrativeRowProps> = ({
   selected,
   rowNumber,
   onSelect,
   narrative,
+  onToggleFlag,
 }) => {
   const views = Math.min(Math.max(narrative.viewsCount, 0), VIEWS_COUNT_MAX);
   const fill = Math.round((views / VIEWS_COUNT_MAX) * 100);
   const viewsLabel = `${viewsFormat.format(narrative.viewsCount)} צפיות`;
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.target !== event.currentTarget) return;
+
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       onSelect?.(narrative);
@@ -84,6 +89,26 @@ export const NarrativeRow: FC<NarrativeRowProps> = ({
           </Box>
         </Tooltip>
       </TableCell>
+      <TableCell sx={[styles.cell, COLUMN_STYLES.flag]}>
+        {onToggleFlag ? (
+          <IconButton
+            size="small"
+            aria-label="סימון התראה"
+            aria-pressed={narrative.isFlagged} 
+            sx={narrative.isFlagged ? styles.flagged : styles.flag}
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleFlag(narrative);
+            }}
+          >
+            <FlagIcon filled={narrative.isFlagged} />
+          </IconButton>
+        ) : (
+          narrative.isFlagged && <FlagIcon filled aria-label="התראה מסומנת" sx={styles.flagged} />
+        )}
+      </TableCell>
     </TableRow>
   );
 };
+
+export const NarrativeRow = memo(NarrativeRowComponent);

@@ -1,4 +1,4 @@
-import type { SxProps, Theme } from '@mui/material/styles';
+import { alpha, type SxProps, type Theme } from '@mui/material/styles';
 
 export const styles = {
   clickableRow: {
@@ -6,11 +6,11 @@ export const styles = {
   },
   row: {
     '&.Mui-selected, &.Mui-selected:hover': {
-      bgcolor: 'primary.light opacity 0.8',
+      bgcolor: (theme) => alpha(theme.palette.primary.light, 0.8),
     },
     '& > td': {
       height: 68,
-      borderBottom: '1px solid #BFBFBF',
+      borderBottom: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
       fontSize: 16,
       fontWeight: 'fontWeightLight',
     },
@@ -58,5 +58,11 @@ export const styles = {
     height: '100%',
     borderRadius: '6px',
     bgcolor: 'primary.main',
+  },
+  flag: {
+    color: 'text.primary',
+  },
+  flagged: {
+    color: 'primary.main',
   },
 } satisfies Record<string, SxProps<Theme>>;

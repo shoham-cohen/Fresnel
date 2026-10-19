@@ -1,4 +1,9 @@
-import type { NarrativeDto, NarrativesQuery, Page } from '@/interfaces/narrative-api.interface';
+import type {
+  Page,
+  NarrativeDto,
+  NarrativeUpdate,
+  NarrativesQuery,
+} from '@/interfaces/narrative-api.interface';
 
 const HOUR = 60 * 60 * 1000;
 const MOCK_LATENCY_MS = 300;
@@ -11,6 +16,7 @@ const mockNarrative = (
   fields: Pick<NarrativeDto, 'narrativeId' | 'title' | 'summary' | 'locationName' | 'arena'> & {
     hoursAgo: number;
     viewsCount: number;
+    isFlagged?: boolean;
   },
 ): NarrativeDto => {
   const detectedAt = hoursAgo(fields.hoursAgo);
@@ -26,6 +32,7 @@ const mockNarrative = (
     narrativeId: fields.narrativeId,
     locationName: fields.locationName,
     viewsCount: fields.viewsCount,
+    isFlagged: fields.isFlagged ?? false,
   };
 };
 
@@ -59,6 +66,7 @@ const seedNarratives: NarrativeDto[] = [
   }),
   mockNarrative({
     narrativeId: 'nar-0001',
+    isFlagged: true,
     title: 'שמועה על פינוי יישובים בגבול הצפון',
     summary: 'פוסטים רבים טוענים שהוחלט על פינוי כפוי של יישובי קו העימות',
     locationName: 'גבול הצפון',
@@ -104,6 +112,7 @@ const seedNarratives: NarrativeDto[] = [
   }),
   mockNarrative({
     narrativeId: 'nar-0005',
+    isFlagged: true,
     title: 'דיווח כוזב על הפסקת אש',
     summary: 'ציוצים בערבית מדווחים על הסכם הפסקת אש שלא נחתם',
     locationName: 'רצועת עזה',
@@ -142,14 +151,14 @@ const generatedNarratives: NarrativeDto[] = Array.from({ length: 100 }, (_, inde
     arena: pick(arenas, g * 5),
     hoursAgo: g * 3,
     viewsCount: (5 + ((g * 37) % 95)) * 10_000,
+    isFlagged: g % 9 === 0,
   });
 });
 
 /** Every mock narrative, newest first. */
-export const mockNarrativeDtos: readonly NarrativeDto[] = [
-  ...seedNarratives,
-  ...generatedNarratives,
-].sort((a, b) => Date.parse(b.detectedAt) - Date.parse(a.detectedAt));
+export const mockNarrativeDtos: NarrativeDto[] = [...seedNarratives, ...generatedNarratives].sort(
+  (a, b) => Date.parse(b.detectedAt) - Date.parse(a.detectedAt),
+);
 
 const collator = new Intl.Collator('he', { numeric: true, sensitivity: 'base' });
 
@@ -186,6 +195,10 @@ export const getMockNarrativesPage = async (
   const filtered = mockNarrativeDtos
     .filter((dto) => matches(dto, query))
     .sort((a, b) => {
+      // Flagged narratives come first, across all pages; the sort applies within each group.
+      const flagged = Number(b.isFlagged) - Number(a.isFlagged);
+      if (flagged !== 0) return flagged;
+
       if (sortBy === 'locationName') {
         const missing = Number(a.locationName === null) - Number(b.locationName === null);
         if (missing !== 0) return missing;
@@ -201,4 +214,19 @@ export const getMockNarrativesPage = async (
     page,
     pageSize,
   };
+};
+
+/** Updates a mock narrative the way PATCH /api/narratives/:id should, and returns it. */
+export const updateMockNarrative = async (
+  narrativeId: string,
+  changes: NarrativeUpdate,
+): Promise<NarrativeDto> => {
+  await new Promise((resolve) => setTimeout(resolve, MOCK_LATENCY_MS));
+
+  const narrative = mockNarrativeDtos.find((dto) => dto.narrativeId === narrativeId);
+  if (!narrative) {
+    throw new Error(`Narrative ${narrativeId} not found`);
+  }
+
+  return Object.assign(narrative, changes);
 };

@@ -3,6 +3,7 @@ export interface Narrative {
   detectedAt: string;
   narrativeId: string;
   viewsCount: number;
+  isFlagged: boolean;
   summary: string | null;
   locationName: string | null;
 }

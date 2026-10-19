@@ -18,16 +18,21 @@ export const nextSort = (current: SortState | null, key: SortKey): SortState => 
   return { key, direction: 'asc' };
 };
 
+const byFlag: Comparator = (a, b) => Number(b.isFlagged) - Number(a.isFlagged);
+
 export const sortNarratives = (
   narratives: readonly Narrative[],
   sort: SortState | null,
 ): readonly Narrative[] => {
-  if (!sort) return narratives;
+  if (!sort) return narratives.toSorted(byFlag);
 
   const compare = comparators[sort.key];
   const factor = sort.direction === 'asc' ? 1 : -1;
 
   return narratives.toSorted((a, b) => {
+    const flagged = byFlag(a, b);
+    if (flagged !== 0) return flagged;
+
     if (sort.key === 'location') {
       const missing = Number(a.locationName === null) - Number(b.locationName === null);
       if (missing !== 0) return missing;

@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { pageStyles } from '@/styles/page.styles';
-import { useNarratives } from '@/hooks/narratives.hook';
+import { useNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
 import { toSortParams } from '@/utilities/narrative.utility';
+import type { Narrative } from '@/interfaces/narrative.interface';
 import type { NarrativesQuery } from '@/interfaces/narrative-api.interface';
 import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import { NarrativesTable, type SortState } from '@/components/NarrativesTable';
@@ -17,7 +18,12 @@ export const NarrativeHistoryPage = () => {
     () => ({ page, pageSize: PAGE_SIZE, ...toSortParams(sort) }),
     [page, sort],
   );
+  const toggleFlag = useToggleNarrativeFlag();
   const { narratives, tableStatus, refetch, isRefetching } = useNarratives(query);
+
+  const handleSelect = useCallback((narrative: Narrative) => {
+    setSelectedId(narrative.narrativeId);
+  }, []);
 
   return (
     <>
@@ -40,6 +46,7 @@ export const NarrativeHistoryPage = () => {
       <NarrativesTable
         sort={sort}
         onRetry={refetch}
+        onToggleFlag={toggleFlag}
         status={tableStatus}
         narratives={narratives}
         selectedId={selectedId}
@@ -48,9 +55,7 @@ export const NarrativeHistoryPage = () => {
           setSort(next);
           setPage(1);
         }}
-        onSelect={(narrative) => {
-          setSelectedId(narrative.narrativeId);
-        }}
+        onSelect={handleSelect}
       />
     </>
   );

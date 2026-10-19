@@ -18,11 +18,11 @@ import {
 import { useMemo, useState, type FC } from 'react';
 import { MessageRow } from './components/MessageRow/MessageRow';
 import { SORTABLE_COLUMNS } from './constants/columns.constant';
-import { COLUMN_STYLES, styles, TOOLTIP_SLOT_PROPS } from './NarrativesTable.styles';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import type { SortKey, SortState } from './interfaces/sort.interface';
 import { NarrativeRow } from './components/NarrativeRow/NarrativeRow';
 import { nextSort, sortNarratives } from './utilities/sort-narratives.utility';
+import { COLUMN_STYLES, styles, TOOLTIP_SLOT_PROPS } from './NarrativesTable.styles';
 
 export type NarrativesTableStatus = 'loading' | 'error' | 'ready';
 
@@ -35,6 +35,7 @@ export interface NarrativesTableProps {
   narratives: readonly Narrative[];
   onSortChange?: (sort: SortState) => void;
   onSelect?: (narrative: Narrative) => void;
+  onToggleFlag?: (narrative: Narrative) => void;
 }
 
 export const NarrativesTable: FC<NarrativesTableProps> = ({
@@ -42,6 +43,7 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
   onSelect,
   narratives,
   onSortChange,
+  onToggleFlag,
   status = 'ready',
   selectedId = null,
   firstRowNumber = 1,
@@ -110,6 +112,7 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
         key={narrative.narrativeId}
         onSelect={onSelect}
         narrative={narrative}
+        onToggleFlag={onToggleFlag}
         rowNumber={firstRowNumber + index}
         selected={narrative.narrativeId === selectedId}
       />
@@ -172,6 +175,11 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
                 </TableCell>
               );
             })}
+            <TableCell sx={[styles.headCell, COLUMN_STYLES.flag]}>
+              <Box component="span" sx={styles.visuallyHidden}>
+                סימון
+              </Box>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>{renderBody()}</TableBody>

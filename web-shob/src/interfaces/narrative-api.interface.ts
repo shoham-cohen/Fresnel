@@ -9,11 +9,14 @@ export interface NarrativeDto {
   receivedAt: string;
   detectedAt: string;
   viewsCount: number;
+  isFlagged: boolean;
   narrativeId: string;
   summary: string | null;
   locationName: string | null;
   payload: Record<string, unknown>;
 }
+
+export type NarrativeUpdate = Partial<Omit<NarrativeDto, 'narrativeId'>>;
 
 export interface NarrativesQuery {
   to?: string;

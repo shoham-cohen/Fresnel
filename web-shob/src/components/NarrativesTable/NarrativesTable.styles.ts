@@ -41,11 +41,14 @@ export const COLUMN_STYLES = {
   viewsCount: {
     paddingInlineStart: '55px',
   },
+  flag: {
+    width: 106,
+    textAlign: 'center',
+  },
 } satisfies Record<string, SxProps<Theme>>;
 
 export const styles = {
   container: {
-    border: '1px solid #C4C4C4',
     borderRadius: '10px',
   },
   table: {

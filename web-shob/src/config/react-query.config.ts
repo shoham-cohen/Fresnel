@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import type { NarrativesQuery } from '@/interfaces/narrative-api.interface';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const RECENT_REFETCH_MS = 30_000;
@@ -11,9 +12,12 @@ export const queryClient = new QueryClient({
   },
 });
 
-export const QUERY_KEYS = {
-  NARRATIVES: 'narratives',
-} as const;
+export const narrativeKeys = {
+  all: ['narratives'] as const,
+  update: () => [...narrativeKeys.all, 'update'] as const,
+  recent: (hours: number) => [...narrativeKeys.all, 'recent', hours] as const,
+  list: (query: NarrativesQuery) => [...narrativeKeys.all, 'list', query] as const,
+};
 
 // TODO: replace polling with a server push (SSE / WebSocket) once the API has one.
 export const RECENT_NARRATIVES_OPTIONS = {
