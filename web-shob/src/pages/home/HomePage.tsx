@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
 import { Box, Typography } from '@mui/material';
+import { useSearchParams } from 'react-router';
 import { pageStyles } from '@/styles/page.styles';
+import { NarrativeDetailsPanel } from '@/features/narratives';
 import { NarrativesTable } from '@/components/NarrativesTable';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import { useRecentNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
@@ -17,6 +19,7 @@ export const HomePage = () => {
   const handleSelect = useCallback((narrative: Narrative) => {
     setSelectedId(narrative.narrativeId);
   }, []);
+  const [, setSearchParams] = useSearchParams();
 
   return (
     <>
@@ -25,6 +28,26 @@ export const HomePage = () => {
       <Typography component="h1" sx={pageStyles.title}>
         כל ההתראות
       </Typography>
+      {/* Demo row trigger until the table component is plugged in */}
+        <div style={{ marginBlockStart: '20px' }}>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchParams({ narrativeId: 'nar-0001' });
+            }}
+            style={{
+              padding: '10px 18px',
+              backgroundColor: '#f2f2f2',
+              border: '1px solid #d9d9d9',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 500,
+              fontFamily: 'inherit',
+            }}
+          >
+            פתח פאנל התראה לדוגמה (עלייה חריגה בשיח סביב פעילות צהל בגבול הצפון)
+          </button>
+        </div>
       <NarrativesTable
         narratives={narratives}
         status={tableStatus}
@@ -33,6 +56,9 @@ export const HomePage = () => {
         selectedId={selectedId}
         onSelect={handleSelect}
       />
+
+
+      <NarrativeDetailsPanel />
     </>
   );
 };

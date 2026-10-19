@@ -13,7 +13,7 @@ export class Event {
   @Column({ name: 'narrative_id', type: 'text' })
   narrativeId: string;
 
-  @ManyToOne(() => Narrative)
+  @ManyToOne(() => Narrative, (narrative) => narrative.events)
   @JoinColumn({ name: 'narrative_id' })
   narrative: Narrative;
 
