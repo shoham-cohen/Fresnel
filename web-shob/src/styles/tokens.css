@@ -15,16 +15,12 @@
   --color-toggle-track: #9a9a9a; /* reality / Rectangle 11 (132:58) */
   --color-toggle-thumb: #d9d9d9; /* reality / Rectangle 12 (132:59) */
   --color-text-primary: #000000;
-  --color-table-border: #c4c4c4; /* narratives table outline (264:3569) */
-  --color-table-divider: #bfbfbf; /* narratives table row divider (264:3569) */
-  --color-bar-fill: #7b7777; /* narratives table traffic bar fill (264:3569) */
 
   /* Typography */
   --font-family-base: 'Rubik', sans-serif;
   --font-weight-light: 300;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  --font-size-xs: 14px; /* area tag, narrative subtitle (264:3569, measured from a screenshot) */
   --font-size-sm: 16px; /* reality labels, user name */
   --font-size-md: 21px; /* nav item, inactive */
   --font-size-lg: 23px; /* nav item, active */
