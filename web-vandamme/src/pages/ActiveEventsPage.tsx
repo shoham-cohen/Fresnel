@@ -19,10 +19,13 @@ export default function ActiveEventsPage({ isSimulation }: Props) {
   const debouncedSearch = useDebouncedValue(search, 300)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const { events, total, loading, error, hasMore, loadMore } = useActiveEvents({ search: debouncedSearch, isSimulation })
-  const selectedEvent = events.find((event) => event.eventId === selectedEventId)
+const selectedEvent = events.find(
+  (event) => String(event.eventId) === String(selectedEventId)
+)
 
   return (
     <ListDetailLayout
+      selectedEvent={selectedEvent}
       list={
         <ActiveEventList
           title="אירועים פתוחים"
@@ -39,13 +42,8 @@ export default function ActiveEventsPage({ isSimulation }: Props) {
         />
       }
     >
-      {selectedEvent ? (
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          {selectedEvent.title}
-        </Typography>
-      ) : (
-        <NoEventSelected />
-      )}
+      {selectedEvent ? 
+<></> : <NoEventSelected />}
     </ListDetailLayout>
   )
 }
