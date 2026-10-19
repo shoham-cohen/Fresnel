@@ -1,15 +1,13 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-export enum Arena {  
-  IL = 'IL',
-  ARAB = 'ARAB',
-  INTL = 'INTL'
+export enum Arena {
+  IL = 'israel',
+  ARAB = 'arab',
+  INTL = 'intl',
 }
 
-// Written by the שו"ב for every narrative Anomalies sends.
 @Entity({ schema: 'fresnel', name: 'narrative' })
 export class Narrative {
-  // The narrative id in Anomalies; also the key for fetching its items.
   @PrimaryColumn({ name: 'narrative_id', type: 'text' })
   narrativeId: string;
 
@@ -22,19 +20,30 @@ export class Narrative {
   @Column({ name: 'is_anomaly', type: 'boolean' })
   isAnomaly: boolean;
 
-  @Column({ type: 'text', nullable: true })
-  arena: Arena | null;
+  @Column({ type: 'text', array: true, nullable: true })
+  arena: Arena[] | null;
 
   @Column({ name: 'detected_at', type: 'timestamptz' })
   detectedAt: Date;
 
-  // Only needed by natural-language search, so it is not loaded by default.
   @Column({ type: 'vector', length: 1024, nullable: true, select: false })
   embedding: number[] | null;
 
-  @Column({ name: 'received_at', type: 'timestamptz' })
-  receivedAt: Date;
+  @Column({ name: 'item_list', type: 'text', array: true, nullable: true })
+  itemList: string[] | null;
 
-  @Column({ name: 'is_event', type: 'boolean' })
-  isEvent: boolean;
+  @Column({ type: 'text', array: true, nullable: true })
+  platforms: string[] | null;
+
+  @Column({ name: 'shares_count', type: 'bigint', nullable: true })
+  sharesCount: number | null;
+
+  @Column({ name: 'views_count', type: 'bigint', nullable: true })
+  viewsCount: number | null;
+
+  @Column({ type: 'text', array: true, nullable: true })
+  languages: string[] | null;
+
+  @Column({ name: 'is_flagged', type: 'boolean', default: false })
+  isFlagged: boolean;
 }

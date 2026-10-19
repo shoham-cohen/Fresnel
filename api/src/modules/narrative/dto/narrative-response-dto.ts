@@ -24,17 +24,38 @@ export class NarrativeResponseDto {
   isAnomaly: boolean;
 
   @IsOptional()
-  @IsEnum(Arena)
-  arena: Arena | null;
+  @IsArray()
+  @IsEnum(Arena, { each: true })
+  arena: Arena[] | null;
 
   @IsDateString()
   detectedAt: Date;
 
-  @IsDateString()
-  receivedAt: Date;
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  itemList: string[] | null;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  platforms: string[] | null;
+
+  @IsOptional()
+  @IsNumber()
+  sharesCount: number | null;
+
+  @IsOptional()
+  @IsNumber()
+  viewsCount: number | null;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  languages: string[] | null;
 
   @IsBoolean()
-  isEvent: boolean;
+  isFlagged: boolean;
 
   @IsOptional()
   @IsArray()

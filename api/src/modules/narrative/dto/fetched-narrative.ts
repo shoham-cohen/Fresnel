@@ -3,15 +3,13 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
-  IsInt,
   IsNumber,
   IsOptional,
   IsString,
-  Min,
 } from 'class-validator';
 import { Arena } from '../../../entities';
 
-
+// Shape of the narrative payload sent by Anomalies / Doron.
 export class FetchedNarrativeDto {
   @IsString()
   narrativeId: string;
@@ -19,56 +17,39 @@ export class FetchedNarrativeDto {
   @IsDateString()
   detectedAt: Date;
 
-  @IsEnum(Arena)
-  arena: Arena;
-
-  @IsString()
-  title: string;
-
-  @IsString()
-  summary: string;
+  @IsOptional()
+  @IsArray()
+  @IsEnum(Arena, { each: true })
+  arena: Arena[] | null;
 
   @IsBoolean()
   isAnomaly: boolean;
 
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  itemCount?: number;
+  // IDs of the items (post/article/video) that belong to this narrative.
+  @IsOptional() 
+  @IsArray()
+  @IsString({ each: true })
+  itemList: string[] | null;
 
-  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  platforms: string[] | null;
+
   @IsNumber()
-  @Min(0)
-  spreadRate?: number;
+  sharesCount: number | null;
 
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  platformsCount?: number;
+  @IsNumber()
+  viewsCount: number | null;
+
+  @IsArray()
+  @IsString({ each: true })
+  languages: string[] | null;
+
+  @IsBoolean()
+  isFlagged: boolean;
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  platforms?: string[];
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  sharesCount?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  viewsCount?: number;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  languages?: string[];
-
- @IsBoolean()
- isFlagged: boolean;
-
- @IsArray()
-  embedding: number[];
+  @IsNumber({}, { each: true })
+  embedding: number[] | null;
 }
