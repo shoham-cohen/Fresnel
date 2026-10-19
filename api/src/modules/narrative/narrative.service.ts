@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { Narrative } from '../../entities';
+import { plainToInstance } from 'class-transformer';
+import { NarrativeResponseDto } from './dto/narrative-response-dto';
 import { NarrativeRepository } from './narrative.repository';
 
 @Injectable()
 export class NarrativeService {
   constructor(private readonly narrativeRepository: NarrativeRepository) {}
 
-  findAll(): Promise<Narrative[]> {
-    return this.narrativeRepository.findAll();
+  async findAll(): Promise<NarrativeResponseDto[]> {
+    const narratives = await this.narrativeRepository.findAll();
+    return plainToInstance(NarrativeResponseDto, narratives);
   }
 
-  findOne(narrativeId: string): Promise<Narrative | null> {
-    return this.narrativeRepository.findOne(narrativeId);
+  async findOne(narrativeId: string): Promise<NarrativeResponseDto | null> {
+    const narrative = await this.narrativeRepository.findOne(narrativeId);
+    return narrative ? plainToInstance(NarrativeResponseDto, narrative) : null;
   }
 }
