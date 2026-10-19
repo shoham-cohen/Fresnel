@@ -1,6 +1,10 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-export type Arena = 'IL' | 'ARAB' | 'INTL';
+export enum Arena {  
+  IL = 'IL',
+  ARAB = 'ARAB',
+  INTL = 'INTL'
+}
 
 // Written by the שו"ב for every narrative Anomalies sends.
 @Entity({ schema: 'fresnel', name: 'narrative' })
@@ -21,9 +25,6 @@ export class Narrative {
   @Column({ type: 'text', nullable: true })
   arena: Arena | null;
 
-  @Column({ name: 'location_name', type: 'text', nullable: true })
-  locationName: string | null;
-
   @Column({ name: 'detected_at', type: 'timestamptz' })
   detectedAt: Date;
 
@@ -31,9 +32,9 @@ export class Narrative {
   @Column({ type: 'vector', length: 1024, nullable: true, select: false })
   embedding: number[] | null;
 
-  @Column({ type: 'jsonb' })
-  payload: Record<string, unknown>;
-
   @Column({ name: 'received_at', type: 'timestamptz' })
   receivedAt: Date;
+
+  @Column({ name: 'is_event', type: 'boolean' })
+  isEvent: boolean;
 }
