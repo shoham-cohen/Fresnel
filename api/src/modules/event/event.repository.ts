@@ -129,6 +129,7 @@ export class EventRepository {
   }
 }
 
+
 function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
