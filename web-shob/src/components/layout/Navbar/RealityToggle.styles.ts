@@ -3,12 +3,12 @@ import type { SxProps, Theme } from '@mui/material/styles';
 export const styles = {
   track: {
     display: 'flex',
-    alignItems: 'center', // Ensures vertical centering
-    justifyContent: 'center', // Ensures horizontal centering
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: '2px',
     width: 222,
     height: 41,
-    p: '1px 2px', // Corrected math: 1px top/bottom, 2px left/right
+    p: '1px 2px',
     border: '1px solid',
     borderColor: 'toggle.border',
     borderRadius: '35px',

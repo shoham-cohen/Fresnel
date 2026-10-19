@@ -25,7 +25,7 @@ export const styles = {
   navList: {
     display: 'flex',
     flexDirection: 'row',
-    gap: '116px', // Hardcode the exact pixel spacing here
+    gap: '116px',
     listStyle: 'none',
     m: 0,
     p: 0,
