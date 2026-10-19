@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
 import { EventListPage } from './dto/event-list-item';
 import { EventDetailDto } from './dto/event-detail.dto';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventRepository } from './event.repository';
+import { SERVITY } from './consts';
 
 @Injectable()
 export class EventService {
@@ -37,12 +40,14 @@ export class EventService {
       throw new NotFoundException(`Event with id ${id} not found`);
     }
 
+    const arenaValue = event.narrative?.arena ?? null;
+
     return {
       eventId: event.eventId,
       narrativeId: event.narrativeId,
       title: event.narrative?.title ?? '',
       description: event.narrative?.summary ?? null,
-      arena: event.narrative?.arena ?? null,
+      arena: arenaValue,
       detectedAt: event.narrative?.detectedAt ?? event.createdAt,
       openedBy: event.createdBy,
       closedBy: event.closedBy,
@@ -53,6 +58,34 @@ export class EventService {
       updatedAt: event.updatedAt,
       closedAt: event.closedAt,
       closureSummary: event.closureSummary,
+    };
+  }
+  
+  async create(dto: CreateEventDto): Promise<CreatedEventResponse> {
+    const narrativeId = dto.narrativeId;
+    if (!narrativeId) {
+      throw new BadRequestException('narrativeId is required');
+    }
+
+    const narrative = await this.eventRepository.findNarrativeById(narrativeId);
+    if (!narrative) {
+      throw new NotFoundException(`Narrative '${narrativeId}' not found`);
+    }
+
+    const severity = dto.severity ?? SERVITY.MEDIUM;
+    const isSimulation = dto.isSimulation ?? false;
+    const createdBy = dto.createdBy ?? 'shob.operator';
+
+    const event = await this.eventRepository.create({
+      narrativeId,
+      severity,
+      isSimulation,
+      createdBy,
+    });
+
+    return {
+      ...event,
+      title: narrative.title
     };
   }
 }

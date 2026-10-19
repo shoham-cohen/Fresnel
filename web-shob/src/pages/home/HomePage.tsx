@@ -1,16 +1,44 @@
+import { useSearchParams } from 'react-router';
+
+import { NarrativeDetailsPanel } from '@/features/narratives';
+
 export function HomePage() {
+  const [, setSearchParams] = useSearchParams();
+
   /*
-   * TODO: build the main screen ("מסך ראשי") from Figma, page "מערכת שו״ב":
-   * - area tag (e.g. "ישראל") above the heading "כל ההתראות"
-   * - table of narratives from the last 24 hours: subject + subtitle, location,
-   *   date and time, traffic volume bar, category tag, open-row arrow
-   * - clicking a row opens a side panel: details, four key-metric cards
-   *   (publications, views, sources, shares) and a "פתיחת אירוע" button
+   * The narratives table will be written by someone else and placed here.
+   * Clicking a row in the table sets ?narrativeId=<id> in the URL,
+   * which automatically triggers NarrativeDetailsPanel to slide open.
    */
   return (
     <>
       <title>מסך ראשי · Palantir</title>
-      <h1>מסך ראשי</h1>
+      <div style={{ padding: '24px 32px' }}>
+        <h1>מסך ראשי</h1>
+
+        {/* Demo row trigger until the table component is plugged in */}
+        <div style={{ marginBlockStart: '20px' }}>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchParams({ narrativeId: 'nar-0001' });
+            }}
+            style={{
+              padding: '10px 18px',
+              backgroundColor: '#f2f2f2',
+              border: '1px solid #d9d9d9',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 500,
+              fontFamily: 'inherit',
+            }}
+          >
+            פתח פאנל התראה לדוגמה (עלייה חריגה בשיח סביב פעילות צהל בגבול הצפון)
+          </button>
+        </div>
+      </div>
+
+      <NarrativeDetailsPanel />
     </>
   );
 }
