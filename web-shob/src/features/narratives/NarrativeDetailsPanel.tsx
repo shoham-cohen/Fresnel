@@ -1,7 +1,6 @@
+
 import { useEffect, useState, type ReactNode } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import SensorsIcon from '@mui/icons-material/Sensors';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Box from '@mui/material/Box';
@@ -9,8 +8,12 @@ import Divider from '@mui/material/Divider';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 import { useSearchParams } from 'react-router';
 import { alpha, useTheme } from '@mui/material/styles';
+
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import SensorsIcon from '@mui/icons-material/Sensors';
 
 import {
   fetchNarrativeById,
@@ -19,23 +22,22 @@ import {
 } from './mockData';
 
 function formatDetectedAt(value: string): string {
-  try {
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return value;
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = String(d.getFullYear());
-    return `${hours}:${minutes} ${day}/${month}/${year}`;
-  } catch {
-    return value;
-  }
+  const d = new Date(value);
+
+  if (Number.isNaN(d.getTime())) return value;
+
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = String(d.getFullYear());
+
+  return `${hours}:${minutes} ${day}/${month}/${year}`;
 }
 
 interface MetricCardProps {
   label: string;
-  value: number;
+  value: number | null;
   icon: ReactNode;
 }
 
@@ -55,13 +57,7 @@ function MetricCard({ label, value, icon }: MetricCardProps) {
         boxSizing: 'border-box',
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-start',
-          color: colors.primary.main,
-        }}
-      >
+      <Box sx={{ display: 'flex', color: colors.primary.main }}>
         {icon}
       </Box>
 
@@ -87,7 +83,7 @@ function MetricCard({ label, value, icon }: MetricCardProps) {
           mt: 0.5,
         }}
       >
-        {value.toLocaleString('en-US')}
+        {value == null ? '—' : value.toLocaleString('en-US')}
       </Typography>
     </Box>
   );
@@ -96,7 +92,9 @@ function MetricCard({ label, value, icon }: MetricCardProps) {
 export function NarrativeDetailsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const narrativeId = searchParams.get('narrativeId');
-  const [narrative, setNarrative] = useState<NarrativeDetails | null>(null);
+
+  const [narrative, setNarrative] =
+    useState<NarrativeDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
@@ -149,13 +147,19 @@ export function NarrativeDetailsPanel() {
   };
 
   const handleCreateEvent = () => {
-    if (!narrative) return;
-    const targetUrl = `${MOCK_CREATE_EVENT_URL}?narrativeId=${encodeURIComponent(narrative.narrativeId)}`;
-    console.info('Redirecting to create event:', targetUrl);
+    if (!displayData) return;
+
+    const targetUrl =
+      `${MOCK_CREATE_EVENT_URL}?narrativeId=` +
+      encodeURIComponent(displayData.narrativeId);
+
     window.location.assign(targetUrl);
   };
 
-  const displayData = narrativeId && narrative?.narrativeId === narrativeId ? narrative : null;
+  const displayData =
+    narrativeId && narrative?.narrativeId === narrativeId
+      ? narrative
+      : null;
 
   return (
     <Dialog
@@ -208,58 +212,107 @@ export function NarrativeDetailsPanel() {
 
       {displayData && (
         <Box sx={{ mt: 1.5 }}>
-          <Typography sx={{ fontSize: '24px', fontWeight: 700, lineHeight: 1.25, color: colors.header.background, mb: 0.5 }}>
+          <Typography
+            sx={{
+              fontSize: '24px',
+              fontWeight: 700,
+              lineHeight: 1.25,
+              color: colors.header.background,
+              mb: 0.5,
+            }}
+          >
             {displayData.title}
           </Typography>
 
           {displayData.summary && (
-            <Typography sx={{ fontSize: '16px', color: '#333', mb: 2 }}>
+            <Typography
+              sx={{
+                fontSize: '16px',
+                color: '#333',
+                mb: 2,
+              }}
+            >
               {displayData.summary}
             </Typography>
           )}
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-            <Typography sx={{ fontSize: '18px', fontWeight: 500, color: colors.header.background }}>
-              {displayData.locationName ?? '—'}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 1.5,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: '18px',
+                fontWeight: 500,
+                color: colors.header.background,
+              }}
+            >
+              {displayData.arena?.join(', ') ?? '—'}
             </Typography>
-            <Typography sx={{ fontSize: '18px', fontWeight: 500, color: colors.header.background, direction: 'ltr' }}>
+
+            <Typography
+              sx={{
+                fontSize: '18px',
+                fontWeight: 500,
+                color: colors.header.background,
+                direction: 'ltr',
+              }}
+            >
               {formatDetectedAt(displayData.detectedAt)}
             </Typography>
           </Box>
 
-         <Divider
+          <Divider
             sx={{
               my: 2,
               borderColor: alpha(colors.primary.main, 0.45),
             }}
-        />
+          />
 
-          <Typography sx={{ fontSize: '19px', fontWeight: 700, color: colors.header.background, mb: 2 }}>
+          <Typography
+            sx={{
+              fontSize: '19px',
+              fontWeight: 700,
+              color: colors.header.background,
+              mb: 2,
+            }}
+          >
             נתונים מרכזיים
           </Typography>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5, mb: 4 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 1.5,
+              mb: 4,
+            }}
+          >
             <MetricCard
               label="כמות פרסומים"
-              value={displayData.metrics.publications}
+              value={displayData.itemList?.length ?? 0}
               icon={<DescriptionOutlinedIcon />}
             />
 
             <MetricCard
               label="כמות מקורות"
-              value={displayData.metrics.sources}
+              value={displayData.platforms?.length ?? 0}
               icon={<SensorsIcon />}
             />
 
             <MetricCard
               label="סה״כ צפיות"
-              value={displayData.metrics.views}
+              value={displayData.viewsCount ?? 0}
               icon={<VisibilityOutlinedIcon />}
             />
 
             <MetricCard
               label="כמות שיתופים"
-              value={displayData.metrics.shares}
+              value={displayData.sharesCount ?? 0}
               icon={<ShareOutlinedIcon />}
             />
           </Box>

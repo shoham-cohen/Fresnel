@@ -1,22 +1,20 @@
 
 export type Arena = 'IL' | 'ARAB' | 'INTL';
 
-export interface NarrativeMetrics {
-  publications: number;
-  sources: number;
-  views: number;
-  shares: number;
-}
-
 export interface NarrativeDetails {
   narrativeId: string;
   title: string;
   summary: string | null;
   isAnomaly: boolean;
-  arena: Arena | null;
-  locationName: string | null;
+  arena: Arena[] | null;
   detectedAt: string;
-  metrics: NarrativeMetrics;
+  itemList: string[] | null;
+  platforms: string[] | null;
+  sharesCount: number | null;
+  viewsCount: number | null;
+  languages: string[] | null;
+  isFlagged: boolean;
+  embedding?: number[] | null;
 }
 
 export const MOCK_CREATE_EVENT_URL =
@@ -28,15 +26,18 @@ export const MOCK_NARRATIVES: Record<string, NarrativeDetails> = {
     title: 'עלייה חריגה בשיח סביב פעילות צה״ל בגבול הצפון',
     summary: 'עלייה חדה בהיקף הפרסומים ברשת X',
     isAnomaly: true,
-    arena: 'IL',
-    locationName: 'גבול הצפון',
+    arena: ['IL'],
     detectedAt: '2026-10-18T14:32:00.000Z',
-    metrics: {
-      publications: 2847,
-      sources: 126,
-      views: 63221,
-      shares: 5432,
-    },
+    itemList: [
+      'item-0001',
+      'item-0002',
+      'item-0003',
+    ],
+    platforms: ['X'],
+    sharesCount: 5432,
+    viewsCount: 63221,
+    languages: ['he'],
+    isFlagged: false,
   },
 
   'nar-0002': {
@@ -44,15 +45,17 @@ export const MOCK_NARRATIVES: Record<string, NarrativeDetails> = {
     title: 'סרטון מזויף של פגיעה בבסיס',
     summary: 'סרטון ישן מסוריה מופץ כאילו צולם אתמול בבסיס בדרום',
     isAnomaly: true,
-    arena: 'ARAB',
-    locationName: 'הנגב',
+    arena: ['ARAB'],
     detectedAt: '2026-10-18T16:15:00.000Z',
-    metrics: {
-      publications: 1420,
-      sources: 54,
-      views: 38400,
-      shares: 2190,
-    },
+    itemList: [
+      'item-0004',
+      'item-0005',
+    ],
+    platforms: ['X', 'Telegram'],
+    sharesCount: 2190,
+    viewsCount: 38400,
+    languages: ['ar'],
+    isFlagged: true,
   },
 };
 
