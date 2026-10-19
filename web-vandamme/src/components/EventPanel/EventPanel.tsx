@@ -3,7 +3,7 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import EventCard from './EventCard';
 import type { EventSummary, EventStatus } from '../../api/events';
-import EventTimelineItem from './EventTimelineItem';
+import EventTimelineItem from './TimelineItems/EventTimelineItem';
 import { Divider } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
@@ -148,7 +148,7 @@ export default function EventPanel( { selectedEvent }: EventPanelProps ) {
         <EventCard selectedEvent={mockEventsList[0]}></EventCard>
       </Grid>
       <Grid size={12} sx={{ height: '85%',  paddingTop:3}}>
-        <Typography variant="h5" sx={{ mb: 2, color: '#1B365D', fontWeight: 'bold' }}>
+        <Typography variant="h5" sx={{ color: '#1B365D', fontWeight: 'bold' }}>
         פעולות שבוצעו ({mockEventsList.length})          </Typography>
         <Grid size={12} sx={{ height: '85%', paddingTop: 3, overflowY: 'auto' }}>
           {/* 3. Loop through the mockEventsList and render an item for each */}
