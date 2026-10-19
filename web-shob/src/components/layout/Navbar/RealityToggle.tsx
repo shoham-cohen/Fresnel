@@ -13,9 +13,6 @@ const options: readonly { value: Reality; label: string }[] = [
   { value: 'exercise', label: 'תרגילית' },
 ];
 
-/**
- * Switches between real and exercise data. Figma: mainPage › reality (132:63).
- */
 export function RealityToggle() {
   const { reality, setReality } = useReality();
 

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Event, EventLog } from '../../entities';
+import { Event, Narrative, Severity, EventLog } from '../../entities';
+
 
 export interface FindActiveOptions {
   isSimulation: boolean;
@@ -15,6 +16,13 @@ export interface CloseEventPayload {
   closureSummary: string;
 }
 
+export interface CreateEventData {
+  narrativeId: string;
+  severity: Severity;
+  isSimulation: boolean;
+  createdBy: string;
+}
+
 @Injectable()
 export class EventRepository {
   constructor(
@@ -22,9 +30,32 @@ export class EventRepository {
     private readonly eventOrmRepository: Repository<Event>,
     @InjectRepository(EventLog)
     private readonly eventLogOrmRepository: Repository<EventLog>,
+    @InjectRepository(Narrative)
+    private readonly narrativeOrmRepository: Repository<Narrative>,
   ) {}
 
-  // Open and in-progress events, newest first, with their narrative for the title.
+  findNarrativeById(narrativeId: string): Promise<Narrative | null> {
+    return this.narrativeOrmRepository.findOne({
+      where: { narrativeId },
+    });
+  }
+
+  create(data: CreateEventData): Promise<Event> {
+    const event = this.eventOrmRepository.create({
+      narrativeId: data.narrativeId,
+      severity: data.severity,
+      status: 'open',
+      isSimulation: data.isSimulation,
+      createdBy: data.createdBy,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      closedAt: null,
+      closedBy: null,
+      closureSummary: null,
+    });
+    return this.eventOrmRepository.save(event);
+  }
+
   findActive({ isSimulation, search, page, pageSize }: FindActiveOptions): Promise<[Event[], number]> {
     const query = this.eventOrmRepository
       .createQueryBuilder('e')
@@ -36,7 +67,6 @@ export class EventRepository {
       .skip((page - 1) * pageSize);
 
     if (search) {
-      // Served by the trigram index on narrative.title.
       query.andWhere('n.title ILIKE :pattern', { pattern: `%${escapeLike(search)}%` });
     }
 

@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
+import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
 import { EventListPage } from './dto/event-list-item';
 import { ListEventsQuery } from './dto/list-events.query';
 import { CloseEventDto } from './dto/close-event.dto';
@@ -38,5 +39,11 @@ export class EventController {
       res.send(`error occured when tried to reopen event with ${id}`);
       return;
     }
+  }
+  
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() dto: CreateEventDto): Promise<CreatedEventResponse> {
+    return this.eventService.create(dto);
   }
 }
