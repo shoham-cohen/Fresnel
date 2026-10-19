@@ -7,16 +7,16 @@ export const pageStyles = {
     placeItems: 'center',
     width: 133,
     height: 24,
-    borderRadius: 'var(--radius-sm)',
-    bgcolor: 'var(--color-header-bg)',
-    fontSize: 'var(--font-size-xs)',
-    fontWeight: 'var(--font-weight-light)',
+    borderRadius: 1,
+    bgcolor: 'primary.light',
+    fontSize: 14,
+    fontWeight: 'fontWeightLight',
   },
   title: {
     my: '16px',
     lineHeight: 'normal',
-    fontSize: 'var(--font-size-md)',
-    fontWeight: 'var(--font-weight-bold)',
+    fontSize: 21,
+    fontWeight: 'fontWeightBold',
   },
   // A title with actions on the other side (e.g. history's refresh button). Not in Figma yet.
   titleRow: {

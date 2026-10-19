@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Typography } from '@mui/material';
-import { pageStyles } from '@/styles/page.style';
+import { pageStyles } from '@/styles/page.styles';
 import { useRecentNarratives } from '@/hooks/narratives.hook';
 import { NarrativesTable } from '@/components/NarrativesTable';
 

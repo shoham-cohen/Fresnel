@@ -15,9 +15,9 @@ import {
 } from '@mui/material';
 
 import { useMemo, useState, type FC } from 'react';
-import { COLUMN_STYLES, styles } from './NarrativesTable.style';
 import { MessageRow } from './components/MessageRow/MessageRow';
 import { SORTABLE_COLUMNS } from './constants/columns.constant';
+import { COLUMN_STYLES, styles } from './NarrativesTable.styles';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import type { SortKey, SortState } from './interfaces/sort.interface';
 import { NarrativeRow } from './components/NarrativeRow/NarrativeRow';

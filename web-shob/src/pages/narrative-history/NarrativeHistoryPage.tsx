@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { pageStyles } from '@/styles/page.style';
+import { pageStyles } from '@/styles/page.styles';
 import { useNarratives } from '@/hooks/narratives.hook';
 import { toSortParams } from '@/utilities/narrative.utility';
 import type { NarrativesQuery } from '@/interfaces/narrative-api.interface';

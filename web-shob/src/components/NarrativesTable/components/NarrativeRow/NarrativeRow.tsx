@@ -1,6 +1,6 @@
-import { styles } from './NarrativeRow.style';
+import { styles } from './NarrativeRow.styles';
 import type { FC, KeyboardEvent } from 'react';
-import { COLUMN_STYLES } from '../../NarrativesTable.style';
+import { COLUMN_STYLES } from '../../NarrativesTable.styles';
 import { formatDate, formatTime } from '@/lib/formatDateTime';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import { VIEWS_COUNT_MAX } from '../../constants/columns.constant';
@@ -12,7 +12,7 @@ interface NarrativeRowProps {
   selected: boolean;
   rowNumber: number;
   narrative: Narrative;
-  onSelect?: ((narrative: Narrative) => void);
+  onSelect?: (narrative: Narrative) => void;
 }
 
 export const NarrativeRow: FC<NarrativeRowProps> = ({

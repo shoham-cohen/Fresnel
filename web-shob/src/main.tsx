@@ -11,6 +11,9 @@ import { router } from '@/app/router';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import { RealityProvider } from '@/contexts';
+import { RtlCacheProvider } from '@/app/RtlCacheProvider';
+import { queryClient } from '@/config/react-query.config';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 const rootElement = document.getElementById('root');
 
@@ -20,8 +23,12 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <RealityProvider>
-      <RouterProvider router={router} />
-    </RealityProvider>
+    <QueryClientProvider client={queryClient}>
+      <RtlCacheProvider>
+        <RealityProvider>
+          <RouterProvider router={router} />
+        </RealityProvider>
+      </RtlCacheProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );

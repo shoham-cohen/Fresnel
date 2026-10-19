@@ -1,5 +1,5 @@
 import type { ReactNode, FC } from 'react';
-import { styles } from './MessageRow.style';
+import { styles } from './MessageRow.styles';
 import { TableCell, TableRow } from '@mui/material';
 import { COLUMN_COUNT } from '../../constants/columns.constant';
 

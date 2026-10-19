@@ -27,9 +27,11 @@ export const COLUMN_STYLES = {
   },
 } satisfies Record<string, SxProps<Theme>>;
 
+// Figma 264:3569. Colors come from the reality theme (src/styles/theme.ts); the two greys
+// (table outline, row divider) are Figma values the theme doesn't have.
 export const styles = {
   container: {
-    border: '1px solid var(--color-table-border)',
+    border: '1px solid #C4C4C4',
     borderRadius: '10px',
   },
   table: {
@@ -39,9 +41,9 @@ export const styles = {
     p: 0,
     height: 58,
     border: 0,
-    bgcolor: 'var(--color-header-bg)',
-    fontSize: 'var(--font-size-sm)',
-    fontWeight: 'var(--font-weight-semibold)',
+    bgcolor: 'primary.light',
+    fontSize: 16,
+    fontWeight: 'fontWeightMedium',
     whiteSpace: 'nowrap',
   },
   // The subject header sits 18px further in than the titles under it.
