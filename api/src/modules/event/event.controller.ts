@@ -1,5 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { EventListPage } from './dto/event-list-item';
+import { EventDetailDto } from './dto/event-detail.dto';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventService } from './event.service';
 
@@ -11,5 +12,10 @@ export class EventController {
   @Get()
   list(@Query() query: ListEventsQuery): Promise<EventListPage> {
     return this.eventService.list(query);
+  }
+
+  @Get(':id')
+  getById(@Param('id') id: string): Promise<EventDetailDto> {
+    return this.eventService.getEventById(id);
   }
 }

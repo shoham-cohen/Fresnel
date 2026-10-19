@@ -35,6 +35,15 @@ export class EventRepository {
 
     return query.getManyAndCount();
   }
+
+  async findByIdWithNarrative(id: string): Promise<Event | null> {
+    return this.eventOrmRepository.findOne({
+      where: { eventId: id },
+      relations: {
+        narrative: true,
+      },
+    });
+  }
 }
 
 function escapeLike(value: string): string {

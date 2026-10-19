@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventListPage } from './dto/event-list-item';
+import { EventDetailDto } from './dto/event-detail.dto';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventRepository } from './event.repository';
 
@@ -26,6 +27,30 @@ export class EventService {
       total,
       page,
       pageSize,
+    };
+  }
+
+  async getEventById(id: string): Promise<EventDetailDto> {
+    const event = await this.eventRepository.findByIdWithNarrative(id);
+
+    if (!event) {
+      throw new NotFoundException(`Event with id ${id} not found`);
+    }
+
+    return {
+      eventId: event.eventId,
+      title: event.narrative?.title ?? '',
+      description: event.narrative?.summary ?? null,
+      arena: event.narrative?.arena ?? null,
+      detectedAt: event.narrative?.detectedAt ?? event.createdAt,
+      openedBy: event.createdBy,
+      closedBy: event.closedBy,
+      status: event.status,
+      severity: event.severity,
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt,
+      closedAt: event.closedAt,
+      closureSummary: event.closureSummary,
     };
   }
 }
