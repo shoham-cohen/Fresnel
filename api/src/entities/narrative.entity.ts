@@ -21,8 +21,8 @@ export class Narrative {
   @Column({ name: 'is_anomaly', type: 'boolean' })
   isAnomaly: boolean;
 
-  @Column({ type: 'text', array: true, nullable: true })
-  arena: Arena[] | null;
+  @Column({ type: 'text', array: true })
+  arena: Arena[];
 
   @Column({ name: 'detected_at', type: 'timestamptz' })
   detectedAt: Date;
@@ -30,20 +30,20 @@ export class Narrative {
   @Column({ type: 'vector', length: 1024, nullable: true, select: false })
   embedding: number[] | null;
 
-  @Column({ name: 'item_list', type: 'text', array: true, nullable: true })
-  itemList: string[] | null;
+  @Column({ name: 'item_list', type: 'text', array: true })
+  itemList: string[];
 
-  @Column({ type: 'text', array: true, nullable: true })
-  platforms: string[] | null;
+  @Column({ type: 'text', array: true })
+  platforms: string[];
 
-  @Column({ name: 'shares_count', type: 'bigint', nullable: true })
-  sharesCount: number | null;
+  @Column({ name: 'shares_count', type: 'bigint' })
+  sharesCount: number;
 
-  @Column({ name: 'views_count', type: 'bigint', nullable: true })
-  viewsCount: number | null;
+  @Column({ name: 'views_count', type: 'bigint' })
+  viewsCount: number;
 
-  @Column({ type: 'text', array: true, nullable: true })
-  languages: string[] | null;
+  @Column({ type: 'text', array: true })
+  languages: string[];
 
   @Column({ name: 'is_flagged', type: 'boolean', default: false })
   isFlagged: boolean;
