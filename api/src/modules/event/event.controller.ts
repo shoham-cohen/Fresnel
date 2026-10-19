@@ -1,6 +1,6 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { Action } from '../../entities';
-import { EventActionsQuery } from './dto/event-actions.query';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { EventActionItem } from './dto/event-action-item';
+import { CreateEventActionDto } from './dto/create-event-action.dto';
 import { EventListPage } from './dto/event-list-item';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventService } from './event.service';
@@ -15,11 +15,16 @@ export class EventController {
     return this.eventService.list(query);
   }
 
-  @Get(':id/actions')
-  getActions(
+  @Post(':id/actions')
+  createAction(
     @Param('id', new ParseUUIDPipe()) eventId: string,
-    @Query() query: EventActionsQuery,
-  ): Promise<Action[]> {
-    return this.eventService.getActionsForEvent(eventId, query.isSimulation);
+    @Body() dto: CreateEventActionDto,
+  ): Promise<EventActionItem> {
+    return this.eventService.createActionForEvent(eventId, dto);
+  }
+
+  @Get(':id/actions')
+  getActions(@Param('id', new ParseUUIDPipe()) eventId: string): Promise<EventActionItem[]> {
+    return this.eventService.getActionsForEvent(eventId);
   }
 }
