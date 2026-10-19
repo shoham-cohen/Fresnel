@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { EventListPage } from './dto/event-list-item';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventRepository } from './event.repository';
+import { CloseEventDto } from './dto/close-event.dto';
+import { Event } from '../../entities';
 
 @Injectable()
 export class EventService {
@@ -27,5 +29,19 @@ export class EventService {
       page,
       pageSize,
     };
+  }
+
+  async closeEvent(id: string, dto: CloseEventDto): Promise<Event> {
+    const event = await this.eventRepository.findById(id);
+
+    if (!event) {
+      throw new Error(`error occured when tried to close an event with id ${id}`);
+    }
+
+    return this.eventRepository.close(id, {
+      closedAt: dto.closed_at,
+      closedBy: dto.closed_by,
+      closureSummary: dto.closure_summary,
+    });
   }
 }

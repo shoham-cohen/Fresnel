@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Event } from '../../entities';
+import { Event, EventLog } from '../../entities';
 
 export interface FindActiveOptions {
   isSimulation: boolean;
@@ -10,11 +10,19 @@ export interface FindActiveOptions {
   pageSize: number;
 }
 
+export interface CloseEventPayload {
+  closedAt: string;
+  closedBy: string;
+  closureSummary: string;
+}
+
 @Injectable()
 export class EventRepository {
   constructor(
     @InjectRepository(Event)
     private readonly eventOrmRepository: Repository<Event>,
+    @InjectRepository(EventLog)
+    private readonly eventLogOrmRepository: Repository<EventLog>,
   ) {}
 
   // Open and in-progress events, newest first, with their narrative for the title.
@@ -34,6 +42,46 @@ export class EventRepository {
     }
 
     return query.getManyAndCount();
+  }
+
+  async findById(id: string): Promise<Event | null> {
+    return this.eventOrmRepository.findOne({ where: { eventId: id } });
+  }
+
+  async close(id: string, payload: CloseEventPayload): Promise<Event> {
+    const event = await this.findById(id);
+
+    if (!event) {
+      throw new Error(`error occured when tried to close an event with id ${id}`);
+    }
+
+    const closedAt = new Date(payload.closedAt);
+
+    const closedEvent = await this.eventOrmRepository.save({
+      ...event,
+      status: 'closed',
+      closedAt,
+      closedBy: payload.closedBy,
+      closureSummary: payload.closureSummary,
+      updatedAt: closedAt,
+    });
+
+    await this.eventLogOrmRepository.insert({
+      eventId: id,
+      kind: 'event_closed',
+      actorId: payload.closedBy,
+      fromValue: event.status,
+      toValue: 'closed',
+      details: {
+        closedAt: payload.closedAt,
+        closedBy: payload.closedBy,
+        closureSummary: payload.closureSummary,
+      },
+      client: 'web',
+      at: closedAt,
+    });
+
+    return closedEvent;
   }
 }
 
