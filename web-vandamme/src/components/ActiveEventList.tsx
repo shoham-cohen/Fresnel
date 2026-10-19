@@ -86,7 +86,7 @@ export default function ActiveEventList({
                   <SearchIcon />
                 </InputAdornment>
               ),
-              endAdornment: loading && events.length === 0 && (
+              endAdornment: loading && events.length === 0 && ( 
                 <InputAdornment position="end">
                   <CircularProgress size={18} />
                 </InputAdornment>
