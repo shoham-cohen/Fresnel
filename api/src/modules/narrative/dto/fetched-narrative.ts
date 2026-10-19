@@ -29,21 +29,21 @@ export class FetchedNarrativeDto {
   @IsOptional() 
   @IsArray()
   @IsString({ each: true })
-  itemList: string[] | null;
+  itemList: string[];
 
   @IsArray()
   @IsString({ each: true })
-  platforms: string[] | null;
+  platforms: string[];
 
   @IsNumber()
-  sharesCount: number | null;
+  sharesCount: number;
 
   @IsNumber()
-  viewsCount: number | null;
+  viewsCount: number;
 
   @IsArray()
   @IsString({ each: true })
-  languages: string[] | null;
+  languages: string[];
 
   @IsBoolean()
   isFlagged: boolean;

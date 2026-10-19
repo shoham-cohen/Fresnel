@@ -3,17 +3,17 @@ import { Arena } from '../../../entities';
 export class NarrativeResponseDto {
   narrativeId: string;
   title: string;
-  summary?: string | null;
+  summary: string;
   isAnomaly: boolean;
-  arena?: Arena[] | null;
+  arena: Arena[];
   detectedAt: Date;
-  itemList?: string[] | null;
-  platforms?: string[] | null;
-  sharesCount?: number | null;
-  viewsCount?: number | null;
-  languages?: string[] | null;
+  itemList?: string[];
+  platforms?: string[];
+  sharesCount?: number;
+  viewsCount?: number;
+  languages?: string[];
   isFlagged: boolean;
-  embedding?: number[] | null;
-  receivedAt?: Date | null;
+  embedding?: number[];
+  receivedAt: Date;
   isEvent: boolean;
 }
