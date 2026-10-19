@@ -25,7 +25,7 @@
 פיגמה: https://www.figma.com/design/kk7LQbGpv8rm9OAYr7fTG8 (המסכים עדיין מציגים צאט ואישורים – האפיון למעלה גובר).
 
 ## DB מקומי
-צריך Docker Desktop. ה-DB מגיע עם pgvector, וה-schema מ-`db/schema.sql` רץ אוטומטית בהפעלה הראשונה.
+צריך Docker Desktop. ה-DB מגיע עם pgvector. בכל `up` השירות `db-migrate` מריץ את קבצי `db/*.sql` שעוד לא רצו, לפי סדר המספרים (נרשם ב-`public.schema_migrations`). קובץ חדש ב-`db/` מגיע גם ל-DB קיים, בלי `down -v`.
 
 1. להעתיק את `.env.example` ל-`.env` ולבחור סיסמה ב-`POSTGRES_PASSWORD` (גם ב-`DATABASE_URL`). הקובץ `.env` לא נכנס ל-git.
 2. להרים:
@@ -34,7 +34,7 @@
 docker compose up -d
 ```
 
-חיבור: `postgresql://fresnel:<הסיסמה שלך>@localhost:5433/fresnel` (פורט 5433, כדי לא להתנגש ב-PostgreSQL מקומי על 5432). אחרי שינוי ב-schema: `docker compose down -v` ואז שוב `up -d`.
+חיבור: `postgresql://fresnel:<הסיסמה שלך>@localhost:5433/fresnel` (פורט 5433, כדי לא להתנגש ב-PostgreSQL מקומי על 5432). שינוי ב-schema: קובץ חדש עם המספר הבא ב-`db/` (לא לשנות קובץ שכבר רץ). התחלה נקייה: `docker compose down -v` ואז שוב `up -d`. הסיסמה נשמרת ב-DB כשה-volume נוצר, אז שינוי שלה ב-`.env` אחר כך דורש `down -v`.
 
 סיסמאות לא נכנסות ל-git. של PreProd ו-Prod מגיעות מ-Sealed Secrets.
 

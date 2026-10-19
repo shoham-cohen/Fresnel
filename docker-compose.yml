@@ -2,6 +2,8 @@
 # Setup:  copy .env.example to .env and set POSTGRES_PASSWORD (.env is git-ignored)
 # Start:  docker compose up -d
 # Reset:  docker compose down -v   (drops the data; the schema is re-applied on the next start)
+# Schema: every db/*.sql file runs once, in name order. The db-migrate service applies new files
+#         on every `up`, so a file added to db/ reaches an existing database too.
 # Host port 5433 by default, so it does not clash with a PostgreSQL already installed on 5432.
 services:
   db:
@@ -15,13 +17,29 @@ services:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - fresnel-db-data:/var/lib/postgresql/data
-      # *.sql files in ./db run once, in name order, when the data volume is created
-      - ./db:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # Not /docker-entrypoint-initdb.d: Postgres runs that only when the volume is created,
+  # so files added later never reach an existing database.
+  db-migrate:
+    image: pgvector/pgvector:pg16
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-fresnel}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+      PGDATABASE: ${POSTGRES_DB:-fresnel}
+    volumes:
+      - ./db:/db:ro
+      - ./scripts/db-migrate.sh:/db-migrate.sh:ro
+    entrypoint: ["sh", "/db-migrate.sh"]
+    restart: "no"
 
 volumes:
   fresnel-db-data:
