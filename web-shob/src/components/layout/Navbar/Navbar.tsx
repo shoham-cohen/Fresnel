@@ -1,38 +1,43 @@
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import { NavLink } from 'react-router';
 
 import { navItems } from '@/routes/paths';
 
-import styles from './Navbar.module.css';
+import { styles } from './Navbar.styles';
 import { RealityToggle } from './RealityToggle';
 import { UserBadge } from './UserBadge';
 
 export interface NavbarProps {
-  /** Signed-in user's display name. Defaults to a placeholder until auth exists. */
   userName?: string;
 }
 
-/** App header. Figma: "מערכת שו״ב" › mainPage (132:52). */
 export function Navbar({ userName }: NavbarProps) {
   return (
-    <header className={styles.header}>
-      <span className={styles.wordmark}>Palantir</span>
-
-      <nav aria-label="ניווט ראשי">
-        <ul className={styles.navList}>
-          {navItems.map((item) => (
-            <li key={item.path}>
-              <NavLink to={item.path} end className={styles.navLink}>
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div className={styles.end}>
-        <RealityToggle />
-        <UserBadge userName={userName} />
-      </div>
-    </header>
+    <AppBar position="static" component="header" elevation={0} sx={styles.appBar}>
+      <Toolbar disableGutters sx={styles.toolbar}>
+        <Typography component="span" sx={styles.wordmark}>
+          Palantir
+        </Typography>
+        <Box component="nav" aria-label="ניווט ראשי">
+          <Box component="ul" sx={styles.navList}>
+            {navItems.map((item) => (
+              <Box component="li" key={item.path}>
+                <Link component={NavLink} to={item.path} end sx={styles.navLink}>
+                  {item.label}
+                </Link>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+        <Box sx={styles.endSection}>
+          <RealityToggle />
+          <UserBadge userName={userName} />
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }
