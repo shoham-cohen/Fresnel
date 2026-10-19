@@ -1,6 +1,5 @@
 import type { SxProps, Theme } from '@mui/material/styles';
 
-// Figma 264:3569, the header above the narratives table. Measured from a screenshot.
 export const pageStyles = {
   areaTag: {
     display: 'grid',
@@ -18,7 +17,6 @@ export const pageStyles = {
     fontSize: 21,
     fontWeight: 'fontWeightBold',
   },
-  // A title with actions on the other side (e.g. history's refresh button). Not in Figma yet.
   titleRow: {
     my: '16px',
     display: 'flex',

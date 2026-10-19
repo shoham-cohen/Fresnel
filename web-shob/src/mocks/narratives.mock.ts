@@ -131,7 +131,6 @@ const pick = <T>(list: readonly T[], i: number): T => {
   return list[i % list.length] as T;
 };
 
-// 100 more, one every 3 hours, like nar-1001..nar-1100 in the seed. Deterministic on purpose.
 const generatedNarratives: NarrativeDto[] = Array.from({ length: 100 }, (_, index) => {
   const g = index + 1;
 
@@ -187,7 +186,6 @@ export const getMockNarrativesPage = async (
   const filtered = mockNarrativeDtos
     .filter((dto) => matches(dto, query))
     .sort((a, b) => {
-      // Like the table's own sort: narratives without a location stay last in both directions.
       if (sortBy === 'locationName') {
         const missing = Number(a.locationName === null) - Number(b.locationName === null);
         if (missing !== 0) return missing;

@@ -1,10 +1,10 @@
 import { styles } from './NarrativeRow.styles';
 import type { FC, KeyboardEvent } from 'react';
-import { COLUMN_STYLES } from '../../NarrativesTable.styles';
+import { COLUMN_STYLES, TOOLTIP_SLOT_PROPS } from '../../NarrativesTable.styles';
 import { formatDate, formatTime } from '@/lib/formatDateTime';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import { VIEWS_COUNT_MAX } from '../../constants/columns.constant';
-import { Box, TableRow, TableCell, Typography } from '@mui/material';
+import { Box, Tooltip, TableRow, TableCell, Typography } from '@mui/material';
 
 const viewsFormat = new Intl.NumberFormat('he-IL');
 
@@ -23,6 +23,7 @@ export const NarrativeRow: FC<NarrativeRowProps> = ({
 }) => {
   const views = Math.min(Math.max(narrative.viewsCount, 0), VIEWS_COUNT_MAX);
   const fill = Math.round((views / VIEWS_COUNT_MAX) * 100);
+  const viewsLabel = `${viewsFormat.format(narrative.viewsCount)} צפיות`;
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -62,17 +63,26 @@ export const NarrativeRow: FC<NarrativeRowProps> = ({
         </Box>
       </TableCell>
       <TableCell sx={[styles.cell, COLUMN_STYLES.viewsCount]}>
-        <Box
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={fill}
-          sx={styles.trafficBar}
-          aria-label="היקף תנועה"
-          aria-valuetext={`${viewsFormat.format(narrative.viewsCount)} צפיות`}
+        <Tooltip
+          arrow
+          describeChild
+          placement="top"
+          title={viewsLabel}
+          enterDelay={200}
+          slotProps={TOOLTIP_SLOT_PROPS}
         >
-          <Box sx={[styles.trafficFill, { width: `${String(fill)}%` }]} />
-        </Box>
+          <Box
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={fill}
+            sx={styles.trafficBar}
+            aria-label="היקף תנועה"
+            aria-valuetext={viewsLabel}
+          >
+            <Box sx={[styles.trafficFill, { width: `${String(fill)}%` }]} />
+          </Box>
+        </Tooltip>
       </TableCell>
     </TableRow>
   );

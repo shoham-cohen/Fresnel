@@ -1,9 +1,25 @@
+import type { TooltipProps } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 
-/*
- * Figma 264:3569, a 1440 frame where the table is 1391 wide. Column widths are its
- * proportions; paddings are measured from the frame. Header and body cells share them.
- */
+export const TOOLTIP_SLOT_PROPS = {
+  tooltip: {
+    sx: {
+      px: 1.5,
+      py: 1,
+      maxWidth: 260,
+      fontSize: 14,
+      borderRadius: 1,
+      textAlign: 'center',
+      color: 'header.text',
+      bgcolor: 'header.background',
+      fontWeight: 'fontWeightLight',
+    },
+  },
+  arrow: {
+    sx: { color: 'header.background' },
+  },
+} satisfies TooltipProps['slotProps'];
+
 export const COLUMN_STYLES = {
   number: {
     width: 90,
@@ -27,8 +43,6 @@ export const COLUMN_STYLES = {
   },
 } satisfies Record<string, SxProps<Theme>>;
 
-// Figma 264:3569. Colors come from the reality theme (src/styles/theme.ts); the two greys
-// (table outline, row divider) are Figma values the theme doesn't have.
 export const styles = {
   container: {
     border: '1px solid #C4C4C4',
@@ -46,11 +60,9 @@ export const styles = {
     fontWeight: 'fontWeightMedium',
     whiteSpace: 'nowrap',
   },
-  // The subject header sits 18px further in than the titles under it.
   subjectHeadCell: {
     paddingInlineStart: '18px',
   },
-  // Centers the traffic header over the bar, which is as wide as this box.
   trafficHeadLabel: {
     width: 226,
     textAlign: 'center',
@@ -60,7 +72,6 @@ export const styles = {
   },
   visuallyHidden: {
     position: 'absolute',
-    // sx reads 1 as 100%, so the size is spelled out.
     width: '1px',
     height: '1px',
     overflow: 'hidden',

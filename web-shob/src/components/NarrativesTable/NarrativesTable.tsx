@@ -10,6 +10,7 @@ import {
   TableHead,
   Typography,
   TableContainer,
+  Tooltip,
   TableSortLabel,
   CircularProgress,
 } from '@mui/material';
@@ -17,7 +18,7 @@ import {
 import { useMemo, useState, type FC } from 'react';
 import { MessageRow } from './components/MessageRow/MessageRow';
 import { SORTABLE_COLUMNS } from './constants/columns.constant';
-import { COLUMN_STYLES, styles } from './NarrativesTable.styles';
+import { COLUMN_STYLES, styles, TOOLTIP_SLOT_PROPS } from './NarrativesTable.styles';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import type { SortKey, SortState } from './interfaces/sort.interface';
 import { NarrativeRow } from './components/NarrativeRow/NarrativeRow';
@@ -128,10 +129,10 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
             <TableCell sx={[styles.headCell, COLUMN_STYLES.subject, styles.subjectHeadCell]}>
               נושא ההתראה
             </TableCell>
-            {SORTABLE_COLUMNS.map(({ key, label }) => {
+            {SORTABLE_COLUMNS.map(({ key, label, tooltip }) => {
               const direction = sort?.key === key ? sort.direction : null;
 
-              const sortLabel = (
+              const button = (
                 <TableSortLabel
                   active={direction !== null}
                   direction={direction ?? 'asc'}
@@ -141,6 +142,20 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
                 >
                   {label}
                 </TableSortLabel>
+              );
+
+              const sortLabel = tooltip ? (
+                <Tooltip
+                  arrow
+                  describeChild
+                  title={tooltip}
+                  placement="top"
+                  slotProps={TOOLTIP_SLOT_PROPS}
+                >
+                  {button}
+                </Tooltip>
+              ) : (
+                button
               );
 
               return (

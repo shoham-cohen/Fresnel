@@ -6,7 +6,7 @@ export const styles = {
   },
   row: {
     '&.Mui-selected, &.Mui-selected:hover': {
-      bgcolor: 'primary.light',
+      bgcolor: 'primary.light opacity 0.8',
     },
     '& > td': {
       height: 68,
@@ -15,7 +15,6 @@ export const styles = {
       fontWeight: 'fontWeightLight',
     },
   },
-  // Drops MUI's 16px cell padding; each column sets its own (COLUMN_STYLES).
   cell: {
     p: 0,
   },
@@ -48,7 +47,6 @@ export const styles = {
   },
   trafficBar: {
     display: 'flex',
-    // The fill starts on the left in Figma; in RTL that's the flex end.
     justifyContent: 'flex-end',
     width: 226,
     height: 12,
