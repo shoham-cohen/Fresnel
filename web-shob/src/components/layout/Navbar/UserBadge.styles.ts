@@ -9,6 +9,7 @@ export const styles = {
   avatar: {
     width: 45,
     height: 45,
+    filter: 'brightness(0) invert(1)',
   },
   name: {
     fontSize: (theme) => theme.typography.fontSize,
@@ -18,4 +19,3 @@ export const styles = {
     fontFamily: 'inherit',
   },
 } satisfies Record<string, SxProps<Theme>>;
-

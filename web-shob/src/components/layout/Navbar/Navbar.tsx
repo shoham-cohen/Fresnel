@@ -13,11 +13,9 @@ import { RealityToggle } from './RealityToggle';
 import { UserBadge } from './UserBadge';
 
 export interface NavbarProps {
-  /** Signed-in user's display name. Defaults to a placeholder until auth exists. */
   userName?: string;
 }
 
-/** App header. Figma: "מערכת שו״ב" › mainPage (132:52). */
 export function Navbar({ userName }: NavbarProps) {
   return (
     <AppBar position="static" component="header" elevation={0} sx={styles.appBar}>
@@ -25,9 +23,8 @@ export function Navbar({ userName }: NavbarProps) {
         <Typography component="span" sx={styles.wordmark}>
           Palantir
         </Typography>
-
         <Box component="nav" aria-label="ניווט ראשי">
-          <Stack component="ul" direction="row" spacing="116px" sx={styles.navList}>
+          <Box component="ul" sx={styles.navList}>
             {navItems.map((item) => (
               <Box component="li" key={item.path}>
                 <Link component={NavLink} to={item.path} end sx={styles.navLink}>
@@ -35,9 +32,8 @@ export function Navbar({ userName }: NavbarProps) {
                 </Link>
               </Box>
             ))}
-          </Stack>
+          </Box>
         </Box>
-
         <Box sx={styles.endSection}>
           <RealityToggle />
           <UserBadge userName={userName} />
