@@ -13,7 +13,7 @@ export const styles = {
   name: {
     fontSize: (theme) => theme.typography.fontSize,
     fontWeight: 'fontWeightMedium',
-    color: 'text.primary',
+    color: 'header.text',
     whiteSpace: 'nowrap',
     fontFamily: 'inherit',
   },

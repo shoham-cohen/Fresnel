@@ -3,7 +3,7 @@ import type { SxProps, Theme } from '@mui/material/styles';
 export const styles = {
   appBar: {
     bgcolor: 'header.background',
-    color: 'text.primary',
+    color: 'header.text',
     height: (theme) => theme.customSizes.headerHeight,
     justifyContent: 'center',
     paddingInline: '23px 16px',
@@ -20,6 +20,7 @@ export const styles = {
     fontWeight: 'fontWeightBold',
     textTransform: 'uppercase',
     fontFamily: 'inherit',
+    color: 'inherit',
   },
   navList: {
     listStyle: 'none',
@@ -28,7 +29,7 @@ export const styles = {
     alignItems: 'center',
   },
   navLink: {
-    color: 'text.primary',
+    color: 'header.text',
     fontSize: 21,
     fontWeight: 'fontWeightLight',
     textDecoration: 'none',

@@ -18,7 +18,7 @@ export const styles = {
     bgcolor: (theme: Theme) => (isSelected ? theme.palette.toggle.thumb : 'transparent'),
     fontSize: (theme: Theme) => theme.typography.fontSize,
     fontWeight: isSelected ? 'fontWeightMedium' : 'fontWeightLight',
-    color: 'text.primary',
+    color: 'header.text',
     fontFamily: 'inherit',
     cursor: 'pointer',
     transition: 'background-color 0.15s ease',

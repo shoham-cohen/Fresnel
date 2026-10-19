@@ -1,4 +1,3 @@
-// Rubik, only the weights and scripts Figma uses (Hebrew UI, Latin wordmark).
 import '@fontsource/rubik/hebrew-300.css';
 import '@fontsource/rubik/hebrew-600.css';
 import '@fontsource/rubik/hebrew-700.css';
@@ -11,23 +10,19 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 
-import { ThemeProvider } from '@mui/material/styles';
-
 import { router } from '@/app/router';
 import { RealityProvider } from '@/contexts';
-import { theme } from '@/theme';
 
 const rootElement = document.getElementById('root');
+
 if (!rootElement) {
   throw new Error('Root element #root not found in index.html');
 }
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ThemeProvider theme={theme}>
-      <RealityProvider>
-        <RouterProvider router={router} />
-      </RealityProvider>
-    </ThemeProvider>
+    <RealityProvider>
+      <RouterProvider router={router} />
+    </RealityProvider>
   </StrictMode>,
 );
