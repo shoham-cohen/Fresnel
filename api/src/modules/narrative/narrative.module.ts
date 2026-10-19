@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Narrative } from '../../entities';
 import { NarrativeController } from './narrative.controller';
-import { NarrativeRepository } from './narrative.repository';
 import { NarrativeService } from './narrative.service';
+import { NarrativeRepository } from './narrative.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Narrative])],
