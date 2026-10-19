@@ -1,8 +1,7 @@
 import { useState } from 'react';
 
 import styles from './RealityToggle.module.css';
-
-export type Reality = 'real' | 'exercise';
+import type { Reality } from '@/types';
 
 const options: readonly { value: Reality; label: string }[] = [
   { value: 'real', label: 'אמת' },
