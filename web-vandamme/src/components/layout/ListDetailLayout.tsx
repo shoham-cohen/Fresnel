@@ -1,4 +1,4 @@
-import {  useState, type ReactNode } from 'react'
+import {  type ReactNode } from 'react'
 import { Box, Paper } from '@mui/material'
 import EventPanel from '../EventPanel'
 import type { EventSummary } from '../../api/events'
