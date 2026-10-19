@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Event, EventLog } from '../../entities';
 
 export interface FindActiveOptions {
@@ -23,6 +23,7 @@ export class EventRepository {
     private readonly eventOrmRepository: Repository<Event>,
     @InjectRepository(EventLog)
     private readonly eventLogOrmRepository: Repository<EventLog>,
+    private readonly dataSource: DataSource,
   ) {}
 
   // Open and in-progress events, newest first, with their narrative for the title.
@@ -48,7 +49,7 @@ export class EventRepository {
     return this.eventOrmRepository.findOne({ where: { eventId: id } });
   }
 
-  async close(id: string, payload: CloseEventPayload): Promise<Event> {
+  async close(id: string, payload: CloseEventPayload): Promise<void> {
     const event = await this.findById(id);
 
     if (!event) {
@@ -57,7 +58,7 @@ export class EventRepository {
 
     const closedAt = new Date(payload.closedAt);
 
-    const closedEvent = await this.eventOrmRepository.save({
+    await this.eventOrmRepository.save({
       ...event,
       status: 'closed',
       closedAt,
@@ -80,8 +81,51 @@ export class EventRepository {
       client: 'web',
       at: closedAt,
     });
+  }
 
-    return closedEvent;
+  async reopen(id: string): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const currentEvent = await queryRunner.manager.findOne(Event, { where: { eventId: id } });
+
+      if (!currentEvent) {
+        throw new Error(`error occured when tried to reopen event with ${id}`);
+      }
+
+      const reopenedAt = new Date();
+
+      await queryRunner.manager.save(Event, {
+        ...currentEvent,
+        status: 'in_progress',
+        closedAt: null,
+        closedBy: null,
+        closureSummary: null,
+        updatedAt: reopenedAt,
+      });
+
+      await queryRunner.manager.insert(EventLog, {
+        eventId: id,
+        kind: 'event_reopened',
+        actorId: 'system',
+        fromValue: 'closed',
+        toValue: 'in_progress',
+        details: {
+          reopenedAt: reopenedAt.toISOString(),
+        },
+        client: 'web',
+        at: reopenedAt,
+      });
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
 

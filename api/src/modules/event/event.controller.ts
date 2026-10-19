@@ -15,15 +15,28 @@ export class EventController {
   }
 
   @Post(':id/close')
-  @HttpCode(HttpStatus.CREATED)
-  async close(@Param('id') id: string, @Body() dto: CloseEventDto, @Res({ passthrough: true }) res: Response): Promise<{ eventId: string } | undefined> {
+  @HttpCode(HttpStatus.OK)
+  async close(@Param('id') id: string, @Body() dto: CloseEventDto, @Res({ passthrough: true }) res: Response): Promise<void> {
     try {
-      const event = await this.eventService.closeEvent(id, dto);
-      return { eventId: event.eventId };
+      await this.eventService.closeEvent(id, dto);
+      return;
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR);
       res.send(`error occured when tried to close an event with id ${id}`);
-      return undefined;
+      return;
+    }
+  }
+
+  @Post(':id/reopen')
+  @HttpCode(HttpStatus.OK)
+  async reopen(@Param('id') id: string, @Res({ passthrough: true }) res: Response): Promise<void> {
+    try {
+      await this.eventService.reopenEvent(id);
+      return;
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+      res.send(`error occured when tried to reopen event with ${id}`);
+      return;
     }
   }
 }

@@ -31,17 +31,27 @@ export class EventService {
     };
   }
 
-  async closeEvent(id: string, dto: CloseEventDto): Promise<Event> {
+  async closeEvent(id: string, dto: CloseEventDto): Promise<void> {
     const event = await this.eventRepository.findById(id);
 
     if (!event) {
       throw new Error(`error occured when tried to close an event with id ${id}`);
     }
 
-    return this.eventRepository.close(id, {
+    await this.eventRepository.close(id, {
       closedAt: dto.closed_at,
       closedBy: dto.closed_by,
       closureSummary: dto.closure_summary,
     });
+  }
+
+  async reopenEvent(id: string): Promise<void> {
+    const event = await this.eventRepository.findById(id);
+
+    if (!event) {
+      throw new Error(`error occured when tried to reopen event with ${id}`);
+    }
+
+    await this.eventRepository.reopen(id);
   }
 }
