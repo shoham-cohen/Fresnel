@@ -27,47 +27,70 @@ export default function EventCard() {
   const white = '#ffffff';
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: 2,
-        height: '100%',
-        width: '100%',
-        dir: 'rtl', 
-      }}
-    >
-      {/* Right Box: Event Info */}
-      <Item 
-        sx={{ 
-          flex: 1, 
-          flexDirection: 'column', 
-          alignItems: 'flex-start',
-          justifyContent: 'center',
-          p: 3 
-        }}
-      >
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: white, mb: 3 }}>
-          כותרת האירוע
-        </Typography>
+<Box
+  dir="rtl" // 1. Move dir="rtl" HERE as a prop, NOT inside sx
+  sx={{
+    display: 'flex',
+    gap: 2,
+    height: '100%',
+    width: '100%',
+  }}
+>
+{/* Right Box: Event Info */}
+<Item 
+  sx={{ 
+    flex: 1, 
+    flexDirection: 'column', 
+    alignItems: 'flex-start', 
+    
+    p: 3,
+  }}
+>
+  <Typography 
+  variant="h5" 
+  sx={{ 
+    fontWeight: 'bold', 
+    color: white, 
+    mb: 3,
+    alignSelf: 'flex-start' // Relies on the container's RTL flex direction
+  }}
+>
+  כותרת האירוע
+</Typography>
 
-        <Box sx={{ width: '100%',textAlign: 'right' , mb: 2 }}>
-          <Typography variant="body1" sx={{ fontWeight: 'bold',color: white }}>
-            זיהוי האירוע
-          </Typography>
-          <Typography sx={{ variant: "body2", color: "text.secondary" }}>
-            10.04.2026 | 12:34
-          </Typography>
-        </Box>
+  <Box 
+    sx={{ 
+      width: '100%', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'flex-start', 
+      mb: 2 
+    }}
+  >
+    <Typography variant="body1" sx={{ fontWeight: 'bold', color: white, fontSize: '1.1rem' }}>
+      זיהוי האירוע
+    </Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '1rem' }}>
+      10.04.2026 | 12:34
+    </Typography>
+  </Box>
 
-        <Box sx={{ width: '100%',textAlign: 'right' , mb: 2 }}>
-          <Typography variant="body1" sx={{ fontWeight: 'bold',color: white }}>
-            עדכון אחרון
-          </Typography>
-          <Typography sx={{ variant: "body2", color: "text.secondary" }}>
-            10.04.2026 | 12:34
-          </Typography>
-        </Box>
-      </Item>
+  <Box 
+    sx={{ 
+      width: '100%', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'flex-start' 
+    }}
+  >
+    <Typography variant="body1" sx={{ fontWeight: 'bold', color: white, fontSize: '1.1rem' }}>
+      עדכון אחרון
+    </Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '1rem' }}>
+      10.04.2026 | 12:34
+    </Typography>
+  </Box>
+</Item>
 
       {/* Middle Box: Stats */}
       <Item 

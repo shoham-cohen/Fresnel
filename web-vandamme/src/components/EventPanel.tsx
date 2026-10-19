@@ -51,7 +51,6 @@ export default function EventPanel( ) {
         <Item>4</Item>
       </Grid>
       </Grid>
-      
     </Grid>
   );
 }
