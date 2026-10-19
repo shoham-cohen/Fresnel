@@ -39,6 +39,7 @@ export class EventService {
 
     return {
       eventId: event.eventId,
+      narrativeId: event.narrativeId,
       title: event.narrative?.title ?? '',
       description: event.narrative?.summary ?? null,
       arena: event.narrative?.arena ?? null,
@@ -47,6 +48,7 @@ export class EventService {
       closedBy: event.closedBy,
       status: event.status,
       severity: event.severity,
+      isSimulation: event.isSimulation,
       createdAt: event.createdAt,
       updatedAt: event.updatedAt,
       closedAt: event.closedAt,
