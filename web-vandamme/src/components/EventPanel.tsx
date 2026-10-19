@@ -2,6 +2,7 @@ import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import EventCard from './EventPanel/EventCard';
+import type { EventSummary } from '../api/events';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
@@ -17,7 +18,9 @@ const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: '#1A2027',
   }),
 }));
-
+type EventPanelProps = {
+  selectedEvent?: EventSummary; // Replace 'any' with the actual type of your event object
+};
 
 export default function EventPanel( ) {
   return (

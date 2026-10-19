@@ -7,6 +7,7 @@ import { Box, Divider } from '@mui/material';
 import LocalFireDepartmentOutlinedIcon from '@mui/icons-material/LocalFireDepartmentOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import type { EventSummary } from '../../api/events';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
@@ -23,7 +24,10 @@ const Item = styled(Paper)(({ theme }) => ({
   }),
 }));
 
-export default function EventCard() {
+type EventCardProps = {
+  selectedEvent?: EventSummary; // Replace 'any' with the actual type of your event object
+};
+export default function EventCard({ selectedEvent }: EventCardProps) {
   const white = '#ffffff';
 
   return (

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Typography } from '@mui/material'
 import ActiveEventList from '../components/ActiveEventList'
 import NoEventSelected from '../components/NoEventSelected'
 import ListDetailLayout from '../components/layout/ListDetailLayout'
