@@ -10,6 +10,7 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { useSearchParams } from 'react-router';
+import { alpha, useTheme } from '@mui/material/styles';
 
 import {
   fetchNarrativeById,
@@ -17,7 +18,6 @@ import {
   type NarrativeDetails,
 } from './mockData';
 
-// Formats ISO timestamp (from DB entity `detected_at`) to "HH:mm dd/MM/yyyy"
 function formatDetectedAt(value: string): string {
   try {
     const d = new Date(value);
@@ -40,30 +40,48 @@ interface MetricCardProps {
 }
 
 function MetricCard({ label, value, icon }: MetricCardProps) {
+  const theme = useTheme();
+  const colors = theme.palette;
+
   return (
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: '#f2f2f2',
-        border: '1px solid #e0e0e0',
-        borderRadius: '8px',
+        bgcolor: alpha(colors.primary.light, 0.35),
+        border: `1px solid ${colors.primary.main}`,
+        borderRadius: '5px',
         p: '12px 14px 16px',
         boxSizing: 'border-box',
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'flex-start', color: '#111' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-start',
+          color: colors.primary.main,
+        }}
+      >
         {icon}
       </Box>
-      <Typography sx={{ textAlign: 'center', fontSize: '15px', color: '#333', mt: 0.5 }}>
+
+      <Typography
+        sx={{
+          textAlign: 'center',
+          fontSize: '15px',
+          color: colors.header.background,
+          mt: 0.5,
+        }}
+      >
         {label}
       </Typography>
+
       <Typography
         sx={{
           textAlign: 'center',
           fontSize: '28px',
           fontWeight: 700,
-          color: '#000',
+          color: colors.header.background,
           fontVariantNumeric: 'tabular-nums',
           lineHeight: 1.1,
           mt: 0.5,
@@ -79,6 +97,9 @@ export function NarrativeDetailsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const narrativeId = searchParams.get('narrativeId');
   const [narrative, setNarrative] = useState<NarrativeDetails | null>(null);
+
+  const theme = useTheme();
+  const colors = theme.palette;
 
   useEffect(() => {
     if (!narrativeId) {
@@ -119,30 +140,35 @@ export function NarrativeDetailsPanel() {
   return (
     <Dialog
       open={isOpen}
-  onClose={handleClose}
-  maxWidth={false}
-  slotProps={{
-    paper: {
-      sx: {
-        width: 420,
-        maxWidth: 'calc(100vw - 32px)',
-        maxHeight: 'calc(100vh - 64px)',
-        overflowY: 'auto',
-        p: '24px 28px',
-        bgcolor: '#ffffff',
-        direction: 'rtl',
-        boxSizing: 'border-box',
-        borderRadius: '12px',
-      },
-    },
-  }}
+      onClose={handleClose}
+      maxWidth={false}
+      slotProps={{
+        paper: {
+          sx: {
+            width: 420,
+            maxWidth: 'calc(100vw - 32px)',
+            maxHeight: 'calc(100vh - 64px)',
+            overflowY: 'auto',
+            p: '24px 28px',
+            bgcolor: colors.background.paper,
+            color: colors.header.background,
+            border: `1px solid ${colors.primary.main}`,
+            direction: 'rtl',
+            boxSizing: 'border-box',
+            borderRadius: '8px',
+          },
+        },
+      }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <IconButton
           onClick={handleClose}
           aria-label="סגירה"
           size="small"
-          sx={{ color: '#000', p: 0.5 }}
+          sx={{
+            color: colors.header.background,
+            p: 0.5,
+          }}
         >
           <CloseIcon fontSize="medium" />
         </IconButton>
@@ -150,7 +176,7 @@ export function NarrativeDetailsPanel() {
 
       {displayData && (
         <Box sx={{ mt: 1.5 }}>
-          <Typography sx={{ fontSize: '24px', fontWeight: 700, lineHeight: 1.25, color: '#000', mb: 0.5 }}>
+          <Typography sx={{ fontSize: '24px', fontWeight: 700, lineHeight: 1.25, color: colors.header.background, mb: 0.5 }}>
             {displayData.title}
           </Typography>
 
@@ -161,17 +187,22 @@ export function NarrativeDetailsPanel() {
           )}
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-            <Typography sx={{ fontSize: '18px', fontWeight: 500, color: '#000' }}>
+            <Typography sx={{ fontSize: '18px', fontWeight: 500, color: colors.header.background }}>
               {displayData.locationName ?? '—'}
             </Typography>
-            <Typography sx={{ fontSize: '18px', fontWeight: 500, color: '#000', direction: 'ltr' }}>
+            <Typography sx={{ fontSize: '18px', fontWeight: 500, color: colors.header.background, direction: 'ltr' }}>
               {formatDetectedAt(displayData.detectedAt)}
             </Typography>
           </Box>
 
-          <Divider sx={{ my: 2, borderColor: '#d9d9d9' }} />
+         <Divider
+            sx={{
+              my: 2,
+              borderColor: alpha(colors.primary.main, 0.45),
+            }}
+        />
 
-          <Typography sx={{ fontSize: '19px', fontWeight: 700, color: '#000', mb: 2 }}>
+          <Typography sx={{ fontSize: '19px', fontWeight: 700, color: colors.header.background, mb: 2 }}>
             נתונים מרכזיים
           </Typography>
 
@@ -207,20 +238,25 @@ export function NarrativeDetailsPanel() {
             onClick={handleCreateEvent}
             sx={{
               width: '100%',
-              minHeight: '48px',
+              minHeight: '56px',
               py: '12px',
               px: '20px',
-              bgcolor: '#d9d9d9',
-              color: '#000',
+              bgcolor: colors.header.background,
+              color: colors.header.text,
               border: 0,
-              borderRadius: '6px',
+              borderRadius: '999px',
               fontSize: '19px',
               fontWeight: 700,
               cursor: 'pointer',
               fontFamily: 'inherit',
               transition: 'background-color 0.15s',
-              '&:hover': { bgcolor: '#cccccc' },
-              '&:active': { bgcolor: '#bebebe' },
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+              '&:hover': {
+                bgcolor: colors.primary.main,
+              },
+              '&:active': {
+                bgcolor: colors.header.background,
+              },
             }}
           >
             פתיחת אירוע
