@@ -23,6 +23,9 @@ export const styles = {
     color: 'inherit',
   },
   navList: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '116px',
     listStyle: 'none',
     m: 0,
     p: 0,
@@ -46,4 +49,3 @@ export const styles = {
     marginInlineStart: 'auto',
   },
 } satisfies Record<string, SxProps<Theme>>;
-

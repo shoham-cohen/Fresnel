@@ -12,6 +12,7 @@ declare module '@mui/material/styles' {
     toggle: {
       track: string;
       thumb: string;
+      border: string;
     };
     accent: {
       main: string;
@@ -27,6 +28,7 @@ declare module '@mui/material/styles' {
     toggle?: {
       track?: string;
       thumb?: string;
+      border?: string;
     };
     accent?: {
       main?: string;
@@ -47,29 +49,28 @@ declare module '@mui/material/styles' {
 
 export const REAL_PALETTE = {
   reality: 'real' as const,
-  primary: '#4872A5', // Blue accent / progress filled
+  primary: '#4872A5',
   background: '#ffffff',
-  headerBg: '#102B4D', // Dark navy header
+  headerBg: '#102B4D',
   headerText: '#ffffff',
-  toggleTrack: '#02152B', // Deep navy track
-  toggleThumb: '#4872A5', // Active toggle thumb blue
-  accentLight: '#E8F1FC', // Soft ice blue (table headers, progress track)
+  toggleTrack: '#02152B',
+  toggleThumb: '#4872A5',
+  toggleBorder: '#4872A5',
+  accentLight: '#E8F1FC',
   textPrimary: '#000000',
   textSecondary: '#666666',
 };
 
-/**
- * Color palette specifications for "Exercise" (תרגילית) mode.
- */
 export const EXERCISE_PALETTE = {
   reality: 'exercise' as const,
-  primary: '#B99462', // Warm tan / bronze accent
+  primary: '#B99462',
   background: '#ffffff',
-  headerBg: '#49311F', // Dark warm brown header
+  headerBg: '#49311F',
   headerText: '#ffffff',
-  toggleTrack: '#684B31', // Brown track
-  toggleThumb: '#B99462', // Active toggle thumb tan
-  accentLight: '#EDE2D3', // Soft warm beige (table headers, progress track)
+  toggleTrack: '#684B31',
+  toggleThumb: '#B99462',
+  toggleBorder: '#B99462',
+  accentLight: '#EDE2D3',
   textPrimary: '#000000',
   textSecondary: '#666666',
 };
@@ -82,6 +83,7 @@ export interface RealityPaletteConfig {
   headerText: string;
   toggleTrack: string;
   toggleThumb: string;
+  toggleBorder: string;
   accentLight: string;
   textPrimary: string;
   textSecondary: string;
@@ -122,6 +124,7 @@ function createRealityTheme(config: RealityPaletteConfig): Theme {
       toggle: {
         track: config.toggleTrack,
         thumb: config.toggleThumb,
+        border: config.toggleBorder,
       },
       accent: {
         main: config.primary,
@@ -129,7 +132,7 @@ function createRealityTheme(config: RealityPaletteConfig): Theme {
       },
     },
     shape: {
-      borderRadius: 5,
+      borderRadius: 35,
     },
     customSizes: {
       headerHeight: 79,
@@ -153,20 +156,14 @@ function createRealityTheme(config: RealityPaletteConfig): Theme {
   });
 }
 
-/** Theme for "Real" (אמת) mode */
 export const realTheme = createRealityTheme(REAL_PALETTE);
 
-/** Theme for "Exercise" (תרגילית) mode */
 export const exerciseTheme = createRealityTheme(EXERCISE_PALETTE);
 
-/**
- * Returns the appropriate theme based on the active reality.
- */
 export function getTheme(reality: Reality): Theme {
   return reality === 'exercise' ? exerciseTheme : realTheme;
 }
 
-/** Default theme (Real mode) */
 export const theme = realTheme;
 
 export type AppTheme = typeof realTheme;
