@@ -9,8 +9,11 @@ import { NarrativeRepository } from './narrative.repository';
 export class NarrativeService {
   constructor(private readonly narrativeRepository: NarrativeRepository) {}
 
-  async findAll(): Promise<NarrativeResponseDto[]> {
-    const narratives = await this.narrativeRepository.findAll();
+  async findAll(
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<NarrativeResponseDto[]> {
+    const narratives = await this.narrativeRepository.findAll(startDate, endDate);
 
     return plainToInstance(
       NarrativeResponseDto,

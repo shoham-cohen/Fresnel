@@ -1,5 +1,6 @@
 import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
+import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
 import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
 import { NarrativeService } from './narrative.service';
@@ -9,8 +10,10 @@ export class NarrativeController {
   constructor(private readonly narrativeService: NarrativeService) {}
 
   @Get()
-  findAll(): Promise<NarrativeResponseDto[]> {
-    return this.narrativeService.findAll();
+  findAll(
+    @Query() query: FindNarrativesQueryDto,
+  ): Promise<NarrativeResponseDto[]> {
+    return this.narrativeService.findAll(query.startDate, query.endDate);
   }
 
   @Get('simulated')

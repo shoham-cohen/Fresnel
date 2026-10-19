@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, FindOptionsWhere, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
 
 @Injectable()
@@ -12,8 +12,18 @@ export class NarrativeRepository {
     private readonly simulatedNarrativeOrmRepository: Repository<SimulatedNarrative>,
   ) {}
 
-  findAll(): Promise<Narrative[]> {
+  findAll(startDate?: Date, endDate?: Date): Promise<Narrative[]> {
+    const where: FindOptionsWhere<Narrative> = {};
+    if (startDate && endDate) {
+      where.detectedAt = Between(startDate, endDate);
+    } else if (startDate) {
+      where.detectedAt = MoreThanOrEqual(startDate);
+    } else if (endDate) {
+      where.detectedAt = LessThanOrEqual(endDate);
+    }
+
     return this.narrativeOrmRepository.find({
+      where,
       relations: { events: true },
     });
   }
