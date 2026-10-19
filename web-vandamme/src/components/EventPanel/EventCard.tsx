@@ -28,7 +28,7 @@ export default function EventCard() {
 
   return (
 <Box
-  dir="rtl" // 1. Move dir="rtl" HERE as a prop, NOT inside sx
+  dir="rtl"
   sx={{
     display: 'flex',
     gap: 2,
@@ -52,7 +52,7 @@ export default function EventCard() {
     fontWeight: 'bold', 
     color: white, 
     mb: 3,
-    alignSelf: 'flex-start' // Relies on the container's RTL flex direction
+    alignSelf: 'flex-start'
   }}
 >
   כותרת האירוע
