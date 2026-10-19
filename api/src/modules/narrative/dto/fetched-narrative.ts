@@ -50,6 +50,5 @@ export class FetchedNarrativeDto {
 
   @IsOptional()
   @IsArray()
-  @IsNumber({}, { each: true })
   embedding: number[] | null;
 }

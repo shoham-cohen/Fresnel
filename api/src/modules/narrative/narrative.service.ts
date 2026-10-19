@@ -11,12 +11,28 @@ export class NarrativeService {
 
   async findAll(): Promise<NarrativeResponseDto[]> {
     const narratives = await this.narrativeRepository.findAll();
-    return plainToInstance(NarrativeResponseDto, narratives);
+
+    return plainToInstance(
+      NarrativeResponseDto,
+      narratives.map((narrative) => {
+        const { events, ...data } = narrative;
+        return {
+          ...data,
+          isEvent: Boolean(events && events.length > 0),
+        };
+      }),
+    );
   }
 
   async findOne(narrativeId: string): Promise<NarrativeResponseDto | null> {
     const narrative = await this.narrativeRepository.findOne(narrativeId);
-    return narrative ? plainToInstance(NarrativeResponseDto, narrative) : null;
+    if (!narrative) return null;
+
+    const { events, ...data } = narrative;
+    return plainToInstance(NarrativeResponseDto, {
+      ...data,
+      isEvent: Boolean(events && events.length > 0),
+    });
   }
 
   async findSimulated(
@@ -27,11 +43,15 @@ export class NarrativeService {
 
     return plainToInstance(
       SimulatedNarrativeResponseDto,
-      simulatedNarratives.map((item) => ({
-        ...item.narrative,
-        narrativeId: item.narrativeId,
-        simulationId: item.simulationId,
-      })),
+      simulatedNarratives.map((item) => {
+        const { events, ...narrativeData } = item.narrative ?? {};
+        return {
+          ...narrativeData,
+          narrativeId: item.narrativeId,
+          simulationId: item.simulationId,
+          isEvent: Boolean(events && events.length > 0),
+        };
+      }),
     );
   }
 
@@ -45,11 +65,13 @@ export class NarrativeService {
     }
 
     const created = await this.narrativeRepository.createSimulated(dto);
-    
+
+    const { events, ...narrativeData } = narrative;
     return plainToInstance(SimulatedNarrativeResponseDto, {
-      ...narrative,
+      ...narrativeData,
       narrativeId: created.narrativeId,
       simulationId: created.simulationId,
+      isEvent: Boolean(events && events.length > 0),
     });
   }
 }

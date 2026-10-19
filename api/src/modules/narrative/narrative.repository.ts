@@ -13,17 +13,22 @@ export class NarrativeRepository {
   ) {}
 
   findAll(): Promise<Narrative[]> {
-    return this.narrativeOrmRepository.find();
+    return this.narrativeOrmRepository.find({
+      relations: { events: true },
+    });
   }
 
   findOne(narrativeId: string): Promise<Narrative | null> {
-    return this.narrativeOrmRepository.findOneBy({ narrativeId });
+    return this.narrativeOrmRepository.findOne({
+      where: { narrativeId },
+      relations: { events: true },
+    });
   }
 
   findSimulated(simulationId?: string): Promise<SimulatedNarrative[]> {
     return this.simulatedNarrativeOrmRepository.find({
       where: simulationId ? { simulationId } : {},
-      relations: { narrative: true },
+      relations: { narrative: { events: true } },
     });
   }
 

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Event } from './event.entity';
 
 export enum Arena {
   IL = 'israel',
@@ -46,4 +47,10 @@ export class Narrative {
 
   @Column({ name: 'is_flagged', type: 'boolean', default: false })
   isFlagged: boolean;
+
+  @Column({name: 'received_at', type: 'timestamptz', nullable: true})
+  receivedAt?: Date;
+
+ @OneToMany(() => Event, event => event.narrative)
+  events: Event[];
 }
