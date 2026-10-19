@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Event } from '../../entities';
+import { Event, Narrative, Severity } from '../../entities';
 
 export interface FindActiveOptions {
   isSimulation: boolean;
@@ -10,12 +10,43 @@ export interface FindActiveOptions {
   pageSize: number;
 }
 
+export interface CreateEventData {
+  narrativeId: string;
+  severity: Severity;
+  isSimulation: boolean;
+  createdBy: string;
+}
+
 @Injectable()
 export class EventRepository {
   constructor(
     @InjectRepository(Event)
     private readonly eventOrmRepository: Repository<Event>,
+    @InjectRepository(Narrative)
+    private readonly narrativeOrmRepository: Repository<Narrative>,
   ) {}
+
+  findNarrativeById(narrativeId: string): Promise<Narrative | null> {
+    return this.narrativeOrmRepository.findOne({
+      where: { narrativeId },
+    });
+  }
+
+  create(data: CreateEventData): Promise<Event> {
+    const event = this.eventOrmRepository.create({
+      narrativeId: data.narrativeId,
+      severity: data.severity,
+      status: 'open',
+      isSimulation: data.isSimulation,
+      createdBy: data.createdBy,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      closedAt: null,
+      closedBy: null,
+      closureSummary: null,
+    });
+    return this.eventOrmRepository.save(event);
+  }
 
   // Open and in-progress events, newest first, with their narrative for the title.
   findActive({ isSimulation, search, page, pageSize }: FindActiveOptions): Promise<[Event[], number]> {
