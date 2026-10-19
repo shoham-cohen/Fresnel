@@ -33,7 +33,22 @@ export default function ListDetailLayout({ list, children, selectedEvent }: Prop
          <Box sx={{ flex: 1, minHeight: 0, width: '100%' }}>
             <EventPanel />
           </Box>
-        </Box> : children}
+        </Box> : <Box sx={{ display: 'flex', gap: 2, flexGrow: 1, minHeight: 0 }}>
+      <Paper
+        variant="outlined"
+        sx={{
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 6,
+          textAlign: 'center',
+        }}
+      >
+        {children}
+      </Paper>
+      </Box>}
       </Paper>
     </Box>
   )
