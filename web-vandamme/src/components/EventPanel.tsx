@@ -29,17 +29,24 @@ export default function EventPanel() {
         flexGrow: 1,
       }}
     >
-      <Grid size={8} sx={{ height: '50%' }}>
-        <Item>size=8</Item>
+      <Grid size={3} sx={{ height: '100%' , paddingTop:1 }}>
+        <Item>1</Item>
       </Grid>
-      <Grid size={4} sx={{ height: '50%' }}>
-        <Item>size=4</Item>
+      <Grid size={6} sx={{ height: '100%' }}>
+         <Grid size={12} sx={{ height: '15%', paddingTop:1 }}>
+        <Item>5</Item>
       </Grid>
-      <Grid size={4} sx={{ height: '50%' }}>
-        <Item>size=4</Item>
+      <Grid size={12} sx={{ height: '85%',  paddingTop:3}}>
+        <Item>6</Item>
       </Grid>
-      <Grid size={8} sx={{ height: '50%' }}>
-        <Item>size=8</Item>
+      </Grid>
+      <Grid size={3} sx={{ height: '100%',  paddingTop:1 }}>
+        <Grid size={12} sx={{ height: '40%' ,  }}>
+        <Item>3</Item>
+      </Grid>
+      <Grid size={12} sx={{ height: '60%', paddingTop:1}}>
+        <Item>4</Item>
+      </Grid>
       </Grid>
     </Grid>
   );
