@@ -5,5 +5,13 @@ export interface Narrative {
   viewsCount: number;
   isFlagged: boolean;
   summary: string | null;
-  locationName: string | null;
+  arena: string[];
+}
+
+export interface NarrativeDetails extends Narrative {
+  isAnomaly: boolean;
+  itemList: string[];
+  platforms: string[];
+  languages: string[];
+  sharesCount: number;
 }

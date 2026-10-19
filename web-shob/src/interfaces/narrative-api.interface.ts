@@ -1,22 +1,31 @@
-export type SortDir = 'asc' | 'desc';
-export type Arena = 'IL' | 'ARAB' | 'INTL';
-export type NarrativeSortField = 'locationName' | 'detectedAt' | 'viewsCount';
+import type { Narrative } from '@/interfaces/narrative.interface';
 
+export type SortDir = 'asc' | 'desc';
+export type Arena = 'israel' | 'arab' | 'intl';
+export type NarrativeSortField = 'arena' | 'detectedAt' | 'viewsCount';
+
+// GET /api/narratives, as the server sends it (api/src/modules/narrative/dto/narrative-response-dto.ts).
+// The newer columns are nullable in the DB (rows from before the migration have them empty).
 export interface NarrativeDto {
   title: string;
+  // Usually Arena codes; rows from before the migration may hold the old IL / ARAB / INTL.
+  arena: string[] | null;
+  isEvent: boolean;
   isAnomaly: boolean;
-  arena: Arena | null;
-  receivedAt: string;
-  detectedAt: string;
-  viewsCount: number;
   isFlagged: boolean;
+  itemList: string[] | null;
+  platforms: string[] | null;
+  languages: string[] | null;
+  detectedAt: string;
   narrativeId: string;
   summary: string | null;
-  locationName: string | null;
-  payload: Record<string, unknown>;
+  receivedAt: string | null;
+  // bigint columns: Postgres sends them as strings.
+  viewsCount: number | string | null;
+  sharesCount: number | string | null;
 }
 
-export type NarrativeUpdate = Partial<Omit<NarrativeDto, 'narrativeId'>>;
+export type NarrativeUpdate = Partial<Omit<Narrative, 'narrativeId'>>;
 
 export interface NarrativesQuery {
   to?: string;
@@ -25,7 +34,7 @@ export interface NarrativesQuery {
   search?: string;
   sortDir?: SortDir;
   pageSize?: number;
-  locationName?: string;
+  arena?: Arena;
   sortBy?: NarrativeSortField;
 }
 

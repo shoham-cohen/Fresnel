@@ -6,9 +6,10 @@ import type {
 } from '@/interfaces/narrative-api.interface';
 
 import type { AxiosInstance } from 'axios';
-import type { Narrative } from '@/interfaces/narrative.interface';
-import { createAxiosInstance, USE_MOCKS } from '@/config/axios.config';
-import { getMockNarrativesPage, updateMockNarrative } from '@/mocks/narratives.mock';
+import { toNarrative, toNarrativeDetails } from '@/utilities/narrative.utility';
+import { createAxiosInstance } from '@/config/axios.config';
+import type { Narrative, NarrativeDetails } from '@/interfaces/narrative.interface';
+import { applyNarrativesQuery } from '@/utilities/narrative-query.utility';
 
 class NarrativeService {
   private api: AxiosInstance;
@@ -17,25 +18,28 @@ class NarrativeService {
     this.api = createAxiosInstance('/narratives');
   }
 
+  // TODO: the API returns every narrative and ignores the query, so it's applied here for now.
+  // Once GET /api/narratives filters, sorts and pages, send `params: query` and return its page.
   public async getAll(query: NarrativesQuery = {}, signal?: AbortSignal): Promise<Page<Narrative>> {
-    if (USE_MOCKS) {
-      return getMockNarrativesPage(query);
-    }
-
-    const { data } = await this.api.get<Page<NarrativeDto>>('', { params: query, signal });
-    return data;
+    const { data } = await this.api.get<NarrativeDto[]>('', { signal });
+    return applyNarrativesQuery(data.map(toNarrative), query);
   }
 
-  public async update(narrativeId: string, changes: NarrativeUpdate): Promise<NarrativeDto> {
-    if (USE_MOCKS) {
-      return updateMockNarrative(narrativeId, changes);
-    }
+  // GET /api/narratives/:id. A missing narrative is a 404, which axios throws.
+  public async getById(narrativeId: string, signal?: AbortSignal): Promise<NarrativeDetails> {
+    const { data } = await this.api.get<NarrativeDto>(`/${encodeURIComponent(narrativeId)}`, {
+      signal,
+    });
+    return toNarrativeDetails(data);
+  }
 
+  // TODO: the server has no update endpoint yet, so this fails and the change rolls back.
+  public async update(narrativeId: string, changes: NarrativeUpdate): Promise<Narrative> {
     const { data } = await this.api.patch<NarrativeDto>(
       `/${encodeURIComponent(narrativeId)}`,
       changes,
     );
-    return data;
+    return toNarrative(data);
   }
 }
 

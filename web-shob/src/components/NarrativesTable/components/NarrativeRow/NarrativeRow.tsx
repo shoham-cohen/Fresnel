@@ -1,4 +1,5 @@
 import { FlagIcon } from '@/icons/FlagIcon';
+import { formatArenas } from '@/constants/arena.constant';
 import { styles } from './NarrativeRow.styles';
 import { memo, type FC, type KeyboardEvent } from 'react';
 import { formatDate, formatTime } from '@/lib/formatDateTime';
@@ -60,7 +61,7 @@ const NarrativeRowComponent: FC<NarrativeRowProps> = ({
         <Typography sx={styles.title}>{narrative.title}</Typography>
         {narrative.summary && <Typography sx={styles.summary}>{narrative.summary}</Typography>}
       </TableCell>
-      <TableCell sx={[styles.cell, COLUMN_STYLES.location]}>{narrative.locationName}</TableCell>
+      <TableCell sx={[styles.cell, COLUMN_STYLES.arena]}>{formatArenas(narrative.arena)}</TableCell>
       <TableCell sx={[styles.cell, COLUMN_STYLES.detectedAt]}>
         <Box component="time" dateTime={narrative.detectedAt} sx={styles.dateTime}>
           <span>{formatDate(narrative.detectedAt)}</span>
@@ -94,7 +95,7 @@ const NarrativeRowComponent: FC<NarrativeRowProps> = ({
           <IconButton
             size="small"
             aria-label="סימון התראה"
-            aria-pressed={narrative.isFlagged} 
+            aria-pressed={narrative.isFlagged}
             sx={narrative.isFlagged ? styles.flagged : styles.flag}
             onClick={(event) => {
               event.stopPropagation();

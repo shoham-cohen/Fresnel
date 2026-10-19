@@ -1,5 +1,5 @@
 export type SortDirection = 'asc' | 'desc';
-export type SortKey = 'location' | 'detectedAt' | 'viewsCount';
+export type SortKey = 'arena' | 'detectedAt' | 'viewsCount';
 
 export interface SortState {
   key: SortKey;

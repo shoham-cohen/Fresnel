@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router';
 import { pageStyles } from '@/styles/page.styles';
@@ -12,14 +12,23 @@ const RECENT_HOURS = 24;
 const AREA_LABEL = 'ישראל';
 
 export const HomePage = () => {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const toggleFlag = useToggleNarrativeFlag();
   const { narratives, tableStatus, refetch } = useRecentNarratives(RECENT_HOURS);
 
-  const handleSelect = useCallback((narrative: Narrative) => {
-    setSelectedId(narrative.narrativeId);
-  }, []);
-  const [, setSearchParams] = useSearchParams();
+  // The open narrative lives in the URL (?narrativeId=), which the details panel reads too.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedId = searchParams.get('narrativeId');
+
+  const handleSelect = useCallback(
+    (narrative: Narrative) => {
+      setSearchParams((params) => {
+        const next = new URLSearchParams(params);
+        next.set('narrativeId', narrative.narrativeId);
+        return next;
+      });
+    },
+    [setSearchParams],
+  );
 
   return (
     <>
@@ -28,26 +37,6 @@ export const HomePage = () => {
       <Typography component="h1" sx={pageStyles.title}>
         כל ההתראות
       </Typography>
-      {/* Demo row trigger until the table component is plugged in */}
-        <div style={{ marginBlockStart: '20px' }}>
-          <button
-            type="button"
-            onClick={() => {
-              setSearchParams({ narrativeId: 'nar-0001' });
-            }}
-            style={{
-              padding: '10px 18px',
-              backgroundColor: '#f2f2f2',
-              border: '1px solid #d9d9d9',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 500,
-              fontFamily: 'inherit',
-            }}
-          >
-            פתח פאנל התראה לדוגמה (עלייה חריגה בשיח סביב פעילות צהל בגבול הצפון)
-          </button>
-        </div>
       <NarrativesTable
         narratives={narratives}
         status={tableStatus}
@@ -56,8 +45,6 @@ export const HomePage = () => {
         selectedId={selectedId}
         onSelect={handleSelect}
       />
-
-
       <NarrativeDetailsPanel />
     </>
   );

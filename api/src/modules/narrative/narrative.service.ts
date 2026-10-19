@@ -3,6 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
 import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
+import { UpdateNarrativeDto } from './dto/update-narrative-dto';
 import { NarrativeRepository } from './narrative.repository';
 
 @Injectable()
@@ -29,6 +30,23 @@ export class NarrativeService {
     if (!narrative) return null;
 
     const { events, ...data } = narrative;
+    return plainToInstance(NarrativeResponseDto, {
+      ...data,
+      isEvent: Boolean(events && events.length > 0),
+    });
+  }
+
+  async update(
+    narrativeId: string,
+    dto: UpdateNarrativeDto,
+  ): Promise<NarrativeResponseDto> {
+    const updated = await this.narrativeRepository.update(narrativeId, dto);
+
+    if (!updated) {
+      throw new NotFoundException(`Narrative with id ${narrativeId} not found`);
+    }
+
+    const { events, ...data } = updated;
     return plainToInstance(NarrativeResponseDto, {
       ...data,
       isEvent: Boolean(events && events.length > 0),

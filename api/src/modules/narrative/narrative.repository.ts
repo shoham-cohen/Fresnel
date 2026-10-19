@@ -25,6 +25,20 @@ export class NarrativeRepository {
     });
   }
 
+  // Returns the updated narrative, or null when there is no narrative with this id.
+  async update(
+    narrativeId: string,
+    changes: Partial<Pick<Narrative, 'isFlagged'>>,
+  ): Promise<Narrative | null> {
+    // TypeORM rejects an update with no values, so an empty body just returns the narrative.
+    if (Object.keys(changes).length > 0) {
+      const { affected } = await this.narrativeOrmRepository.update({ narrativeId }, changes);
+      if (!affected) return null;
+    }
+
+    return this.findOne(narrativeId);
+  }
+
   findSimulated(simulationId?: string): Promise<SimulatedNarrative[]> {
     return this.simulatedNarrativeOrmRepository.find({
       where: simulationId ? { simulationId } : {},

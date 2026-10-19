@@ -10,7 +10,7 @@ interface SortableColumn {
 }
 
 export const SORTABLE_COLUMNS: readonly SortableColumn[] = [
-  { key: 'location', label: 'מיקום' },
+  { key: 'arena', label: 'מיקום' },
   { key: 'detectedAt', label: 'תאריך ושעה' },
   {
     key: 'viewsCount',

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
 import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
+import { UpdateNarrativeDto } from './dto/update-narrative-dto';
 import { NarrativeService } from './narrative.service';
 
 @Controller('narratives')
@@ -34,6 +35,15 @@ export class NarrativeController {
       throw new NotFoundException(`Narrative with id ${id} not found`);
     }
     return narrative;
+  }
+
+  // Updates the fields in the body (e.g. { isFlagged: true }) and returns the updated narrative.
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateNarrativeDto: UpdateNarrativeDto,
+  ): Promise<NarrativeResponseDto> {
+    return this.narrativeService.update(id, updateNarrativeDto);
   }
 }
 

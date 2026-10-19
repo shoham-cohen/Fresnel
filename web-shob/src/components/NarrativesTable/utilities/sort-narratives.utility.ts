@@ -1,3 +1,4 @@
+import { formatArenas } from '@/constants/arena.constant';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import type { SortKey, SortState } from '../interfaces/sort.interface';
 
@@ -8,7 +9,7 @@ const collator = new Intl.Collator('he', { numeric: true, sensitivity: 'base' })
 const comparators: Record<SortKey, Comparator> = {
   viewsCount: (a, b) => a.viewsCount - b.viewsCount,
   detectedAt: (a, b) => Date.parse(a.detectedAt) - Date.parse(b.detectedAt),
-  location: (a, b) => collator.compare(a.locationName ?? '', b.locationName ?? ''),
+  arena: (a, b) => collator.compare(formatArenas(a.arena), formatArenas(b.arena)),
 };
 
 export const nextSort = (current: SortState | null, key: SortKey): SortState => {
@@ -33,8 +34,9 @@ export const sortNarratives = (
     const flagged = byFlag(a, b);
     if (flagged !== 0) return flagged;
 
-    if (sort.key === 'location') {
-      const missing = Number(a.locationName === null) - Number(b.locationName === null);
+    // Narratives with no arena stay last in both directions.
+    if (sort.key === 'arena') {
+      const missing = Number(a.arena.length === 0) - Number(b.arena.length === 0);
       if (missing !== 0) return missing;
     }
     return factor * compare(a, b);

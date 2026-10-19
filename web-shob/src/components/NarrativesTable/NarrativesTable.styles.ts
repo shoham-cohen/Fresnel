@@ -30,7 +30,7 @@ export const COLUMN_STYLES = {
     width: '26.5%',
     paddingInlineEnd: '16px',
   },
-  location: {
+  arena: {
     width: '17.4%',
     textAlign: 'center',
   },
