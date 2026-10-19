@@ -14,7 +14,6 @@ import {
 import type { SelectChangeEvent } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 
-// מערך Mock עבור כותרות הפעולה בדרופ-דאון
 const MOCK_ACTION_TITLES = [
   'עדכון סטטוס אירוע',
   'שיחה עם גורם מוסמך',
@@ -22,6 +21,8 @@ const MOCK_ACTION_TITLES = [
   'בדיקת נתונים בשטח',
   'סגירת מעגל טיפול',
 ]
+
+const MAX_CHARS = 500
 
 type Props = {
   open: boolean
@@ -31,10 +32,8 @@ type Props = {
 export default function AddActionModal({ open, onClose }: Props) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const MAX_CHARS = 500
 
   const handleSubmit = () => {
-    console.log({ title, description })
     onClose()
   }
 
@@ -42,16 +41,17 @@ export default function AddActionModal({ open, onClose }: Props) {
     <Dialog
       open={open}
       onClose={onClose}
+      dir="rtl"
       maxWidth="sm"
       fullWidth
       sx={{
         '& .MuiDialog-paper': {
           borderRadius: 3,
           p: 1,
+          direction: 'rtl',
         },
       }}
     >
-      {/* כותרת הפופ-אפ וכפתור סגירה */}
       <Box
         sx={{
           display: 'flex',
@@ -59,23 +59,25 @@ export default function AddActionModal({ open, onClose }: Props) {
           alignItems: 'center',
           px: 3,
           pt: 2,
-          pb: 1,
+          pb: 1
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '20px'}}>
-          הוספת פעולה
-        </Typography>
         <IconButton onClick={onClose} sx={{ color: 'text.primary' }}>
           <CloseIcon />
         </IconButton>
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '20px' }}>
+          הוספת פעולה
+        </Typography>
+        
       </Box>
 
       <DialogContent sx={{ px: 3, pb: 4 }}>
         <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          
-          {/* כותרת לפעולה - דרופ דאון מבוסס Select ו-FormControl */}
           <Box>
-            <Typography component="label" sx={{ display: 'block', mb: 1, fontWeight: 500, fontSize: '14px', textAlign: 'right' }}>
+            <Typography
+              component="label"
+              sx={{ display: 'block', mb: 1, fontWeight: 500, fontSize: '14px' }}
+            >
               כותרת לפעולה <Box component="span" sx={{ color: 'error.main' }}>*</Box>
             </Typography>
             <FormControl fullWidth size="small">
@@ -83,10 +85,16 @@ export default function AddActionModal({ open, onClose }: Props) {
                 value={title}
                 onChange={(e: SelectChangeEvent) => setTitle(e.target.value)}
                 displayEmpty
+                MenuProps={{ dir: 'rtl' }}
                 sx={{
-                  textAlign: 'right',
-                  '& .MuiSelect-select': {
+                  '& .MuiSelect-select.MuiSelect-outlined': {
                     color: title ? 'text.primary' : 'text.secondary',
+                    paddingRight: '14px',
+                    paddingLeft: '32px',
+                  },
+                  '& .MuiSelect-icon': {
+                    right: 'auto',
+                    left: 7,
                   },
                 }}
               >
@@ -94,7 +102,7 @@ export default function AddActionModal({ open, onClose }: Props) {
                   הזן כותרת לפעולה...
                 </MenuItem>
                 {MOCK_ACTION_TITLES.map((item) => (
-                  <MenuItem key={item} value={item} sx={{ direction: 'rtl' }}>
+                  <MenuItem key={item} value={item}>
                     {item}
                   </MenuItem>
                 ))}
@@ -102,9 +110,11 @@ export default function AddActionModal({ open, onClose }: Props) {
             </FormControl>
           </Box>
 
-          {/* תיאור קצר */}
           <Box>
-            <Typography component="label" sx={{ display: 'block', mb: 1, fontWeight: 500, fontSize: '14px', textAlign: 'right' }}>
+            <Typography
+              component="label"
+              sx={{ display: 'block', mb: 1, fontWeight: 500, fontSize: '14px' }}
+            >
               תיאור קצר <Box component="span" sx={{ color: 'error.main' }}>*</Box>
             </Typography>
             <TextField
@@ -119,20 +129,17 @@ export default function AddActionModal({ open, onClose }: Props) {
               }}
               placeholder="הזן תיאור קצר של מה שבוצע.."
               sx={{
-                '& .MuiOutlinedInput-root': {
-                  alignItems: 'flex-start',
-                },
-                '& .MuiInputBase-input': {
-                  textAlign: 'right',
-                },
+                '& .MuiOutlinedInput-root': { alignItems: 'flex-start' },
               }}
             />
-            <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, display: 'block', textAlign: 'left' }}>
+            <Typography
+              variant="caption"
+              sx={{ color: 'text.secondary', mt: 0.5, display: 'block', textAlign: 'left' }}
+            >
               {description.length}/{MAX_CHARS}
             </Typography>
           </Box>
 
-          {/* כפתור הוסף פעולה תחתון */}
           <Button
             variant="contained"
             fullWidth
@@ -155,7 +162,6 @@ export default function AddActionModal({ open, onClose }: Props) {
           >
             הוסף פעולה
           </Button>
-
         </Box>
       </DialogContent>
     </Dialog>
