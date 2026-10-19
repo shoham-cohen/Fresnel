@@ -14,7 +14,6 @@ export class EventController {
     return this.eventService.list(query);
   }
 
-  // Opens a new event on an existing narrative.
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateEventDto): Promise<CreatedEventResponse> {

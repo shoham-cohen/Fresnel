@@ -3,6 +3,7 @@ import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
 import { EventListPage } from './dto/event-list-item';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventRepository } from './event.repository';
+import { SERVITY } from './consts';
 
 @Injectable()
 export class EventService {
@@ -41,7 +42,7 @@ export class EventService {
       throw new NotFoundException(`Narrative '${narrativeId}' not found`);
     }
 
-    const severity = dto.severity ?? 'medium';
+    const severity = dto.severity ?? SERVITY.MEDIUM;
     const isSimulation = dto.isSimulation ?? false;
     const createdBy = dto.createdBy ?? 'shob.operator';
 
@@ -53,14 +54,8 @@ export class EventService {
     });
 
     return {
-      eventId: event.eventId,
-      narrativeId: event.narrativeId,
-      title: narrative.title,
-      status: event.status,
-      severity: event.severity,
-      isSimulation: event.isSimulation,
-      createdBy: event.createdBy,
-      createdAt: event.createdAt,
+      ...event,
+      title: narrative.title
     };
   }
 }

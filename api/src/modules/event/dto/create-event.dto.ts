@@ -1,25 +1,22 @@
 import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { EventStatus, Severity } from '../../../entities';
+import { SERVITY } from '../consts';
 
 // POST /api/events
 export class CreateEventDto {
-  // Required: narrative id (standard JSON camelCase).
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   narrativeId?: string;
 
-  // Defaults to 'medium' if omitted.
   @IsOptional()
-  @IsIn(['low', 'medium', 'high', 'critical'])
-  severity?: Severity = 'medium';
+  @IsIn(Object.values(SERVITY))
+  severity?: Severity = SERVITY.MEDIUM;
 
-  // True for simulation events ("תרגילית"), defaults to false.
   @IsOptional()
   @IsBoolean()
   isSimulation?: boolean = false;
 
-  // User id opening the event. Defaults to 'shob.operator' if not provided.
   @IsOptional()
   @IsString()
   createdBy?: string;

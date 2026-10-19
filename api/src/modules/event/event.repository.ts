@@ -48,7 +48,6 @@ export class EventRepository {
     return this.eventOrmRepository.save(event);
   }
 
-  // Open and in-progress events, newest first, with their narrative for the title.
   findActive({ isSimulation, search, page, pageSize }: FindActiveOptions): Promise<[Event[], number]> {
     const query = this.eventOrmRepository
       .createQueryBuilder('e')
@@ -60,7 +59,6 @@ export class EventRepository {
       .skip((page - 1) * pageSize);
 
     if (search) {
-      // Served by the trigram index on narrative.title.
       query.andWhere('n.title ILIKE :pattern', { pattern: `%${escapeLike(search)}%` });
     }
 
