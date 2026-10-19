@@ -8,10 +8,12 @@ import '@fontsource/rubik/latin-700.css';
 import '@/styles/global.css';
 
 import { StrictMode } from 'react';
+import { router } from '@/app/router';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
-
-import { router } from '@/app/router';
+import { MuiThemeProvider } from '@/app/MuiThemeProvider';
+import { queryClient } from '@/config/react-query.config';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -20,6 +22,10 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <MuiThemeProvider>
+        <RouterProvider router={router} />
+      </MuiThemeProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );

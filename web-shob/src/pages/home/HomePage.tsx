@@ -1,16 +1,33 @@
-export function HomePage() {
-  /*
-   * TODO: build the main screen ("מסך ראשי") from Figma, page "מערכת שו״ב":
-   * - area tag (e.g. "ישראל") above the heading "כל ההתראות"
-   * - table of narratives from the last 24 hours: subject + subtitle, location,
-   *   date and time, traffic volume bar, category tag, open-row arrow
-   * - clicking a row opens a side panel: details, four key-metric cards
-   *   (publications, views, sources, shares) and a "פתיחת אירוע" button
-   */
+import { useState } from 'react';
+import { Box, Typography } from '@mui/material';
+import { pageStyles } from '@/styles/page.style';
+import { useRecentNarratives } from '@/hooks/narratives.hook';
+import { NarrativesTable } from '@/components/NarrativesTable';
+
+const RECENT_HOURS = 24;
+// TODO: the signed-in user's area (arena), once it comes from Keycloak / Mirage.
+const AREA_LABEL = 'ישראל';
+
+export const HomePage = () => {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { narratives, tableStatus, refetch } = useRecentNarratives(RECENT_HOURS);
+
   return (
     <>
       <title>מסך ראשי · Palantir</title>
-      <h1>מסך ראשי</h1>
+      <Box sx={pageStyles.areaTag}>{AREA_LABEL}</Box>
+      <Typography component="h1" sx={pageStyles.title}>
+        כל ההתראות
+      </Typography>
+      <NarrativesTable
+        narratives={narratives}
+        status={tableStatus}
+        onRetry={refetch}
+        selectedId={selectedId}
+        onSelect={(narrative) => {
+          setSelectedId(narrative.narrativeId);
+        }}
+      />
     </>
   );
-}
+};

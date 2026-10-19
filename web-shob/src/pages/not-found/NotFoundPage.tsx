@@ -1,4 +1,4 @@
-export function NotFoundPage() {
+export const NotFoundPage = () => {
   // TODO: there's no 404 design in Figma yet. Keep this minimal until there is.
   return (
     <>
@@ -6,4 +6,4 @@ export function NotFoundPage() {
       <h1>הדף לא נמצא</h1>
     </>
   );
-}
+};

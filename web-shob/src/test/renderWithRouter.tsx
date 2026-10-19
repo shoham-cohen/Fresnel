@@ -8,6 +8,9 @@ interface RenderWithRouterOptions {
 }
 
 /** Renders `ui` inside an in-memory router, for components that use links or route hooks. */
-export function renderWithRouter(ui: ReactElement, { route = '/' }: RenderWithRouterOptions = {}) {
+export const renderWithRouter = (
+  ui: ReactElement,
+  { route = '/' }: RenderWithRouterOptions = {},
+) => {
   return render(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>);
-}
+};
