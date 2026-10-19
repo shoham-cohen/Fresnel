@@ -39,9 +39,8 @@ export class EventService {
     }
 
     await this.eventRepository.close(id, {
-      closedAt: dto.closed_at,
-      closedBy: dto.closed_by,
-      closureSummary: dto.closure_summary,
+      closedBy: dto.closedBy,
+      closureSummary: dto.closureSummary,
     });
   }
 

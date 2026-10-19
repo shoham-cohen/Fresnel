@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Event, EventLog } from '../../entities';
 
 export interface FindActiveOptions {
@@ -11,7 +11,6 @@ export interface FindActiveOptions {
 }
 
 export interface CloseEventPayload {
-  closedAt: string;
   closedBy: string;
   closureSummary: string;
 }
@@ -23,7 +22,6 @@ export class EventRepository {
     private readonly eventOrmRepository: Repository<Event>,
     @InjectRepository(EventLog)
     private readonly eventLogOrmRepository: Repository<EventLog>,
-    private readonly dataSource: DataSource,
   ) {}
 
   // Open and in-progress events, newest first, with their narrative for the title.
@@ -52,11 +50,7 @@ export class EventRepository {
   async close(id: string, payload: CloseEventPayload): Promise<void> {
     const event = await this.findById(id);
 
-    if (!event) {
-      throw new Error(`error occured when tried to close an event with id ${id}`);
-    }
-
-    const closedAt = new Date(payload.closedAt);
+    const closedAt = new Date();
 
     await this.eventOrmRepository.save({
       ...event,
@@ -71,10 +65,10 @@ export class EventRepository {
       eventId: id,
       kind: 'event_closed',
       actorId: payload.closedBy,
-      fromValue: event.status,
+      fromValue: event!.status,
       toValue: 'closed',
       details: {
-        closedAt: payload.closedAt,
+        closedAt: closedAt.toISOString(),
         closedBy: payload.closedBy,
         closureSummary: payload.closureSummary,
       },
@@ -84,51 +78,33 @@ export class EventRepository {
   }
 
   async reopen(id: string): Promise<void> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const event = await this.findById(id);
 
-    try {
-      const currentEvent = await queryRunner.manager.findOne(Event, { where: { eventId: id } });
+    const reopenedAt = new Date();
 
-      if (!currentEvent) {
-        throw new Error(`error occured when tried to reopen event with ${id}`);
-      }
+    await this.eventOrmRepository.save({
+      ...event,
+      status: 'in_progress',
+      closedAt: null,
+      closedBy: null,
+      closureSummary: null,
+      updatedAt: reopenedAt,
+    });
 
-      const reopenedAt = new Date();
-
-      await queryRunner.manager.save(Event, {
-        ...currentEvent,
-        status: 'in_progress',
-        closedAt: null,
-        closedBy: null,
-        closureSummary: null,
-        updatedAt: reopenedAt,
-      });
-
-      await queryRunner.manager.insert(EventLog, {
-        eventId: id,
-        kind: 'event_reopened',
-        actorId: 'system',
-        fromValue: 'closed',
-        toValue: 'in_progress',
-        details: {
-          reopenedAt: reopenedAt.toISOString(),
-        },
-        client: 'web',
-        at: reopenedAt,
-      });
-
-      await queryRunner.commitTransaction();
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    await this.eventLogOrmRepository.insert({
+      eventId: id,
+      kind: 'event_reopened',
+      actorId: 'system',
+      fromValue: event!.status,
+      toValue: 'in_progress',
+      details: {
+        reopenedAt: reopenedAt.toISOString(),
+      },
+      client: 'web',
+      at: reopenedAt,
+    });
   }
 }
-
 
 function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, (c) => `\\${c}`);
