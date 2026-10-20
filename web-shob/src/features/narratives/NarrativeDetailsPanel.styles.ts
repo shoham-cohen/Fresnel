@@ -12,7 +12,7 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       bgcolor: alpha(colors.primary.light, 0.35),
       border: `1px solid ${colors.primary.main}`,
       borderRadius: '5px',
-      p: '12px 14px 16px',
+      p: '16px 16px 24px',
       boxSizing: 'border-box',
     },
 
@@ -25,7 +25,7 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       textAlign: 'center',
       fontSize: '15px',
       color: colors.header.background,
-      mt: 0.5,
+      mt: 1,
     },
 
     metricValue: {
@@ -35,7 +35,7 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       color: colors.header.background,
       fontVariantNumeric: 'tabular-nums',
       lineHeight: 1.1,
-      mt: 0.5,
+      mt: 1.5,
     },
 
     panel: {
@@ -48,7 +48,7 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       bgcolor: colors.background.paper,
       color: colors.header.background,
       boxSizing: 'border-box',
-      borderRadius: '8px',
+      borderRadius: '15px',
     },
 
     closeButtonContainer: {
@@ -67,28 +67,27 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
     },
 
     content: {
-      mt: 1.5,
+      mt: 3,
     },
 
     title: {
-      fontSize: '24px',
+      fontSize: '26px',
       fontWeight: 700,
       lineHeight: 1.25,
       color: colors.header.background,
-      mb: 0.5,
+      mb: 1,
     },
 
     summary: {
-      fontSize: '16px',
+      fontSize: '18px',
       color: '#333',
-      mb: 2,
+      mb: 4,
     },
 
     metadata: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      mb: 1.5,
     },
 
     metadataText: {
@@ -105,7 +104,8 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
     },
 
     divider: {
-      my: 2,
+      mb: 4,
+      mt: 1,
       borderColor: alpha(colors.primary.main, 0.45),
     },
 
@@ -113,14 +113,14 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       fontSize: '19px',
       fontWeight: 700,
       color: colors.header.background,
-      mb: 2,
+      mb: 3,
     },
 
     metricsGrid: {
       display: 'grid',
       gridTemplateColumns: 'repeat(2, 1fr)',
-      gap: 1.5,
-      mb: 4,
+      gap: 2.5,
+      mb: 6,
     },
 
     createEventButton: {
