@@ -10,6 +10,7 @@
 -- v0.4: simulation events. Osher's simulation system can send past events to train users.
 -- They get is_simulation = true and are handled like any other event. The אמת / תרגילית
 -- switch in the UI picks which kind is shown.
+-- A separate simulation_id UUID can also be attached to a simulation run for traceability.
 -- v0.5: narratives. The שו"ב stores every narrative from Anomalies in `narrative`; an anomaly is
 -- a narrative with is_anomaly = true (recommended to open an event on). An event points to its
 -- narrative instead of origin_kind / origin_ref_id. Narratives carry an embedding for
@@ -81,6 +82,7 @@ CREATE TABLE event (
                    CHECK (status IN ('open', 'in_progress', 'closed')),     -- in_progress once an action is documented
   is_simulation    boolean NOT NULL DEFAULT false,   -- sent by the simulation system ("תרגילית"), not the שו"ב.
                                                  -- Gets its own event_id, returned in the create response.
+  simulation_id    uuid,                            -- optional simulation run identifier; may be null for real events.
   created_by       text NOT NULL,                -- "נפתח על ידי": who opened it in the שו"ב
   created_at       timestamptz NOT NULL DEFAULT now(),
   updated_at       timestamptz NOT NULL DEFAULT now(),   -- "עדכון אחרון"
@@ -99,6 +101,7 @@ CREATE UNIQUE INDEX event_open_narrative_uq ON event (narrative_id)
 CREATE INDEX event_narrative_idx ON event (narrative_id);                      -- "is there an event on this narrative?"
 CREATE INDEX event_board_idx ON event (is_simulation, status, created_at DESC);   -- open list / closed list, per אמת / תרגילית
 CREATE INDEX event_closed_idx ON event (is_simulation, closed_at DESC) WHERE status = 'closed';  -- closed list date filter
+CREATE INDEX event_simulation_id_idx ON event (simulation_id);                  -- optional lookup by simulation run
 CREATE TRIGGER event_updated_at BEFORE UPDATE ON event
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 

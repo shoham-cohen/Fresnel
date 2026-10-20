@@ -1,12 +1,19 @@
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 
-// GET /api/events?isSimulation=false&search=&page=1&pageSize=20
+// GET /api/events?isSimulation=false&simulationId=uuid&search=&page=1&pageSize=20
 export class ListEventsQuery {
-  // Required, so a list never mixes real and simulation events.
+  // Legacy boolean filter retained for compatibility.
   @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
+  @IsOptional()
   @IsBoolean()
-  isSimulation: boolean;
+  isSimulation?: boolean;
+
+  // Required, so a list never mixes real and simulation events.
+  @Transform(({ value }) => (value === '' || value === 'null' ? null : value))
+  @IsOptional()
+  @IsUUID()
+  simulationId?: string | null;
 
   // Free text, matched against the narrative title.
   @IsOptional()
