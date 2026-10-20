@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import type { EventSummary } from '../../api/events';
+import {
+  Card,
+  Box,
+  Typography,
+  Divider,
+  List,
+  ListItem,
+  Avatar,
+  Link,
+  CircularProgress
+} from '@mui/material';
+import type { EventSummary } from '../../api/events'; // Adjust path if needed
 
 // --- Types ---
-
 
 export type SourceItem = {
   itemId: string;
@@ -39,7 +49,7 @@ const MOCK_SOURCES_RESPONSE: SourcesResponse = {
       contentText: 'תוכן הדיווח מהשטח למעקב ופתרון מהיר',
       authorName: 'מערכת חדשות',
       sourceId: 'src-1',
-      publishedAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 min ago
+      publishedAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
     },
     {
       itemId: 'item-2',
@@ -49,7 +59,7 @@ const MOCK_SOURCES_RESPONSE: SourcesResponse = {
       contentText: 'פרטי עדכון שהתקבלו מערוץ הדיווחים',
       authorName: 'ערוץ חירום',
       sourceId: 'src-2',
-      publishedAt: new Date(Date.now() - 1000 * 60 * 12).toISOString(), // 12 min ago
+      publishedAt: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
     },
     {
       itemId: 'item-3',
@@ -150,7 +160,6 @@ export function EventSourcesMonitor({ event, useRealApi = false }: EventSourcesM
       setError(null);
       try {
         if (useRealApi) {
-          // Real API fetch
           const response = await fetch(`/api/events/${event.eventId}/items`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -158,7 +167,6 @@ export function EventSourcesMonitor({ event, useRealApi = false }: EventSourcesM
           const result: SourcesResponse = await response.json();
           if (isMounted) setData(result);
         } else {
-          // Simulated Mock API delay (600ms)
           await new Promise((resolve) => setTimeout(resolve, 600));
           if (isMounted) setData(MOCK_SOURCES_RESPONSE);
         }
@@ -182,7 +190,6 @@ export function EventSourcesMonitor({ event, useRealApi = false }: EventSourcesM
     };
   }, [event.eventId, useRealApi]);
 
-  // Helper to format time to HH:mm
   const formatTime = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -197,78 +204,177 @@ export function EventSourcesMonitor({ event, useRealApi = false }: EventSourcesM
   };
 
   return (
-    <div
+    <Card
       dir="rtl"
-      className="w-full max-w-[420px] bg-white rounded-lg shadow-[0_2px_15px_-3px_rgba(0,0,0,0.1)] border border-slate-100 font-sans overflow-hidden"
+      elevation={0}
+      sx={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#fff',
+        borderRadius: 2,
+        boxShadow: '0 2px 15px -3px rgba(0,0,0,0.1)',
+        border: '1px solid #f1f5f9',
+        fontFamily: 'inherit',
+        overflow: 'hidden',
+      }}
     >
       {/* Header Section */}
-      <div className="px-6 pt-6 pb-3 text-right">
-        <h2 className="text-[28px] font-bold text-[#1e293b] leading-tight">
+      <Box sx={{ px: 3, pt: 3, pb: 1.5, textAlign: 'right', flexShrink: 0 }}>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: 'bold',
+            color: '#1e293b',
+            lineHeight: 1.2,
+            fontSize: 28,
+          }}
+        >
           ניטור אירוע
-        </h2>
-        <p className="text-[17px] text-[#475569] mt-0.5">
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: 17,
+            color: '#475569',
+            mt: 0.5,
+          }}
+        >
           פרסומים חדשים
-        </p>
-      </div>
+        </Typography>
+      </Box>
+
+      {/* Main Divider beneath header */}
+      <Box sx={{ px: 2, flexShrink: 0 }}>
+        <Divider sx={{ borderColor: '#f1f5f9', mb: 1 }} />
+      </Box>
 
       {/* Content Section */}
-      <div className="px-4">
-        {/* Main Divider beneath header */}
-        <div className="w-full h-px bg-slate-100 mb-2"></div>
-
+      <Box 
+        sx={{ 
+          px: 2, 
+          pb: 2, 
+          flexGrow: 1, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          overflow: 'hidden' 
+        }}
+      >
         {loading ? (
-          <div className="flex flex-col gap-4 p-4 items-center justify-center min-h-[300px]">
-            <div className="w-8 h-8 border-4 border-blue-200 border-t-[#1e293b] rounded-full animate-spin"></div>
-            <p className="text-sm text-slate-500">טוען נתונים...</p>
-          </div>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+            }}
+          >
+            <CircularProgress sx={{ color: '#1e293b' }} />
+            <Typography sx={{ fontSize: 14, color: '#64748b' }}>
+              טוען נתונים...
+            </Typography>
+          </Box>
         ) : error ? (
-          <div className="p-8 text-center text-red-500 min-h-[300px] flex items-center justify-center">
+          <Box
+            sx={{
+              textAlign: 'center',
+              color: 'error.main',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {error}
-          </div>
+          </Box>
         ) : (
-          <ul className="flex flex-col max-h-[500px] overflow-y-auto pr-1">
+          <List
+            disablePadding
+            sx={{
+              height: '100%', // Fills the flex-grow parent
+              overflowY: 'auto',
+              pr: 0.5,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             {data?.items.map((item, index) => (
               <React.Fragment key={item.itemId}>
-                <li className="flex items-center justify-between py-[18px] px-2 hover:bg-slate-50 transition-colors rounded-md">
-                  {/* Right side content (in RTL) */}
-                  <div className="flex items-center gap-4">
-                    {/* Placeholder rounded square */}
-                    <div className="w-11 h-11 bg-[#eef2f6] rounded-[6px] shrink-0"></div>
-
-                    {/* Texts */}
-                    <div className="flex flex-col leading-tight gap-1">
-                      <span className="font-bold text-[#1e293b] text-[15px]">
+                <ListItem
+                  disablePadding
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    py: 2.25,
+                    px: 1,
+                    borderRadius: 1.5,
+                    transition: 'background-color 0.2s',
+                    '&:hover': {
+                      backgroundColor: '#f8fafc',
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar
+                      variant="rounded"
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        backgroundColor: '#eef2f6',
+                        borderRadius: 1.5,
+                      }}
+                    />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Typography
+                        sx={{
+                          fontWeight: 'bold',
+                          color: '#1e293b',
+                          fontSize: 15,
+                          lineHeight: 1,
+                        }}
+                      >
                         {item.platform || 'מקור'}
-                      </span>
-                      <a
+                      </Typography>
+                      <Link
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#64748b] text-[14px] hover:text-[#1e293b] transition-colors"
+                        underline="none"
+                        sx={{
+                          color: '#64748b',
+                          fontSize: 14,
+                          lineHeight: 1,
+                          transition: 'color 0.2s',
+                          '&:hover': {
+                            color: '#1e293b',
+                          },
+                        }}
                       >
                         קישור
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* Left side content (in RTL) - Time */}
-                  <span className="text-[#475569] text-[15px]">
+                      </Link>
+                    </Box>
+                  </Box>
+                  <Typography
+                    sx={{
+                      color: '#475569',
+                      fontSize: 15,
+                    }}
+                  >
                     {formatTime(item.publishedAt)}
-                  </span>
-                </li>
-
-                {/* Internal dividers between list items */}
+                  </Typography>
+                </ListItem>
                 {index < (data?.items.length ?? 0) - 1 && (
-                  <div className="w-full h-px bg-slate-100"></div>
+                  <Divider sx={{ borderColor: '#f1f5f9' }} />
                 )}
               </React.Fragment>
             ))}
-          </ul>
+          </List>
         )}
-      </div>
-
-      {/* Bottom padding to match the card feel */}
-      <div className="h-4"></div>
-    </div>
+      </Box>
+    </Card>
   );
 }
