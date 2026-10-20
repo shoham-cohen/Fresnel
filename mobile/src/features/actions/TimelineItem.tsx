@@ -1,8 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { TimelineAction } from '@/api/types';
 import { Avatar } from '@/components/Avatar';
-import { Tag } from '@/components/Tag';
 import { DELETE_ACTION_LABEL } from '@/constants/labels';
 import { useUserName } from '@/hooks/useUserName';
 import { colors, fontSize, spacing } from '@/theme';
@@ -20,12 +20,16 @@ type Props = {
 
 export function TimelineItem({ action, at, isMine, isFirst, isLast, onDelete }: Props) {
   const name = useUserName(action.performedBy);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const canExpand = Boolean(action.description);
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && onDelete && styles.pressed]}
+      style={({ pressed }) => [styles.row, pressed && (canExpand || onDelete) && styles.pressed]}
+      onPress={canExpand ? () => setIsExpanded((current) => !current) : undefined}
       onLongPress={onDelete}
-      disabled={!onDelete}
+      disabled={!canExpand && !onDelete}
+      accessibilityState={canExpand ? { expanded: isExpanded } : undefined}
     >
       <TimelineRail
         marker={<Avatar name={name} isHighlighted={isMine} />}
@@ -53,10 +57,9 @@ export function TimelineItem({ action, at, isMine, isFirst, isLast, onDelete }: 
             </Pressable>
           ) : null}
         </View>
-        <Tag label={action.actionTypeLabel} />
         <Text style={styles.title}>{action.title}</Text>
         {action.description ? (
-          <Text style={styles.description} numberOfLines={2}>
+          <Text style={styles.description} numberOfLines={isExpanded ? undefined : 2}>
             {action.description}
           </Text>
         ) : null}

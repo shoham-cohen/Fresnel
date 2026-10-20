@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors, fontSize, radius, spacing } from '@/theme';
 
 type Props = {
@@ -27,7 +27,11 @@ export function TextField({
         {isRequired ? <Text style={styles.required}> *</Text> : null}
       </Text>
       <TextInput
-        style={[styles.input, isMultiline && styles.multiline]}
+        style={[
+          styles.input,
+          isMultiline && styles.multiline,
+          Platform.OS === 'web' && styles.webRtl,
+        ]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -70,6 +74,9 @@ const styles = StyleSheet.create({
   },
   multiline: {
     minHeight: 88,
+  },
+  webRtl: {
+    textAlign: 'right',
   },
   counter: {
     alignSelf: 'flex-end',

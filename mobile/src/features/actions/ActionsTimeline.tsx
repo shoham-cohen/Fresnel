@@ -21,6 +21,11 @@ type Props = {
 
 const keyOf = (entry: TimelineEntry) => entry.action?.actionId ?? `${entry.kind}-${entry.at}`;
 
+const ERROR_BY_STATUS = {
+  403: ACTIONS_LABEL.forbidden,
+  404: ACTIONS_LABEL.notFound,
+};
+
 export function ActionsTimeline({ eventId }: Props) {
   const { user } = useAuth();
   const timeline = useTimeline(eventId);
@@ -29,7 +34,12 @@ export function ActionsTimeline({ eventId }: Props) {
 
   if (timeline.isPending) return <Loading />;
   if (timeline.isError) {
-    return <ErrorState message={errorText(timeline.error)} onRetry={() => timeline.refetch()} />;
+    return (
+      <ErrorState
+        message={errorText(timeline.error, ERROR_BY_STATUS)}
+        onRetry={() => timeline.refetch()}
+      />
+    );
   }
 
   const entries = timeline.data;
@@ -94,5 +104,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
 });

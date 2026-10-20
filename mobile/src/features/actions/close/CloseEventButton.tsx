@@ -17,7 +17,6 @@ export function CloseEventButton({ eventId, style }: Props) {
       <Button
         label={CLOSE_EVENT_LABEL.button}
         icon="close-circle-outline"
-        variant="secondary"
         onPress={() => setIsSheetVisible(true)}
         style={style}
       />

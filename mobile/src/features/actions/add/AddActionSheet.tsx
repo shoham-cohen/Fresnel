@@ -11,7 +11,7 @@ import { colors, fontSize, spacing } from '@/theme';
 import { ActionTypePicker } from './ActionTypePicker';
 import { useCreateAction } from './useCreateAction';
 
-const TITLE_MAX = 100;
+const TITLE_MAX = 30;
 const DESCRIPTION_MAX = 500;
 const EMPTY_FORM = { actionType: '', title: '', description: '' };
 

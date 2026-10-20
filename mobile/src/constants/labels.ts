@@ -24,6 +24,8 @@ export const TIMELINE_EVENT_LABEL = {
 
 export const ACTIONS_LABEL = {
   empty: 'עוד לא תועדו פעולות',
+  forbidden: 'אין לך הרשאה לצפות באירוע הזה.',
+  notFound: 'האירוע לא נמצא.',
 } as const;
 
 export const DELETE_ACTION_LABEL = {
