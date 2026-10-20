@@ -17,6 +17,8 @@ export const colors = {
   border: '#D6E3F2',
   divider: '#E6EDF6',
   input: '#FFFFFF',
+  cardShadow: 'rgba(16, 43, 77, 0.15)',
+  dangerSurface: '#FDECEA',
   iconBackground: '#D6E3F2',
   text: '#193657',
   textMuted: '#5B7089',

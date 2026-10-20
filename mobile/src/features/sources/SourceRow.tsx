@@ -2,9 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { SourceItem } from '@/api/types';
 import { colors, fontSize, radius, spacing, textAlignStart } from '@/theme';
-
-import type { SourceItem } from './types';
+import { formatTime } from '@/utils/formatTime';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -50,19 +50,9 @@ export function SourceRow({ item }: Props) {
           {text}
         </Text>
       </View>
-      <Text style={styles.time}>{formatPublishedAt(item.publishedAt)}</Text>
+      <Text style={styles.time}>{formatTime(item.publishedAt)}</Text>
     </Pressable>
   );
-}
-
-// HH:mm for today, dd.MM for earlier days.
-function formatPublishedAt(iso: string): string {
-  const date = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  if (date.toDateString() === new Date().toDateString()) {
-    return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  }
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}`;
 }
 
 const styles = StyleSheet.create({

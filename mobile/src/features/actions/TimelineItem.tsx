@@ -6,7 +6,7 @@ import { Avatar } from '@/components/Avatar';
 import { DELETE_ACTION_LABEL } from '@/constants/labels';
 import { useUserName } from '@/hooks/useUserName';
 import { colors, fontSize, spacing } from '@/theme';
-import { formatTime } from '@/utils/formatTime';
+import { formatDateTime } from '@/utils/formatTime';
 import { RAIL_TOP, TimelineRail } from './TimelineRail';
 
 type Props = {
@@ -43,7 +43,7 @@ export function TimelineItem({ action, at, isMine, isFirst, isLast, onDelete }: 
               {name}
             </Text>
             <View style={styles.separator} />
-            <Text style={styles.time}>{formatTime(at)}</Text>
+            <Text style={styles.time}>{formatDateTime(at)}</Text>
           </View>
           {onDelete ? (
             <Pressable

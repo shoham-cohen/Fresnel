@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors, fontSize, spacing } from '@/theme';
 
 type Props = {
-  title: string;
+  title?: string;
   message?: string;
   /** Shown above the title, e.g. a logo or an illustration. */
   icon?: ReactNode;
@@ -14,7 +14,7 @@ export function EmptyState({ title, message, icon }: Props) {
   return (
     <View style={styles.container}>
       {icon}
-      <Text style={styles.title}>{title}</Text>
+      {title ? <Text style={styles.title}>{title}</Text> : null}
       {message ? <Text style={styles.message}>{message}</Text> : null}
     </View>
   );
