@@ -1,4 +1,3 @@
-
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ActionRepository } from '../action/action.repository';
 import { EventLogService } from '../event-log/event-log.service';
@@ -6,6 +5,7 @@ import { EventActionItem } from './dto/event-action-item';
 import { CreateEventActionDto } from './dto/create-event-action.dto';
 import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
 import { EventListPage } from './dto/event-list-item';
+import { EventDetailDto } from './dto/event-detail.dto';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventRepository } from './event.repository';
 import { CloseEventDto } from './dto/close-event.dto';
@@ -41,6 +41,34 @@ export class EventService {
     };
   }
 
+  async getEventById(id: string): Promise<EventDetailDto> {
+    const event = await this.eventRepository.findByIdWithNarrative(id);
+
+    if (!event) {
+      throw new NotFoundException(`Event with id ${id} not found`);
+    }
+
+    const arenaValue = event.narrative?.arena ?? null;
+
+    return {
+      eventId: event.eventId,
+      narrativeId: event.narrativeId,
+      title: event.narrative?.title ?? '',
+      description: event.narrative?.summary ?? null,
+      arena: arenaValue,
+      detectedAt: event.narrative?.detectedAt ?? event.createdAt,
+      openedBy: event.createdBy,
+      closedBy: event.closedBy,
+      status: event.status,
+      severity: event.severity,
+      isSimulation: event.isSimulation,
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt,
+      closedAt: event.closedAt,
+      closureSummary: event.closureSummary,
+    };
+  }
+  
   async createActionForEvent(eventId: string, dto: CreateEventActionDto): Promise<EventActionItem> {
     const event = await this.eventRepository.findEventById(eventId);
 

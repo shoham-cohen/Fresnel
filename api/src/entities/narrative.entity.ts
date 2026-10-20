@@ -1,12 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Event } from './event.entity';
 
-export enum Arena {
-  IL = 'israel',
-  ARAB = 'arab',
-  INTL = 'intl',
-}
-
 @Entity({ schema: 'fresnel', name: 'narrative' })
 export class Narrative {
   @PrimaryColumn({ name: 'narrative_id', type: 'uuid' })
@@ -21,8 +15,11 @@ export class Narrative {
   @Column({ name: 'is_anomaly', type: 'boolean' })
   isAnomaly: boolean;
 
-  @Column({ type: 'text', array: true })
-  arena: Arena[];
+  @Column({ type: 'text', array: true, nullable: true })
+  arena: string[] | null;
+
+  @Column({ name: 'location_name', type: 'text', nullable: true })
+  locationName: string | null;
 
   @Column({ name: 'detected_at', type: 'timestamptz' })
   detectedAt: Date;
@@ -30,11 +27,8 @@ export class Narrative {
   @Column({ type: 'vector', length: 1024, nullable: true, select: false })
   embedding?: number[];
 
-  @Column({ name: 'item_list', type: 'text', array: true })
-  itemList: string[];
-
-  @Column({ type: 'text', array: true })
-  platforms: string[];
+  @Column({ type: 'jsonb', nullable: false, default: {} })
+  payload: Record<string, any>;
 
   @Column({ name: 'shares_count', type: 'bigint' })
   sharesCount: number;

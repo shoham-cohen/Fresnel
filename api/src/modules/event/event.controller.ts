@@ -3,6 +3,7 @@ import { CreateEventActionDto } from './dto/create-event-action.dto';
 import { Body, Controller, Get, HttpCode, HttpStatus,ParseUUIDPipe, Param, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
+import { EventDetailDto } from './dto/event-detail.dto';
 import { EventListPage } from './dto/event-list-item';
 import { ListEventsQuery } from './dto/list-events.query';
 import { CloseEventDto } from './dto/close-event.dto';
@@ -17,6 +18,11 @@ export class EventController {
     return this.eventService.list(query);
   }
 
+  @Get(':id')
+  getById(@Param('id') id: string): Promise<EventDetailDto> {
+    return this.eventService.getEventById(id);
+  }
+  
   @Post(':id/actions')
   createAction(
     @Param('id', new ParseUUIDPipe()) eventId: string,
