@@ -43,14 +43,14 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     marginHorizontal: spacing.md,
-    marginVertical: spacing.sm,
+    marginBottom: spacing.md,
     padding: spacing.xs,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface,
+    backgroundColor: '#DCE8F5',
   },
   tab: {
     flex: 1,
-    minHeight: 32,
+    minHeight: 36,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.pill,
@@ -58,13 +58,15 @@ const styles = StyleSheet.create({
   activeTab: {
     borderWidth: 1,
     borderColor: colors.activeTabBorder,
+    backgroundColor: colors.background,
   },
   label: {
     fontSize: fontSize.sm,
-    color: colors.textMuted,
+    color: '#556A82',
+    fontWeight: '500',
   },
   activeLabel: {
-    color: colors.text,
-    fontWeight: '600',
+    color: colors.navy,
+    fontWeight: '700',
   },
 });
