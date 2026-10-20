@@ -7,6 +7,7 @@ import EventTimelineItem from './TimelineItems/EventTimelineItem';
 import { Divider } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import AddActionButton from '../layout/AddActionButton';
+import { EventSourcesMonitor } from './EventSourcesMonitor';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '',
@@ -168,7 +169,7 @@ export default function EventPanel( { selectedEvent }: EventPanelProps ) {
       </Grid>
       <Grid size={3} sx={{ height: '100%' }}>
         <Grid size={12} sx={{ height: '40%'  }}>
-        <Item>3</Item>
+         <EventSourcesMonitor event={selectedEvent} />
       </Grid>
       <Grid size={12} sx={{ height: '60%', paddingTop:1}}>
         <Item>4</Item>
