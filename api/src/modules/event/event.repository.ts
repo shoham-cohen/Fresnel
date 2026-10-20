@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Event, Narrative, Severity } from '../../entities';
+import { Event, Narrative, Severity, EventLog } from '../../entities';
+
 
 export interface FindActiveOptions {
   isSimulation: boolean;
   search?: string;
   page: number; // 1-based
   pageSize: number;
+}
+
+export interface CloseEventPayload {
+  closedBy: string;
+  closureSummary: string;
 }
 
 export interface CreateEventData {
@@ -22,6 +28,8 @@ export class EventRepository {
   constructor(
     @InjectRepository(Event)
     private readonly eventOrmRepository: Repository<Event>,
+    @InjectRepository(EventLog)
+    private readonly eventLogOrmRepository: Repository<EventLog>,
     @InjectRepository(Narrative)
     private readonly narrativeOrmRepository: Repository<Narrative>,
   ) {}
@@ -63,6 +71,68 @@ export class EventRepository {
     }
 
     return query.getManyAndCount();
+  }
+
+  async findById(id: string): Promise<Event | null> {
+    return this.eventOrmRepository.findOne({ where: { eventId: id } });
+  }
+
+  async close(id: string, payload: CloseEventPayload): Promise<void> {
+    const event = await this.findById(id);
+
+    const closedAt = new Date();
+
+    await this.eventOrmRepository.save({
+      ...event,
+      status: 'closed',
+      closedAt,
+      closedBy: payload.closedBy,
+      closureSummary: payload.closureSummary,
+      updatedAt: closedAt,
+    });
+
+    await this.eventLogOrmRepository.insert({
+      eventId: id,
+      kind: 'event_closed',
+      actorId: payload.closedBy,
+      fromValue: event!.status,
+      toValue: 'closed',
+      details: {
+        closedAt: closedAt.toISOString(),
+        closedBy: payload.closedBy,
+        closureSummary: payload.closureSummary,
+      },
+      client: 'web',
+      at: closedAt,
+    });
+  }
+
+  async reopen(id: string): Promise<void> {
+    const event = await this.findById(id);
+
+    const reopenedAt = new Date();
+
+    await this.eventOrmRepository.save({
+      ...event,
+      status: 'in_progress',
+      closedAt: null,
+      closedBy: null,
+      closureSummary: null,
+      updatedAt: reopenedAt,
+    });
+
+    await this.eventLogOrmRepository.insert({
+      eventId: id,
+      kind: 'event_reopened',
+      actorId: 'system',
+      fromValue: event!.status,
+      toValue: 'in_progress',
+      details: {
+        reopenedAt: reopenedAt.toISOString(),
+      },
+      client: 'web',
+      at: reopenedAt,
+    });
   }
 }
 
