@@ -11,11 +11,9 @@ services:
       - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     volumes:
       - fresnel-db-data:/var/lib/postgresql/data
-      # Only used on first initialization of an empty volume. Seed data is development-only.
       - ./db/1.ddl.sql:/docker-entrypoint-initdb.d/1.ddl.sql:ro
-      - ./db/2.dml.sql:/docker-entrypoint-initdb.d/2.dml.sql:ro
-      # Apply the repository's schema migration after seed data has been inserted.
-      - ./db/migrations/1729339200000-new-narratives-entity.sql:/docker-entrypoint-initdb.d/3.migration.sql:ro
+      - ./db/2.ddl.sql:/docker-entrypoint-initdb.d/2.ddl.sql:ro
+      - ./db/3.dml.sql:/docker-entrypoint-initdb.d/3.dml.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
