@@ -9,49 +9,90 @@ import {
   Select,
   MenuItem,
   FormControl,
+  FormHelperText,
   Button,
+  CircularProgress,
+  Alert,
 } from '@mui/material'
 import type { SelectChangeEvent } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
+import { useActionTypes } from '../hooks/useActionTypes'
+import { useCreateEventAction } from '../hooks/useCreateEventAction'
+import type { EventActionItem } from '../types/eventAction'
 
-// מערך Mock עבור כותרות הפעולה בדרופ-דאון
-const MOCK_ACTION_TITLES = [
-  'עדכון סטטוס אירוע',
-  'שיחה עם גורם מוסמך',
-  'שליחת דיווח ראשוני',
-  'בדיקת נתונים בשטח',
-  'סגירת מעגל טיפול',
-]
+const MAX_CHARS = 500
 
 type Props = {
   open: boolean
   onClose: () => void
+  eventId: string
+  onCreated?: (action: EventActionItem) => void
 }
 
-export default function AddActionModal({ open, onClose }: Props) {
+export default function AddActionModal({
+  open,
+  onClose,
+  eventId,
+  onCreated,
+}: Props) {
+  // ה-value של ה-Select הוא ה-labelHe של סוג הפעולה שנבחר
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const MAX_CHARS = 500
 
-  const handleSubmit = () => {
-    console.log({ title, description })
+  console.log(eventId)
+
+  const { actionTypes, loading, error } = useActionTypes(open)
+  const {
+    submit,
+    submitting,
+    error: submitError,
+    resetError,
+  } = useCreateEventAction(eventId)
+
+  const isValid = title !== '' && description.trim() !== ''
+
+  const handleClose = () => {
+    if (submitting) return
+    resetError()
     onClose()
+  }
+
+  const handleSubmit = async () => {
+    if (!isValid) return
+
+    // ה-code הוא ה-key של ה-MenuItem, ולכן מוצאים אותו לפי ה-labelHe שנבחר
+    const selected = actionTypes.find((item) => item.labelHe === title)
+    if (!selected) return
+
+    const created = await submit({
+      actionTypeCode: selected.code,
+      title: selected.labelHe,
+      description: description.trim(),
+    })
+
+    if (created) {
+      setTitle('')
+      setDescription('')
+      onCreated?.(created)
+      onClose()
+    }
   }
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
+      dir="rtl"
       maxWidth="sm"
       fullWidth
       sx={{
         '& .MuiDialog-paper': {
           borderRadius: 3,
           p: 1,
+          direction: 'rtl',
         },
       }}
     >
-      {/* כותרת הפופ-אפ וכפתור סגירה */}
       <Box
         sx={{
           display: 'flex',
@@ -62,55 +103,72 @@ export default function AddActionModal({ open, onClose }: Props) {
           pb: 1,
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '20px'}}>
-          הוספת פעולה
-        </Typography>
-        <IconButton onClick={onClose} sx={{ color: 'text.primary' }}>
+        <IconButton onClick={handleClose} sx={{ color: 'text.primary' }}>
           <CloseIcon />
         </IconButton>
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '20px' }}>
+          הוספת פעולה
+        </Typography>
       </Box>
 
       <DialogContent sx={{ px: 3, pb: 4 }}>
         <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          
-          {/* כותרת לפעולה - דרופ דאון מבוסס Select ו-FormControl */}
           <Box>
-            <Typography component="label" sx={{ display: 'block', mb: 1, fontWeight: 500, fontSize: '14px', textAlign: 'right' }}>
+            <Typography
+              component="label"
+              sx={{ display: 'block', mb: 1, fontWeight: 500, fontSize: '14px' }}
+            >
               כותרת לפעולה <Box component="span" sx={{ color: 'error.main' }}>*</Box>
             </Typography>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" error={!!error}>
               <Select
                 value={title}
                 onChange={(e: SelectChangeEvent) => setTitle(e.target.value)}
                 displayEmpty
+                disabled={loading || !!error || submitting}
+                MenuProps={{ dir: 'rtl' }}
+                endAdornment={
+                  loading ? (
+                    <CircularProgress size={18} sx={{ position: 'absolute', left: 32 }} />
+                  ) : null
+                }
                 sx={{
-                  textAlign: 'right',
-                  '& .MuiSelect-select': {
+                  '& .MuiSelect-select.MuiSelect-outlined': {
                     color: title ? 'text.primary' : 'text.secondary',
+                    paddingRight: '14px',
+                    paddingLeft: '32px',
+                  },
+                  '& .MuiSelect-icon': {
+                    right: 'auto',
+                    left: 7,
                   },
                 }}
               >
                 <MenuItem value="" disabled>
-                  הזן כותרת לפעולה...
+                  {loading ? 'טוען...' : 'בחר כותרת לפעולה...'}
                 </MenuItem>
-                {MOCK_ACTION_TITLES.map((item) => (
-                  <MenuItem key={item} value={item} sx={{ direction: 'rtl' }}>
-                    {item}
+                {actionTypes.map((item) => (
+                  <MenuItem key={item.code} value={item.labelHe}>
+                    {item.labelHe}
                   </MenuItem>
                 ))}
               </Select>
+              {error && <FormHelperText>{error}</FormHelperText>}
             </FormControl>
           </Box>
 
-          {/* תיאור קצר */}
           <Box>
-            <Typography component="label" sx={{ display: 'block', mb: 1, fontWeight: 500, fontSize: '14px', textAlign: 'right' }}>
+            <Typography
+              component="label"
+              sx={{ display: 'block', mb: 1, fontWeight: 500, fontSize: '14px' }}
+            >
               תיאור קצר <Box component="span" sx={{ color: 'error.main' }}>*</Box>
             </Typography>
             <TextField
               multiline
               rows={4}
               fullWidth
+              disabled={submitting}
               value={description}
               onChange={(e) => {
                 if (e.target.value.length <= MAX_CHARS) {
@@ -119,24 +177,24 @@ export default function AddActionModal({ open, onClose }: Props) {
               }}
               placeholder="הזן תיאור קצר של מה שבוצע.."
               sx={{
-                '& .MuiOutlinedInput-root': {
-                  alignItems: 'flex-start',
-                },
-                '& .MuiInputBase-input': {
-                  textAlign: 'right',
-                },
+                '& .MuiOutlinedInput-root': { alignItems: 'flex-start' },
               }}
             />
-            <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, display: 'block', textAlign: 'left' }}>
+            <Typography
+              variant="caption"
+              sx={{ color: 'text.secondary', mt: 0.5, display: 'block', textAlign: 'left' }}
+            >
               {description.length}/{MAX_CHARS}
             </Typography>
           </Box>
 
-          {/* כפתור הוסף פעולה תחתון */}
+          {submitError && <Alert severity="error">{submitError}</Alert>}
+
           <Button
             variant="contained"
             fullWidth
             onClick={handleSubmit}
+            disabled={!isValid || submitting}
             sx={{
               mt: 1,
               bgcolor: '#13293d',
@@ -148,14 +206,13 @@ export default function AddActionModal({ open, onClose }: Props) {
               textTransform: 'none',
               boxShadow: 'none',
               '&:hover': {
-                bgcolor: '#white',
+                bgcolor: '#0d1d2b',
                 boxShadow: 'none',
               },
             }}
           >
-            הוסף פעולה
+            {submitting ? <CircularProgress size={24} color="inherit" /> : 'הוסף פעולה'}
           </Button>
-
         </Box>
       </DialogContent>
     </Dialog>
