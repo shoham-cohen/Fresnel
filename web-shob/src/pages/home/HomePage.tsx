@@ -22,7 +22,13 @@ export const HomePage = () => {
     (narrative: Narrative) => {
       setSearchParams((params) => {
         const next = new URLSearchParams(params);
-        next.set('narrativeId', narrative.narrativeId);
+
+        if (next.get('narrativeId') === narrative.narrativeId) {
+          next.delete('narrativeId');
+        } else {
+          next.set('narrativeId', narrative.narrativeId);
+        }
+
         return next;
       });
     },
