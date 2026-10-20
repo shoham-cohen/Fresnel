@@ -20,15 +20,15 @@ const Item = styled(Paper)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   ...theme.applyStyles('dark', {
-    backgroundColor: '#1A2027',
+    backgroundColor: '#ffffff',
   }),
 }));
 
 type EventCardProps = {
-  selectedEvent?: EventSummary; // Replace 'any' with the actual type of your event object
+  selectedEvent?: EventSummary;
 };
 export default function EventCard({ selectedEvent }: EventCardProps) {
-  const white = '#ffffff';
+  const textColor = '#31445f'; // Navy blue color for text
 
   return (
 <Box
@@ -54,7 +54,7 @@ export default function EventCard({ selectedEvent }: EventCardProps) {
   variant="h5" 
   sx={{ 
     fontWeight: 'bold', 
-    color: white, 
+    color: textColor, 
     mb: 3,
     alignSelf: 'flex-start'
   }}
@@ -71,10 +71,10 @@ export default function EventCard({ selectedEvent }: EventCardProps) {
       mb: 2 
     }}
   >
-    <Typography variant="body1" sx={{ fontWeight: 'bold', color: white, fontSize: '1.1rem' }}>
+    <Typography variant="body1" sx={{ fontWeight: 'bold', color: textColor, fontSize: '1.1rem' }}>
       זיהוי האירוע
     </Typography>
-    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '1rem' }}>
+    <Typography variant="body2"  sx={{ fontSize: '1rem', color:"#6280aa" }}>
       10.04.2026 | 12:34
     </Typography>
   </Box>
@@ -87,10 +87,10 @@ export default function EventCard({ selectedEvent }: EventCardProps) {
       alignItems: 'flex-start' 
     }}
   >
-    <Typography variant="body1" sx={{ fontWeight: 'bold', color: white, fontSize: '1.1rem' }}>
+    <Typography variant="body1" sx={{ fontWeight: 'bold', color: textColor, fontSize: '1.1rem' }}>
       עדכון אחרון
     </Typography>
-    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '1rem' }}>
+    <Typography variant="body2"  sx={{ fontSize: '1rem',color:"#6280aa"  }}>
       10.04.2026 | 12:34
     </Typography>
   </Box>
@@ -106,11 +106,11 @@ export default function EventCard({ selectedEvent }: EventCardProps) {
       >
         {/* Top Stat */}
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: white }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: textColor }}>
             <DescriptionOutlinedIcon fontSize="small" />
             <Typography variant="body1">סה״כ פרסומים</Typography>
           </Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', color: white, mt: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: textColor, mt: 1 }}>
             2,546
           </Typography>
         </Box>
@@ -119,11 +119,11 @@ export default function EventCard({ selectedEvent }: EventCardProps) {
 
         {/* Bottom Stat */}
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: white }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: textColor }}>
             <VisibilityOutlinedIcon fontSize="small" />
             <Typography variant="body1">סה״כ צפיות</Typography>
           </Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', color: white, mt: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: textColor, mt: 1 }}>
             63,232
           </Typography>
         </Box>
@@ -138,20 +138,20 @@ export default function EventCard({ selectedEvent }: EventCardProps) {
           p: 2 
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: white, mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: textColor, mb: 3 }}>
           <LocalFireDepartmentOutlinedIcon fontSize="medium" />
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
             מקורות עיקריים
           </Typography>
         </Box>
         
-        <Typography variant="body1" sx={{ color: white, mb: 1.5 }}>
+        <Typography variant="body1" sx={{ color: textColor, mb: 1.5 }}>
           instagram
         </Typography>
-        <Typography variant="body1" sx={{ color: white, mb: 1.5 }}>
+        <Typography variant="body1" sx={{ color: textColor, mb: 1.5 }}>
           twitter
         </Typography>
-        <Typography variant="body1" sx={{ color: white }}>
+        <Typography variant="body1" sx={{ color: textColor }}>
           ynet
         </Typography>
       </Item>
