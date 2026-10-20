@@ -1,4 +1,5 @@
 import type { SxProps, Theme } from '@mui/material/styles';
+import { DETAILS_PANEL_TRANSITION } from '@/features/narratives/constants';
 
 export const pageStyles = {
   areaTag: {
@@ -33,6 +34,9 @@ export const pageStyles = {
     flex: 1,
     minHeight: 0,
     overflowY: 'auto',
+  },
+  besideDetailsPanel: {
+    transition: `margin ${String(DETAILS_PANEL_TRANSITION.duration)}ms ${DETAILS_PANEL_TRANSITION.easing}`,
   },
   pagination: {
     mt: '16px',

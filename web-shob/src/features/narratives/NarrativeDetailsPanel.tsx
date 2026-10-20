@@ -7,13 +7,13 @@ import {
   Sensors as SensorsIcon,
 } from '@mui/icons-material';
 
-import { Box, Divider, Dialog, IconButton, Typography } from '@mui/material';
+import { Box, Divider, Drawer, IconButton, Typography } from '@mui/material';
 
 import { useTheme } from '@mui/material/styles';
 import { useSearchParams } from 'react-router';
 import { getNarrativeDetailsPanelStyles } from './NarrativeDetailsPanel.styles';
 
-import { CREATE_EVENT_URL } from './constants';
+import { CREATE_EVENT_URL, DETAILS_PANEL_TRANSITION } from './constants';
 import { narrativeService } from '@/services/narrative.service';
 import type { NarrativeDetails } from '@/interfaces/narrative.interface';
 
@@ -66,7 +66,6 @@ export function NarrativeDetailsPanel() {
 
   useEffect(() => {
     if (!narrativeId) {
-      setNarrative(null);
       setIsLoading(false);
       return;
     }
@@ -120,17 +119,21 @@ export function NarrativeDetailsPanel() {
     window.location.assign(targetUrl);
   };
 
-  const displayData = narrativeId && narrative?.narrativeId === narrativeId ? narrative : null;
+  const displayData = narrativeId
+    ? narrative?.narrativeId === narrativeId
+      ? narrative
+      : null
+    : narrative;
 
   return (
-    <Dialog
+    <Drawer
       open={isOpen}
-      onClose={handleClose}
-      maxWidth={false}
+      anchor="right"
+      variant="persistent"
+      transitionDuration={DETAILS_PANEL_TRANSITION.duration}
       slotProps={{
-        paper: {
-          sx: styles.dialogPaper,
-        },
+        transition: { easing: DETAILS_PANEL_TRANSITION.easing },
+        paper: { component: 'aside', elevation: 4, 'aria-label': 'פרטי ההתראה', sx: styles.panel },
       }}
     >
       <Box sx={styles.closeButtonContainer}>
@@ -201,6 +204,6 @@ export function NarrativeDetailsPanel() {
           </Box>
         </Box>
       )}
-    </Dialog>
+    </Drawer>
   );
 }

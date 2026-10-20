@@ -49,7 +49,8 @@ export const styles = {
   trafficBar: {
     display: 'flex',
     justifyContent: 'flex-end',
-    width: 226,
+    width: '100%',
+    maxWidth: 226,
     height: 12,
     borderRadius: '6px',
     overflow: 'hidden',

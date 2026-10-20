@@ -68,7 +68,8 @@ export const styles = {
     paddingInlineStart: '18px',
   },
   trafficHeadLabel: {
-    width: 226,
+    width: '100%',
+    maxWidth: 226,
     textAlign: 'center',
   },
   loading: {

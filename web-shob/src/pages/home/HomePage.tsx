@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router';
 import { pageStyles } from '@/styles/page.styles';
-import { NarrativeDetailsPanel } from '@/features/narratives';
+import { DETAILS_PANEL_WIDTH, NarrativeDetailsPanel } from '@/features/narratives';
 import { NarrativesTable } from '@/components/NarrativesTable';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import { useRecentNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
@@ -36,15 +36,22 @@ export const HomePage = () => {
       <Typography component="h1" sx={pageStyles.title}>
         כל ההתראות
       </Typography>
-      <NarrativesTable
-        flagColor="alert"
-        onRetry={refetch}
-        status={tableStatus}
-        selectedId={selectedId}
-        onSelect={handleSelect}
-        narratives={narratives}
-        onToggleFlag={toggleFlag}
-      />
+      <Box
+        sx={{
+          ...pageStyles.besideDetailsPanel,
+          marginInlineEnd: selectedId ? `${String(DETAILS_PANEL_WIDTH)}px` : 0,
+        }}
+      >
+        <NarrativesTable
+          flagColor="alert"
+          onRetry={refetch}
+          status={tableStatus}
+          selectedId={selectedId}
+          onSelect={handleSelect}
+          narratives={narratives}
+          onToggleFlag={toggleFlag}
+        />
+      </Box>
       <NarrativeDetailsPanel />
     </>
   );
