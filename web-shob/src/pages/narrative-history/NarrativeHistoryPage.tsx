@@ -6,6 +6,8 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import type { NarrativesQuery } from '@/interfaces/narrative-api.interface';
 import { NarrativesTable, type SortState } from '@/components/NarrativesTable';
 import { useNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
+import { useNarrativeFilters } from './useAlertFilters';
+import { FilterBar } from '@/components/FilterBar';
 
 export const NarrativeHistoryPage = () => {
   const [page, setPage] = useState(1);
@@ -29,8 +31,20 @@ export const NarrativeHistoryPage = () => {
   });
 
   const handleSelect = useCallback((narrative: Narrative) => {
-    setSelectedId((current) => (current === narrative.rowId ? null : narrative.rowId));
+    setSelectedId((current) => (current === narrative.narrativeId ? null : narrative.narrativeId));
   }, []);
+
+  const {
+    searchTerm,
+    startDate,
+    endDate,
+    selectedLocation,
+    setSearchTerm,
+    setStartDate,
+    setEndDate,
+    setSelectedLocation,
+    filteredAlerts,
+  } = useNarrativeFilters(narratives);
 
   return (
     <Box sx={pageStyles.fillPage}>
@@ -39,13 +53,36 @@ export const NarrativeHistoryPage = () => {
         <Typography component="h1" sx={pageStyles.title}>
           היסטוריית התראות
         </Typography>
+      </Box>
+      <FilterBar
+          searchTerm={searchTerm}
+          startDate={startDate}
+          endDate={endDate}
+          selectedLocation={selectedLocation}
+          onSearchChange={setSearchTerm}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onLocationChange={setSelectedLocation}
+      />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: '10px' }}>
         <Button
-          size="small"
           color="inherit"
           variant="outlined"
           onClick={refetch}
           disabled={isRefetching}
-          startIcon={isRefetching && <CircularProgress size={14} color="inherit" />}
+          startIcon={
+            isRefetching ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : undefined
+          }
+          sx={{
+            height: 25,
+            minWidth: 20,
+            px: 2,
+            whiteSpace: 'nowrap',
+            borderRadius: 2,
+            flexShrink: 0,
+          }}
         >
           רענון
         </Button>
@@ -56,15 +93,14 @@ export const NarrativeHistoryPage = () => {
           onRetry={refetch}
           onToggleFlag={toggleFlag}
           status={tableStatus}
-          narratives={narratives}
+          narratives={filteredAlerts}
           selectedId={selectedId}
           paging={{ page, total, onPageChange: setPage, onPageSizeChange: handlePageSizeChange }}
           onSortChange={(next) => {
             setSort(next);
             setPage(1);
-          }}
-          onSelect={handleSelect}
-        />
+          } }
+          onSelect={handleSelect} />
       </Box>
     </Box>
   );

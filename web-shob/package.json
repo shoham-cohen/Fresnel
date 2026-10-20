@@ -31,6 +31,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router": "8.4.0",
+    "react-router-dom": "^7.18.4",
     "stylis": "4.2.0",
     "stylis-plugin-rtl": "2.1.1"
   },
