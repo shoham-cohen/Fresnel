@@ -115,7 +115,6 @@ export class NarrativeRepository {
     });
   }
 
-  // Same filters and ordering as findPage, applied to the narrative behind each simulation.
   findSimulatedPage(
     query: ListNarrativesQueryDto,
   ): Promise<[SimulatedNarrative[], number]> {

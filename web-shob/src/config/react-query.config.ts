@@ -13,7 +13,6 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Lists are cached per reality, so switching modes never shows the other mode's data.
 export const narrativeKeys = {
   all: ['narratives'] as const,
   update: () => [...narrativeKeys.all, 'update'] as const,

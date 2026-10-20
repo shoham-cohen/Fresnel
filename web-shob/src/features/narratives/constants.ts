@@ -13,7 +13,6 @@ export const PANEL_MARGIN = 10;
 
 export const REALITY_STORAGE_KEY = 'reality';
 
-// URL params of the selected row (the details panel reads narrativeId).
 export const SELECTION_PARAMS = {
   narrativeId: 'narrativeId',
   simulationId: 'simulationId',
