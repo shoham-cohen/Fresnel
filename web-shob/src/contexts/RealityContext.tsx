@@ -1,11 +1,12 @@
-import type { Reality } from '@/types';
 import { getTheme } from '@/styles/theme';
+import { REALITY, type Reality } from '@/types';
 import type { Theme } from '@mui/material/styles';
 import { ThemeProvider } from '@mui/material/styles';
 import { REALITY_STORAGE_KEY } from '@/features/narratives/constants';
 import { createContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-const isReality = (value: unknown): value is Reality => value === 'real' || value === 'exercise';
+const isReality = (value: unknown): value is Reality =>
+  Object.values<unknown>(REALITY).includes(value);
 
 const readStoredReality = (fallback: Reality): Reality => {
   try {
@@ -35,7 +36,7 @@ export interface RealityProviderProps {
 
 export const RealityContext = createContext<RealityContextType | undefined>(undefined);
 
-export function RealityProvider({ children, initialReality = 'real' }: RealityProviderProps) {
+export function RealityProvider({ children, initialReality = REALITY.real }: RealityProviderProps) {
   const [reality, setReality] = useState<Reality>(() => readStoredReality(initialReality));
 
   useEffect(() => {
