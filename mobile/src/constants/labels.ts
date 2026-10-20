@@ -26,6 +26,17 @@ export const ACTIONS_LABEL = {
   empty: 'עוד לא תועדו פעולות',
 } as const;
 
+export const DELETE_ACTION_LABEL = {
+  button: 'מחיקת הפעולה',
+  title: 'למחוק את הפעולה?',
+  message: 'הפעולה תימחק מציר הפעולות.',
+  confirm: 'מחיקה',
+  cancel: 'ביטול',
+  notMine: 'אפשר למחוק רק פעולה שתיעדת.',
+  alreadyDeleted: 'הפעולה כבר נמחקה.',
+  eventClosed: 'האירוע נסגר, ולא ניתן למחוק בו פעולות.',
+} as const;
+
 export const COMMON_LABEL = {
   loading: 'טוען…',
   retry: 'נסו שוב',

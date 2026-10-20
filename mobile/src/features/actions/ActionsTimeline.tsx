@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text } from 'react-native';
 import { errorText } from '@/api/errorText';
-import type { TimelineEntry } from '@/api/types';
+import type { TimelineAction, TimelineEntry } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -9,6 +10,7 @@ import { Loading } from '@/components/Loading';
 import { ACTIONS_LABEL, EVENT_TAB_LABEL } from '@/constants/labels';
 import { useManualRefresh } from '@/hooks/useManualRefresh';
 import { colors, fontSize, spacing } from '@/theme';
+import { DeleteActionSheet } from './delete/DeleteActionSheet';
 import { TimelineItem } from './TimelineItem';
 import { TimelineSystemRow } from './TimelineSystemRow';
 import { useTimeline } from './useTimeline';
@@ -23,6 +25,7 @@ export function ActionsTimeline({ eventId }: Props) {
   const { user } = useAuth();
   const timeline = useTimeline(eventId);
   const { isRefreshing, onRefresh } = useManualRefresh(timeline.refetch);
+  const [actionToDelete, setActionToDelete] = useState<TimelineAction | null>(null);
 
   if (timeline.isPending) return <Loading />;
   if (timeline.isError) {
@@ -33,35 +36,50 @@ export function ActionsTimeline({ eventId }: Props) {
   const actionCount = entries.filter((entry) => entry.kind === 'action').length;
 
   return (
-    <FlatList
-      data={actionCount > 0 ? entries : []}
-      keyExtractor={keyOf}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
-      ListHeaderComponent={
-        <Text style={styles.title}>
-          {EVENT_TAB_LABEL.actions} ({actionCount})
-        </Text>
-      }
-      ListEmptyComponent={<EmptyState icon={<FresnelLogo />} title={ACTIONS_LABEL.empty} />}
-      renderItem={({ item, index }) => {
-        const position = { isFirst: index === 0, isLast: index === entries.length - 1 };
-        if (item.kind !== 'action') {
-          return (
-            <TimelineSystemRow kind={item.kind} at={item.at} actorId={item.actorId} {...position} />
-          );
+    <>
+      <FlatList
+        data={actionCount > 0 ? entries : []}
+        keyExtractor={keyOf}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        ListHeaderComponent={
+          <Text style={styles.title}>
+            {EVENT_TAB_LABEL.actions} ({actionCount})
+          </Text>
         }
-        if (!item.action) return null;
-        return (
-          <TimelineItem
-            action={item.action}
-            at={item.at}
-            isMine={item.action.performedBy === user?.id}
-            {...position}
-          />
-        );
-      }}
-    />
+        ListEmptyComponent={<EmptyState icon={<FresnelLogo />} title={ACTIONS_LABEL.empty} />}
+        renderItem={({ item, index }) => {
+          const position = { isFirst: index === 0, isLast: index === entries.length - 1 };
+          if (item.kind !== 'action') {
+            return (
+              <TimelineSystemRow
+                kind={item.kind}
+                at={item.at}
+                actorId={item.actorId}
+                {...position}
+              />
+            );
+          }
+          const action = item.action;
+          if (!action) return null;
+          const isMine = action.performedBy === user?.id;
+          return (
+            <TimelineItem
+              action={action}
+              at={item.at}
+              isMine={isMine}
+              onDelete={isMine ? () => setActionToDelete(action) : undefined}
+              {...position}
+            />
+          );
+        }}
+      />
+      <DeleteActionSheet
+        eventId={eventId}
+        action={actionToDelete}
+        onClose={() => setActionToDelete(null)}
+      />
+    </>
   );
 }
 
