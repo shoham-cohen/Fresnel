@@ -18,32 +18,20 @@ export class Narrative {
   @Column({ type: 'text', array: true, nullable: true })
   arena: string[] | null;
 
+  @Column({ name: 'location_name', type: 'text', nullable: true })
+  locationName: string | null;
+
   @Column({ name: 'detected_at', type: 'timestamptz' })
   detectedAt: Date;
 
   @Column({ type: 'vector', length: 1024, nullable: true, select: false })
   embedding: number[] | null;
 
-  @Column({ name: 'item_list', type: 'text', array: true })
-  itemList: string[];
+  @Column({ type: 'jsonb', nullable: false, default: {} })
+  payload: Record<string, any>;
 
-  @Column({ type: 'text', array: true })
-  platforms: string[];
-
-  @Column({ name: 'shares_count', type: 'bigint' })
-  sharesCount: number;
-
-  @Column({ name: 'views_count', type: 'bigint' })
-  viewsCount: number;
-
-  @Column({ type: 'text', array: true })
-  languages: string[];
-
-  @Column({ name: 'is_flagged', type: 'boolean', default: false })
-  isFlagged: boolean;
-
-  @Column({ name: 'received_at', type: 'timestamptz', nullable: true })
-  receivedAt?: Date;
+  @Column({ name: 'received_at', type: 'timestamptz', nullable: false, default: () => 'now()' })
+  receivedAt: Date;
 
   @OneToMany(() => Event, (event) => event.narrative)
   events: Event[];
