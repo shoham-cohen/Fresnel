@@ -7,6 +7,7 @@ import '@fontsource/rubik/latin-700.css';
 import '@/styles/global.css';
 
 import { StrictMode } from 'react';
+import { initAuth } from '@/auth/keycloak';
 import { router } from '@/app/router';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
@@ -20,6 +21,9 @@ const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Root element #root not found in index.html');
 }
+
+// Before rendering, not in a useEffect: nothing renders until the user is signed in.
+await initAuth();
 
 createRoot(rootElement).render(
   <StrictMode>

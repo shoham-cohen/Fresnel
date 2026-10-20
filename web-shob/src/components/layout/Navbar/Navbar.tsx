@@ -7,15 +7,17 @@ import { NavLink } from 'react-router';
 
 import { navItems } from '@/routes/paths';
 
+import { LogoutButton } from './LogoutButton';
 import { styles } from './Navbar.styles';
 import { RealityToggle } from './RealityToggle';
 import { UserBadge } from './UserBadge';
 
 export interface NavbarProps {
   userName?: string;
+  onLogout: () => void;
 }
 
-export function Navbar({ userName }: NavbarProps) {
+export function Navbar({ userName, onLogout }: NavbarProps) {
   return (
     <AppBar position="static" component="header" elevation={0} sx={styles.appBar}>
       <Toolbar disableGutters sx={styles.toolbar}>
@@ -36,6 +38,7 @@ export function Navbar({ userName }: NavbarProps) {
         <Box sx={styles.endSection}>
           <RealityToggle />
           <UserBadge userName={userName} />
+          <LogoutButton onLogout={onLogout} />
         </Box>
       </Toolbar>
     </AppBar>

@@ -6,7 +6,7 @@ import userAvatarIcon from '@/assets/icons/user-avatar.svg';
 
 import { styles } from './UserBadge.styles';
 
-// TODO: remove once the real name comes from Keycloak.
+// Shown only if the Keycloak token has no name claim.
 const DEFAULT_USER_NAME = 'שם משתמש';
 
 export interface UserBadgeProps {
