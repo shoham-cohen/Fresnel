@@ -5,6 +5,7 @@ import { ActionModule } from './modules/action/action.module';
 import { ActionTypeModule } from './modules/action-type/action-type.module';
 import { EventLogModule } from './modules/event-log/event-log.module';
 import { EventModule } from './modules/event/event.module';
+import { NarrativeModule } from './modules/narrative/narrative.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { EventModule } from './modules/event/event.module';
     ActionTypeModule,
     EventLogModule,
     EventModule,
+    NarrativeModule,
   ],
 })
 export class AppModule {}
