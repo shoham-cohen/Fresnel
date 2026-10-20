@@ -4,16 +4,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import type { EventSummary } from '../../../api/events';
 
 interface EventTimelineItemProps {
-  selectedEvent?: EventSummary;
+  selectedAction?: EventSummary;
 }
 
-export default function EventTimelineItem({ selectedEvent }: EventTimelineItemProps) {
-  if (!selectedEvent) {
+export default function EventTimelineItem({ selectedAction }: EventTimelineItemProps) {
+  if (!selectedAction) {
     return null;
   }
 
-  const formattedTime = selectedEvent.createdAt
-    ? new Date(selectedEvent.createdAt).toLocaleTimeString('he-IL', {
+  const formattedTime = selectedAction.createdAt
+    ? new Date(selectedAction.createdAt).toLocaleTimeString('he-IL', {
         hour: '2-digit',
         minute: '2-digit',
       })
@@ -60,7 +60,7 @@ export default function EventTimelineItem({ selectedEvent }: EventTimelineItemPr
             |
           </Typography>
           <Typography sx={{ color: '#1B365D', fontSize: '1.1rem' }}>
-            {selectedEvent.eventId}
+            {selectedAction.eventId}
           </Typography>
         </Box>
 
@@ -74,13 +74,13 @@ export default function EventTimelineItem({ selectedEvent }: EventTimelineItemPr
             textShadow: '1px 1px 3px rgba(0, 0, 0, 0.2)'
           }}
         >
-          {selectedEvent.title}
+          {selectedAction.title}
         </Typography>
 
         <Typography
           sx={{ color: '#1B365D', fontSize: '1.1rem' }}
         >
-          סטטוס: {selectedEvent.status} • חומרה: {selectedEvent.severity}
+          סטטוס: {selectedAction.status} • חומרה: {selectedAction.severity}
         </Typography>
       </Box>
 
