@@ -11,4 +11,3 @@ export function useReality(): RealityContextType {
 
   return context;
 }
-
