@@ -8,8 +8,14 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import type { Narrative, NarrativeDetails } from '@/interfaces/narrative.interface';
 import type { NarrativesTableStatus, SortKey, SortState } from '@/components/NarrativesTable';
 
+export const toRowId = (narrativeId: string, simulationId?: string | null): string => {
+  return simulationId ? `${simulationId}:${narrativeId}` : narrativeId;
+};
+
 export const toNarrative = (dto: NarrativeDto): Narrative => {
   return {
+    rowId: toRowId(dto.narrativeId, dto.simulationId),
+    simulationId: dto.simulationId ?? null,
     title: dto.title,
     summary: dto.summary,
     arena: dto.arena ?? [],
@@ -24,9 +30,9 @@ export const toNarrative = (dto: NarrativeDto): Narrative => {
 // Maps a narrative from the API to what the details panel shows.
 export const toNarrativeDetails = (dto: NarrativeDto): NarrativeDetails => {
   return {
-    arena: dto.arena ?? [],
     title: dto.title,
     summary: dto.summary,
+    arena: dto.arena ?? [],
     itemList: dto.itemList ?? [],
     platforms: dto.platforms ?? [],
     languages: dto.languages ?? [],
@@ -34,8 +40,10 @@ export const toNarrativeDetails = (dto: NarrativeDto): NarrativeDetails => {
     isFlagged: dto.isFlagged,
     detectedAt: dto.detectedAt,
     narrativeId: dto.narrativeId,
+    simulationId: dto.simulationId ?? null,
     viewsCount: Number(dto.viewsCount ?? 0),
     sharesCount: Number(dto.sharesCount ?? 0),
+    rowId: toRowId(dto.narrativeId, dto.simulationId),
   };
 };
 

@@ -4,5 +4,8 @@ module.exports = {
   roots: ['<rootDir>/src'],
   testMatch: ['**/*.spec.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
+  },
   transformIgnorePatterns: ['/node_modules/(?!@nestjs/typeorm|typeorm)'],
 };

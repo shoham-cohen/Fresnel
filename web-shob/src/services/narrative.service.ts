@@ -5,9 +5,11 @@ import type {
   NarrativesQuery,
 } from '@/interfaces/narrative-api.interface';
 
+import { REALITY } from '@/types';
+import type { Reality } from '@/types';
 import type { AxiosInstance } from 'axios';
-import { toNarrative, toNarrativeDetails } from '@/utilities/narrative.utility';
 import { createAxiosInstance } from '@/config/axios.config';
+import { toNarrative, toNarrativeDetails } from '@/utilities/narrative.utility';
 import type { Narrative, NarrativeDetails } from '@/interfaces/narrative.interface';
 
 class NarrativeService {
@@ -17,8 +19,15 @@ class NarrativeService {
     this.api = createAxiosInstance('/narratives');
   }
 
-  public async getPage(query: NarrativesQuery, signal?: AbortSignal): Promise<Page<Narrative>> {
-    const { data } = await this.api.get<Page<NarrativeDto>>('/page', { params: query, signal });
+  public async getPage(
+    reality: Reality,
+    query: NarrativesQuery,
+    signal?: AbortSignal,
+  ): Promise<Page<Narrative>> {
+    const { data } = await this.api.get<Page<NarrativeDto>>('/page', {
+      params: { ...query, isSimulation: reality === REALITY.simulation },
+      signal,
+    });
     return { ...data, items: data.items.map(toNarrative) };
   }
 

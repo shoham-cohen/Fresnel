@@ -8,16 +8,14 @@ import {
   ArrayContains,
   LessThanOrEqual,
   MoreThanOrEqual,
+  type FindOptionsOrder,
   type FindOptionsWhere,
 } from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
 import { POSTGRES_ERROR_CODES } from '../../consts/postgresErrorCode';
+import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
-
-export type CreateSimulatedNarrativeData = {
-  narrativeId: string;
-  simulationId: string;
-};
+import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
 
 @Injectable()
 export class NarrativeRepository {
@@ -28,43 +26,64 @@ export class NarrativeRepository {
     private readonly simulatedNarrativeOrmRepository: Repository<SimulatedNarrative>,
   ) {}
 
-  findAll(): Promise<Narrative[]> {
-    return this.narrativeOrmRepository.find({
-      relations: { events: true },
-    });
+  private createDetectedAtFilter(
+    from?: Date | string,
+    to?: Date | string,
+  ): FindOptionsWhere<Narrative> {
+    const start = from ? new Date(from) : undefined;
+    const end = to ? new Date(to) : undefined;
+
+    if (start && end) return { detectedAt: Between(start, end) };
+    if (start) return { detectedAt: MoreThanOrEqual(start) };
+    if (end) return { detectedAt: LessThanOrEqual(end) };
+    return {};
   }
 
-  findPage({
+  private createNarrativeFilters({
     from,
     to,
     search,
     arena,
-    page,
-    pageSize,
-    sortBy,
-    sortDir,
-  }: ListNarrativesQueryDto): Promise<[Narrative[], number]> {
+  }: ListNarrativesQueryDto): FindOptionsWhere<Narrative>[] {
     const filters: FindOptionsWhere<Narrative> = {
       ...(arena && { arena: ArrayContains([arena]) }),
-      ...((from || to) && { detectedAt: detectedAtRange(from, to) }),
+      ...this.createDetectedAtFilter(from, to),
     };
 
     const pattern = search && `%${escapeLike(search)}%`;
-    const where = pattern
+    return pattern
       ? [
           { ...filters, title: ILike(pattern) },
           { ...filters, summary: ILike(pattern) },
         ]
-      : filters;
+      : [filters];
+  }
+
+  private createNarrativeOrder({
+    sortBy,
+    sortDir,
+  }: ListNarrativesQueryDto): FindOptionsOrder<Narrative> {
+    return {
+      isFlagged: 'DESC',
+      [sortBy]: { direction: sortDir, nulls: 'LAST' },
+      narrativeId: 'ASC',
+    };
+  }
+
+  findAll(query?: FindNarrativesQueryDto): Promise<Narrative[]> {
+    return this.narrativeOrmRepository.find({
+      where: this.createDetectedAtFilter(query?.startDate, query?.endDate),
+      relations: { events: true },
+    });
+  }
+
+  findPage(query: ListNarrativesQueryDto): Promise<[Narrative[], number]> {
+    const { page, pageSize } = query;
 
     return this.narrativeOrmRepository.findAndCount({
-      where,
+      where: this.createNarrativeFilters(query),
       relations: { events: true },
-      order: {
-        isFlagged: 'DESC',
-        [sortBy]: { direction: sortDir, nulls: 'LAST' },
-        narrativeId: 'ASC',
-      },
+      order: this.createNarrativeOrder(query),
       take: pageSize,
       skip: (page - 1) * pageSize,
     });
@@ -85,8 +104,6 @@ export class NarrativeRepository {
       relations: { events: true },
     });
   }
-
-  // Returns the updated narrative, or null when there is no narrative with this id.
   async update(
     narrativeId: string,
     changes: Partial<Pick<Narrative, 'isFlagged'>>,
@@ -100,15 +117,38 @@ export class NarrativeRepository {
     return this.findOne(narrativeId);
   }
 
-  findSimulated(simulationId?: string): Promise<SimulatedNarrative[]> {
+  findSimulated(query?: FindNarrativesQueryDto): Promise<SimulatedNarrative[]> {
     return this.simulatedNarrativeOrmRepository.find({
-      where: simulationId ? { simulationId } : {},
+      where: {
+        narrative: this.createDetectedAtFilter(query?.startDate, query?.endDate),
+      },
+      relations: { narrative: { events: true } },
+    });
+  }
+
+  findSimulatedPage(
+    query: ListNarrativesQueryDto,
+  ): Promise<[SimulatedNarrative[], number]> {
+    const { page, pageSize } = query;
+
+    return this.simulatedNarrativeOrmRepository.findAndCount({
+      where: this.createNarrativeFilters(query).map((narrative) => ({ narrative })),
+      relations: { narrative: { events: true } },
+      order: { narrative: this.createNarrativeOrder(query) },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+    });
+  }
+
+  findOneSimulated(simulationId: string): Promise<SimulatedNarrative | null> {
+    return this.simulatedNarrativeOrmRepository.findOne({
+      where: { simulationId },
       relations: { narrative: { events: true } },
     });
   }
 
   createSimulated(
-    data: CreateSimulatedNarrativeData,
+    data: CreateSimulatedNarrativeDto,
   ): Promise<SimulatedNarrative> {
     const simulatedNarrative = this.simulatedNarrativeOrmRepository.create(data);
     
@@ -116,7 +156,7 @@ export class NarrativeRepository {
   }
 
   async createSimulatedMany(
-    data: CreateSimulatedNarrativeData[],
+    data: CreateSimulatedNarrativeDto[],
   ): Promise<SimulatedNarrative[]> {
     if (data.length === 0) return [];
 
@@ -131,10 +171,5 @@ export class NarrativeRepository {
     }
   }
 }
-
-const detectedAtRange = (from?: string, to?: string) => {
-  if (from && to) return Between(new Date(from), new Date(to));
-  return from ? MoreThanOrEqual(new Date(from)) : LessThanOrEqual(new Date(to as string));
-};
 
 const escapeLike = (value: string): string => value.replace(/[\\%_]/g, (c) => `\\${c}`);

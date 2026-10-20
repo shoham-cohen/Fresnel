@@ -1,6 +1,5 @@
+import { REALITY, type Reality } from '@/types';
 import { createTheme, type Theme } from '@mui/material/styles';
-
-import type { Reality } from '@/types';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -48,7 +47,7 @@ declare module '@mui/material/styles' {
 }
 
 export const REAL_PALETTE = {
-  reality: 'real' as const,
+  reality: REALITY.real,
   primary: '#4872A5',
   background: '#ffffff',
   headerBg: '#102B4D',
@@ -62,7 +61,7 @@ export const REAL_PALETTE = {
 };
 
 export const EXERCISE_PALETTE = {
-  reality: 'exercise' as const,
+  reality: REALITY.simulation,
   primary: '#B99462',
   background: '#ffffff',
   headerBg: '#49311F',
@@ -161,7 +160,7 @@ export const realTheme = createRealityTheme(REAL_PALETTE);
 export const exerciseTheme = createRealityTheme(EXERCISE_PALETTE);
 
 export function getTheme(reality: Reality): Theme {
-  return reality === 'exercise' ? exerciseTheme : realTheme;
+  return reality === REALITY.simulation ? exerciseTheme : realTheme;
 }
 
 export const theme = realTheme;

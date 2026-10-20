@@ -38,9 +38,7 @@ export const NarrativeHistoryPage = () => {
   const lastRowNumber = Math.min(page * pageSize, total);
 
   const handleSelect = useCallback((narrative: Narrative) => {
-    setSelectedId((current) =>
-      current === narrative.narrativeId ? null : narrative.narrativeId,
-    );
+    setSelectedId((current) => (current === narrative.rowId ? null : narrative.rowId));
   }, []);
 
   return (

@@ -4,6 +4,8 @@ import {
   HISTORY_NARRATIVES_OPTIONS,
 } from '@/config/react-query.config';
 
+import type { Reality } from '@/types';
+import { useReality } from './useReality';
 import { useCallback, useEffect, useMemo } from 'react';
 import { toTableStatus } from '@/utilities/narrative.utility';
 import { narrativeService } from '@/services/narrative.service';
@@ -36,13 +38,15 @@ const toBatch = ({ page = 1, pageSize = 20, ...filters }: NarrativesQuery) => {
   };
 };
 
-const fetchHistoryBatch = (batchQuery: NarrativesQuery) => ({
+const fetchHistoryBatch = (reality: Reality, batchQuery: NarrativesQuery) => ({
   ...HISTORY_NARRATIVES_OPTIONS,
-  queryKey: narrativeKeys.history(batchQuery),
-  queryFn: ({ signal }: { signal: AbortSignal }) => narrativeService.getPage(batchQuery, signal),
+  queryKey: narrativeKeys.history(reality, batchQuery),
+  queryFn: ({ signal }: { signal: AbortSignal }) =>
+    narrativeService.getPage(reality, batchQuery, signal),
 });
 
 export const useNarratives = (query: NarrativesQuery, { enabled = true } = {}) => {
+  const { reality } = useReality();
   const queryClient = useQueryClient();
   const { page = 1, pageSize = 20 } = query;
   const { batchQuery, offset, isLastPageOfBatch } = useMemo(() => toBatch(query), [query]);
@@ -57,31 +61,33 @@ export const useNarratives = (query: NarrativesQuery, { enabled = true } = {}) =
     [page, pageSize, offset],
   );
 
-  const result = useQuery({ ...fetchHistoryBatch(batchQuery), enabled, select });
+  const result = useQuery({ ...fetchHistoryBatch(reality, batchQuery), enabled, select });
 
   const total = result.data?.total ?? 0;
   const hasNextBatch = batchQuery.page * batchQuery.pageSize < total;
   useEffect(() => {
     if (enabled && isLastPageOfBatch && hasNextBatch) {
       queryClient
-        .query(fetchHistoryBatch({ ...batchQuery, page: batchQuery.page + 1 }))
+        .query(fetchHistoryBatch(reality, { ...batchQuery, page: batchQuery.page + 1 }))
         .catch(() => undefined);
     }
-  }, [enabled, isLastPageOfBatch, hasNextBatch, queryClient, batchQuery]);
+  }, [enabled, isLastPageOfBatch, hasNextBatch, queryClient, reality, batchQuery]);
 
   const refetch = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: narrativeKeys.histories() });
-  }, [queryClient]);
+    void queryClient.invalidateQueries({ queryKey: narrativeKeys.histories(reality) });
+  }, [queryClient, reality]);
 
   return toTableProps(result, refetch);
 };
 
 export const useRecentNarratives = (hours: number) => {
+  const { reality } = useReality();
   const result = useQuery({
     ...RECENT_NARRATIVES_OPTIONS,
-    queryKey: narrativeKeys.recent(hours),
+    queryKey: narrativeKeys.recent(reality, hours),
     queryFn: ({ signal }) =>
       narrativeService.getPage(
+        reality,
         {
           pageSize: RECENT_PAGE_SIZE,
           from: new Date(Date.now() - hours * HOUR_MS).toISOString(),
