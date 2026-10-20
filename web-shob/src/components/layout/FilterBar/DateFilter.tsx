@@ -8,7 +8,7 @@ interface DateFilterProps {
   onEndDateChange: (date: string) => void;
 }
 
-export const NotificationHistoryDateFilter: FC<DateFilterProps> = ({
+export const DateFilter: FC<DateFilterProps> = ({
   startDate,
   endDate,
   onStartDateChange,

@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 import { Paper, Box } from '@mui/material';
-import { NotificationHistorySearchBar } from './SearchBar';
-import { NotificationHistoryDateFilter } from './DateFilter';
-import { NotificationHistoryPlaceDropDown } from './PlaceDropDown';
+import { SearchBar } from './SearchBar';
+import { DateFilter } from './DateFilter';
+import { PlaceDropDown } from './PlaceDropDown';
 
 export interface FilterBarProps {
   searchTerm: string;
@@ -23,7 +23,7 @@ export const FilterBar: FC<FilterBarProps> = ({
   onSearchChange,
   onStartDateChange,
   onEndDateChange,
-  onLocationChange,
+  onLocationChange
 }) => (
   <Paper
     elevation={1}
@@ -39,14 +39,14 @@ export const FilterBar: FC<FilterBarProps> = ({
     }}
   >
     <Box sx={{ flex: 1, minWidth: '200px' }}>
-      <NotificationHistorySearchBar 
+      <SearchBar 
         value={searchTerm} 
         onChange={onSearchChange} 
       />
     </Box>
 
     <Box sx={{ flex: 2, minWidth: '300px' }}>
-      <NotificationHistoryDateFilter 
+      <DateFilter 
         startDate={startDate}
         endDate={endDate}
         onStartDateChange={onStartDateChange}
@@ -55,7 +55,7 @@ export const FilterBar: FC<FilterBarProps> = ({
     </Box>
 
     <Box sx={{ flex: 1, minWidth: '150px' }}>
-      <NotificationHistoryPlaceDropDown 
+      <PlaceDropDown 
         selectedLocation={selectedLocation} 
         onLocationChange={onLocationChange} 
       />

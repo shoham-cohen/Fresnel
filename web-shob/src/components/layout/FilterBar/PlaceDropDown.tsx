@@ -1,5 +1,5 @@
 import { type FC } from 'react';
-import { FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent } from '@mui/material';
+import { FormControl, MenuItem, Select, type SelectChangeEvent } from '@mui/material';
 
 interface PlaceDropDownProps {
   selectedLocation: string;
@@ -12,10 +12,7 @@ const PLACE_OPTIONS = [
   { label: 'גבול הדרום', value: 'South' },
 ];
 
-export const NotificationHistoryPlaceDropDown: FC<PlaceDropDownProps> = ({
-  selectedLocation,
-  onLocationChange,
-}) => {
+export const PlaceDropDown: FC<PlaceDropDownProps> = ({ selectedLocation, onLocationChange }) => {
   const handleChange = (event: SelectChangeEvent<string>) => {
     const value = event.target.value;
     onLocationChange(value ? [value] : []);
@@ -23,9 +20,7 @@ export const NotificationHistoryPlaceDropDown: FC<PlaceDropDownProps> = ({
 
   return (
     <FormControl size="small" fullWidth>
-      <InputLabel id="place-dropdown-label">מיקום</InputLabel>
       <Select
-        labelId="place-dropdown-label"
         value={selectedLocation}
         label="מיקום"
         onChange={handleChange}

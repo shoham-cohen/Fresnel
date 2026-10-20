@@ -6,7 +6,7 @@ interface SearchBarProps {
   onChange: (value: string) => void;
 }
 
-export const NotificationHistorySearchBar: FC<SearchBarProps> = ({ value, onChange }) => (
+export const SearchBar: FC<SearchBarProps> = ({ value, onChange }) => (
   <TextField
     value={value}
     onChange={(e) => onChange(e.target.value)}
