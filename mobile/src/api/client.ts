@@ -1,31 +1,31 @@
 import { config } from '@/config';
 
 export class ApiError extends Error {
-  readonly status: number;
-
-  constructor(status: number, message: string) {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
     super(message);
     this.name = 'ApiError';
-    this.status = status;
   }
 }
 
+// Every call from the phone goes through here. The server writes X-Client to event_log.client.
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const url = `${config.apiUrl}${path}`;
-  const response = await fetch(url, {
+  const response = await fetch(`${config.apiUrl}${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      Accept: 'application/json',
       'X-Client': 'mobile',
       ...init?.headers,
     },
   });
 
   if (!response.ok) {
-    throw new ApiError(response.status, `Request to ${path} failed with status ${response.status}`);
+    throw new ApiError(response.status, `${init?.method ?? 'GET'} ${path} failed: ${response.status}`);
   }
-
-  const json = (await response.json()) as T;
-  return json;
+  if (response.status === 204) {
+    return undefined as T;
+  }
+  return response.json() as Promise<T>;
 }
-

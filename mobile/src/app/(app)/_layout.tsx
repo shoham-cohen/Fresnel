@@ -10,7 +10,7 @@ export default function AppLayout() {
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: colors.header },
-        headerTintColor: colors.text,
+        headerTintColor: colors.onHeader,
         headerTitleStyle: { fontWeight: '700' },
         headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: colors.background },
@@ -23,7 +23,7 @@ export default function AppLayout() {
           headerRight: () => (
             <Link href="/profile" asChild>
               <Pressable hitSlop={12} accessibilityRole="button" accessibilityLabel="פרופיל">
-                <Ionicons name="person-circle-outline" size={28} color={colors.text} />
+                <Ionicons name="person-circle-outline" size={28} color={colors.onHeader} />
               </Pressable>
             </Link>
           ),

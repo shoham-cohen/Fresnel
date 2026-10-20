@@ -1,10 +1,22 @@
+import { Platform } from 'react-native';
+
+// The start of a line in RTL (right). Android and iOS swap 'left' and 'right' when the app is RTL,
+// so 'left' already means start there. Web does not swap, so it needs 'right'.
+export const textAlignStart = Platform.OS === 'web' ? 'right' : 'left';
+
+// From the Figma screens.
 export const colors = {
-  background: '#FFFFFF',
-  surface: '#F2F2F2',
-  header: '#D9D9D9',
-  border: '#E0E0E0',
-  text: '#111111',
-  textMuted: '#6B6B6B',
+  background: '#F8FBFF',
+  surface: '#E8F1FC',
+  header: '#102B4D',
+  onHeader: '#FFFFFF',
+  border: '#D7E4F2',
+  divider: '#E6EDF6',
+  input: '#FFFFFF',
+  iconBackground: '#D6E3F2',
+  activeTabBorder: '#C2CEDD',
+  text: '#102B4D',
+  textMuted: '#5B6B80',
   primary: '#0A7AFF',
   onPrimary: '#FFFFFF',
   danger: '#D93025',
