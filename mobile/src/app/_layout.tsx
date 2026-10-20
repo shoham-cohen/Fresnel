@@ -1,9 +1,14 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-
+import { Platform } from 'react-native';
 import { queryClient } from '@/api/queryClient';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
+
+if (Platform.OS === 'web') {
+  document.documentElement.dir = 'rtl';
+  document.documentElement.lang = 'he';
+}
 
 export default function RootLayout() {
   return (
