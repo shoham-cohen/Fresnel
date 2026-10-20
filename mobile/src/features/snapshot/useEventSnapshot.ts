@@ -1,54 +1,40 @@
 import { useQuery } from '@tanstack/react-query';
+import { useIsFocused } from 'expo-router';
 
 import { apiFetch } from '@/api/client';
 import { POLL } from '@/api/polling';
 import { queryKeys } from '@/api/queryKeys';
 import type { EventDetail, Stats } from '@/api/types';
-import { mockEventDetail, mockEventStats } from './fixtures';
 
+// The event card (every 15 seconds) and its stats (every 60 seconds), while the tab is open.
 export function useEventSnapshot(eventId: string) {
-  const isFixtureId = !eventId || eventId === '00000000-0000-0000-0000-000000000001' || eventId === 'demo';
+  const isFocused = useIsFocused();
+  const path = `/api/mobile/events/${encodeURIComponent(eventId)}`;
 
   const eventQuery = useQuery({
     queryKey: queryKeys.event(eventId),
-    queryFn: async () => {
-      try {
-        return await apiFetch<EventDetail>(`/api/events/${eventId}`);
-      } catch {
-        return mockEventDetail;
-      }
-    },
-    refetchInterval: isFixtureId ? false : POLL.event,
-    initialData: mockEventDetail,
+    queryFn: () => apiFetch<EventDetail>(path),
+    refetchInterval: isFocused ? POLL.list : false,
     enabled: Boolean(eventId),
   });
 
   const statsQuery = useQuery({
     queryKey: queryKeys.stats(eventId),
-    queryFn: async () => {
-      try {
-        return await apiFetch<Stats>(`/api/events/${eventId}/stats`);
-      } catch {
-        return mockEventStats;
-      }
-    },
-    refetchInterval: isFixtureId ? false : POLL.stats,
-    initialData: mockEventStats,
+    queryFn: () => apiFetch<Stats>(`${path}/stats`),
+    refetchInterval: isFocused ? POLL.dataLake : false,
     enabled: Boolean(eventId),
   });
 
-  const event = eventQuery.data ?? mockEventDetail;
-  const stats = statsQuery.data ?? mockEventStats;
-
-  async function handleRefetch() {
+  async function refetch() {
     await Promise.all([eventQuery.refetch(), statsQuery.refetch()]);
   }
 
   return {
-    event,
-    stats,
-    isLoading: false,
-    hasError: false,
-    refetch: handleRefetch,
+    event: eventQuery.data,
+    // A stats failure does not hide the card: its numbers show "—".
+    stats: statsQuery.data,
+    isLoading: eventQuery.isPending,
+    isError: eventQuery.isError,
+    refetch,
   };
 }

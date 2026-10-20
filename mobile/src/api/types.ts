@@ -86,7 +86,7 @@ export type OpenEvent = {
   isAnomaly: boolean;
 };
 
-// One row in GET /api/events/:id/items (the sources tab). total is the length of the item id list.
+// One row in GET /api/mobile/events/:id/items (the sources tab). total is the length of the item id list.
 export type SourceItem = {
   itemId: string;
   platform: string;

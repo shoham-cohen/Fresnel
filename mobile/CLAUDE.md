@@ -9,7 +9,7 @@
 
 > **עדכון 18.10 (ערב):**
 > - **אין socket.** כל הרענון במשיכה מחזורית (polling) עם TanStack Query. אין Gateway בשרת ואין socket באפליקציה. פירוט בסעיף "זמנים".
-> - **אין mock-server.** עובדים מול `api/` אמיתי שרץ מקומית, מעל ה-DB המקומי: `db/1.ddl.sql` (ה-schema) ו-`db/2.dml.sql` (נתוני פיתוח). פירוט בסעיף "בנייה והרצה".
+> - ~~אין mock-server.~~ **עדכון 20.10:** כל הצוותים מסונכרנים על ה-mock המשותף ברנדר (`https://fresnel-mock-api.onrender.com`, ה-OpenAPI ב-`/openapi.json`). הזרימה: **טלפון ← `api/` (פורט 3000) ← רנדר**. הטלפון לא פונה לרנדר ישירות. כל ה-routes של הטלפון תחת **`/api/mobile/events`**, כי `GET /api/events` ו-`/api/events/:id(/stats)` של עדן קוראים מה-DB המקומי. ה-DB האמיתי יגיע בהמשך.
 > - **ה-routes שלנו ב-`api/`:** `timeline`, `items`, `stats`, התחקור, `/devices`, ושליחת ה-Push (שמתחברת ל-`POST /events` של שחר). כל השאר של עדן ושחר.
 > - **כניסה דרך מיראז׳:** צוות מיראז׳ (נועה הרשקו) חושף עמוד כניסה (iframe בווב, WebView אצלנו) שכבר מתממשק ל-Keycloak ומחזיר משתמש עם הפרטים שלו. ⬜ החוזה.
 > - **האימות והגזרה בשרת של שחר** ([14]). אין לנו Guard ואין `/me`.
@@ -140,6 +140,17 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 **כניסה:** לא route שלנו. עמוד הכניסה של מיראז׳ ב-WebView מחזיר משתמש. ⬜ החוזה.
 
 ### ה-routes שלנו (מודול `mobile` ב-`api/`)
+**כרגע (מול רנדר):** הטלפון צורך רק את אלה. כולם עוברים ב-`api/` לאותו route ברנדר, דרך `getJson` ב-`api/src/modules/mobile/mock-api.ts` (404 ו-403 עוברים כמו שהם, כל כשל אחר הוא 502).
+
+| route | מה |
+|---|---|
+| `GET /api/mobile/events?search=&page=&pageSize=` | הבית: אירועי אמת פתוחים (#94) |
+| `GET /api/mobile/events/:id` | כרטיס האירוע בתמונת המצב |
+| `GET /api/mobile/events/:id/stats` | נתונים מצטברים ומקורות עיקריים |
+| `GET /api/mobile/events/:id/items?page=&pageSize=` | לשונית מקורות מידע (#61) |
+
+**היעד (מול ה-DB וה-Data Lake):**
+
 | route | מה | משימה |
 |---|---|---|
 | `GET /api/events/:id/stats`, `GET /api/narratives/:id/stats` | `{ posts, views, shares, comments, topSources: [{ platform, count }], basedOn, asOf }`, `posts` הוא מספר כל המבזקים, והסכומים מ-100 האחרונים (`basedOn` כמה נספרו). `null` לשדה חסר, אף פעם לא 0. ה-route של הנרטיב בשביל השו״ב | MAR-06 |
@@ -285,8 +296,9 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 ## בנייה והרצה
 - **דרישות:** **Node 22.13 ומעלה** (Expo SDK 58 לא רץ על Node 20, ראו `.nvmrc`), JDK 17, Android SDK, `ANDROID_HOME`, Docker Desktop. ב-Mac גם Xcode ו-CocoaPods.
 - **DB מקומי (מהשורש):** `cp .env.example .env`, ואז `docker compose up -d` (פורט 5433). בהרמה הראשונה רצים `db/1.ddl.sql` ואז `db/2.dml.sql`. לנתונים טריים: `docker compose down -v` ואז `up -d`.
-- **השרת (מ-`api/`):** `npm install` ואז `npm run start:dev`. רץ על פורט 3000 (`API_PORT`), וקורא את `DATABASE_URL` מה-`.env` שבשורש.
-- **האפליקציה (מ-`mobile/`):** `npm install`, `cp .env.example .env`, ואז `npm run android`. ב-`.env`: `EXPO_PUBLIC_API_URL=http://10.0.2.2:3000` לאמולטור Android (הכתובת של המחשב מתוך האמולטור), ו-`EXPO_PUBLIC_AUTH_BYPASS=true`.
+- **השרת (מ-`api/`):** `npm install` ואז `npm run start:dev`. רץ על פורט 3000 (`API_PORT`), וקורא את `DATABASE_URL` מה-`.env` שבשורש. **בלי Docker:** `API_WITHOUT_DB=true` ב-`.env` שבשורש מרים רק את המודולים בלי DB (המודול `mobile`). כתובת ה-mock ניתנת לשינוי ב-`MOCK_API_URL`.
+- **האפליקציה (מ-`mobile/`):** `npm install`, `cp .env.example .env`, ואז `npm run android`. ב-`.env`: `EXPO_PUBLIC_API_URL=http://localhost:3000` ו-`EXPO_PUBLIC_AUTH_BYPASS=true`. **ב-Android** `src/config.ts` מחליף את `localhost` בכתובת של המחשב (המארח של Metro, או `10.0.2.2` באמולטור), כך שאותו `.env` עובד באמולטור, בטלפון אמיתי באותה רשת וב-iOS.
+- **הבקשה הראשונה לרנדר** אחרי זמן שקט לוקחת 30 עד 60 שניות (השרת מתעורר). המסך מציג טעינה, זה לא באג.
 - **dev client:** נבנה פעם אחת לכל פלטפורמה. אחריו `npm start`, ושינויי JS נטענים בלי בנייה. בונים מחדש רק אחרי שינוי ב-`app.config.ts` או ספרייה נייטיב.
 - **Android:** `npm run android`. האמולטור מתמונת **Google Play**, אחרת אין Push.
 - **iOS:** רק על Mac. `npm run ios` (או `npx expo run:ios --device`). Push אמיתי דרך Expo נבדק על אייפון.

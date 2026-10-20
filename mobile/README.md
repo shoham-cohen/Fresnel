@@ -41,17 +41,29 @@ npm start                   # Metro בלבד. שינויי JS נטענים בל�
 
 לפני כל MR: `npm run lint` ו-`npm run typecheck` עוברים נקי.
 
+## השרת
+
+האפליקציה פונה רק ל-`api/` בפורט 3000, וממנו לשרת ה-mock המשותף ברנדר. לפני האפליקציה, מתוך `api/`:
+
+```bash
+npm install
+npm run start:dev           # http://localhost:3000/api
+```
+
+בלי Docker: `API_WITHOUT_DB=true` ב-`.env` שבשורש ה-repo.
+ב-Android אין צורך לשנות את `EXPO_PUBLIC_API_URL`: `localhost` מוחלף אוטומטית בכתובת של המחשב. בטלפון אמיתי, הטלפון והמחשב צריכים להיות באותה רשת.
+
 ## כניסה בפיתוח
 
 כש-`EXPO_PUBLIC_AUTH_BYPASS=true` ב-`.env`, האפליקציה נכנסת ישר לבית בלי מסך הכניסה.
 
 ## פתיחת מסך ישירות
 
-למשל מסך אירוע, בלי לעבור דרך הבית:
+למשל מסך אירוע, בלי לעבור דרך הבית (מזהה של אירוע מה-mock. כל האירועים לבדיקה ב-`https://fresnel-mock-api.onrender.com/api/mock/scenarios`):
 
 ```bash
-adb shell am start -W -a android.intent.action.VIEW -d "fresnel://events/demo"
-adb shell am start -W -a android.intent.action.VIEW -d "fresnel://events/demo/actions"
+adb shell am start -W -a android.intent.action.VIEW -d "fresnel://events/6fdd21dd-94df-56de-8ee0-94fe60ddcc84"
+adb shell am start -W -a android.intent.action.VIEW -d "fresnel://events/6fdd21dd-94df-56de-8ee0-94fe60ddcc84/sources"
 ```
 
 ## מבנה

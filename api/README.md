@@ -9,6 +9,9 @@
 
 ההגדרות נקראות מה-`.env` שב-root של ה-repo (`DATABASE_URL`).
 
+- `API_WITHOUT_DB=true`: מרים את השרת בלי ה-DB ובלי המודולים שתלויים בו, רק עם המודול `mobile` שקורא מה-mock. בלי המשתנה, הכול עולה כרגיל.
+- `MOCK_API_URL`: כתובת שרת ה-mock המשותף (ברירת מחדל `https://fresnel-mock-api.onrender.com`). המודול `mobile` מעביר אליו את כל ה-routes שלו (`/api/mobile/events...`).
+
 ## מבנה התיקיות
 המודולים מחולקים לפי ישות / טבלה, לא לפי צוות. כל endpoint יושב במודול של הישות שהוא מחזיר.
 

@@ -1,13 +1,23 @@
 import { useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { ErrorState } from '@/components/ErrorState';
+import { Loading } from '@/components/Loading';
+import { SNAPSHOT_LABEL } from '@/constants/labels';
 import { colors } from '@/theme';
 import { SnapshotCardsCarousel } from '@/features/snapshot/SnapshotCardsCarousel';
 import { useEventSnapshot } from '@/features/snapshot/useEventSnapshot';
 
 export default function SnapshotScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { event, stats } = useEventSnapshot(id ?? '');
+  const { event, stats, isLoading, isError, refetch } = useEventSnapshot(id ?? '');
+
+  if (isLoading) {
+    return <Loading />;
+  }
+  if (isError || !event) {
+    return <ErrorState message={SNAPSHOT_LABEL.errorLoading} onRetry={refetch} />;
+  }
 
   return (
     <View style={styles.container}>
