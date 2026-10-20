@@ -50,6 +50,16 @@ export const ADD_ACTION_LABEL = {
   eventClosed: 'האירוע נסגר, ולא ניתן להוסיף בו פעולות.',
 } as const;
 
+export const CLOSE_EVENT_LABEL = {
+  button: 'סגור אירוע',
+  title: 'סגירת אירוע',
+  warning: 'האירוע ייסגר ולא יופיע יותר בטלפון.',
+  summary: 'סיכום',
+  summaryPlaceholder: 'סכמ/י את הטיפול באירוע...',
+  submit: 'סגירת האירוע',
+  alreadyClosed: 'האירוע כבר נסגר.',
+} as const;
+
 export const COMMON_LABEL = {
   loading: 'טוען…',
   retry: 'נסו שוב',

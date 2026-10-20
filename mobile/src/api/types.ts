@@ -21,6 +21,11 @@ export type CreateActionBody = {
   description: string;
 };
 
+export type CloseEventBody = {
+  closureSummary: string;
+  closedBy: string;
+};
+
 export type TimelineEntry = {
   kind: 'action' | 'event_created' | 'event_reopened';
   at: string;
