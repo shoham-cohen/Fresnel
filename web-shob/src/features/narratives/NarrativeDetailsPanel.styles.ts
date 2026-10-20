@@ -2,6 +2,8 @@ import { alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 import { DETAILS_PANEL_WIDTH } from './constants';
 
+const PANEL_MARGIN = 10;
+
 export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
   const colors = theme.palette;
 
@@ -41,7 +43,7 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
     panel: {
       width: DETAILS_PANEL_WIDTH,
       top: theme.customSizes.headerHeight,
-      height: `calc(100% - ${String(theme.customSizes.headerHeight)}px)`,
+      height: `calc(100% - ${String(theme.customSizes.headerHeight + PANEL_MARGIN * 2)}px)`,
       overflowY: 'auto',
       borderInlineStart: `1px solid ${colors.primary.light}`,
       p: '24px 28px',
@@ -49,6 +51,7 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       color: colors.header.background,
       boxSizing: 'border-box',
       borderRadius: '15px',
+      m: `${String(PANEL_MARGIN)}px`,
     },
 
     closeButtonContainer: {
@@ -76,6 +79,7 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       lineHeight: 1.25,
       color: colors.header.background,
       mb: 1,
+      mt: 2,
     },
 
     summary: {

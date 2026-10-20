@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
 import { pageStyles } from '@/styles/page.styles';
-import { useElementHeight } from '@/hooks/element-height.hook';
+import { useCallback, useMemo, useState } from 'react';
 import { toSortParams } from '@/utilities/narrative.utility';
+import { useElementHeight } from '@/hooks/element-height.hook';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import type { NarrativesQuery } from '@/interfaces/narrative-api.interface';
 import { useNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
@@ -38,7 +38,9 @@ export const NarrativeHistoryPage = () => {
   const lastRowNumber = Math.min(page * pageSize, total);
 
   const handleSelect = useCallback((narrative: Narrative) => {
-    setSelectedId(narrative.narrativeId);
+    setSelectedId((current) =>
+      current === narrative.narrativeId ? null : narrative.narrativeId,
+    );
   }, []);
 
   return (
