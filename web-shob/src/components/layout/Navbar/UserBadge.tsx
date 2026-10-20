@@ -12,7 +12,6 @@ import userAvatarIcon from '@/assets/icons/user-avatar.svg';
 
 import { styles } from './UserBadge.styles';
 
-// Shown only if the Keycloak token has no name claim.
 const DEFAULT_USER_NAME = 'שם משתמש';
 
 export interface UserBadgeProps {
@@ -20,7 +19,6 @@ export interface UserBadgeProps {
   onLogout: () => void;
 }
 
-/** Avatar and name; clicking the avatar opens the user menu. Figma: carbon:user-avatar-filled-alt (146:67) + name (146:68). */
 export function UserBadge({ userName = DEFAULT_USER_NAME, onLogout }: UserBadgeProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const isOpen = anchorEl !== null;
@@ -53,7 +51,6 @@ export function UserBadge({ userName = DEFAULT_USER_NAME, onLogout }: UserBadgeP
       >
         <MenuItem onClick={onLogout}>
           <ListItemIcon>
-            {/* The icon points right; flip it so it points out of the page in RTL. */}
             <LogoutIcon fontSize="small" sx={styles.logoutIcon} />
           </ListItemIcon>
           התנתקות
