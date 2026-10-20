@@ -3,8 +3,7 @@ import { Narrative } from './narrative.entity';
 
 @Entity({ schema: 'fresnel', name: 'simulated_narrative' })
 export class SimulatedNarrative {
-  // FK to narrative.narrative_id which is text — must stay text.
-  @PrimaryColumn({ name: 'narrative_id', type: 'text' })
+  @PrimaryColumn({ name: 'narrative_id', type: 'uuid' })
   narrativeId: string;
 
   @PrimaryColumn({ name: 'simulation_id', type: 'uuid' })

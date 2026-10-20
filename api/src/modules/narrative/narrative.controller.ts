@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
 import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
@@ -25,7 +25,7 @@ export class NarrativeController {
 
   @Get('simulated/:simulationId')
   async findOneSimulated(
-      @Param('simulationId') simulationId: string,
+      @Param('simulationId', new ParseUUIDPipe()) simulationId: string,
   ): Promise<SimulatedNarrativeResponseDto> {
     const simulatedNarrative = await this.narrativeService.findOneSimulated(simulationId);
     
@@ -45,7 +45,7 @@ export class NarrativeController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<NarrativeResponseDto> {
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string): Promise<NarrativeResponseDto> {
     const narrative = await this.narrativeService.findOne(id);
     if (!narrative) {
       throw new NotFoundException(`Narrative with id ${id} not found`);
