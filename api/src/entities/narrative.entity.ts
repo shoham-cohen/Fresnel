@@ -1,6 +1,12 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Event } from './event.entity';
 
+export enum Arena {
+  IL = 'IL',
+  ARAB = 'ARAB',
+  INTL = 'INTL',
+}
+
 @Entity({ schema: 'fresnel', name: 'narrative' })
 export class Narrative {
   @PrimaryColumn({ name: 'narrative_id', type: 'uuid' })
@@ -45,6 +51,12 @@ export class Narrative {
   @Column({name: 'received_at', type: 'timestamptz'})
   receivedAt: Date;
 
- @OneToMany(() => Event, event => event.narrative)
+  @OneToMany(() => Event, event => event.narrative)
   events?: Event[];
+
+  @Column({ name: 'item_list', type: 'text', array: true })
+  itemList: string[];
+
+  @Column({ type: 'text', array: true })
+  platforms: string[];
 }
