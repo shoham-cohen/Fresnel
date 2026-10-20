@@ -1,14 +1,14 @@
 export const colors = {
   background: '#FFFFFF',
-  surface: '#F2F2F2',
+  surface: '#E8F1FC',
   header: '#D9D9D9',
-  border: '#E0E0E0',
-  text: '#111111',
-  textMuted: '#6B6B6B',
-  primary: '#0A7AFF',
+  border: '#D6E3F2',
+  text: '#193657',
+  textMuted: '#5B7089',
+  primary: '#193657',
   onPrimary: '#FFFFFF',
   danger: '#D93025',
-  backdrop: 'rgba(0, 0, 0, 0.35)',
+  backdrop: 'rgba(16, 43, 77, 0.4)',
 };
 
 export const severityColors = {

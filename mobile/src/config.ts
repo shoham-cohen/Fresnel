@@ -6,4 +6,6 @@ export const config = {
   keycloakClientId: process.env.EXPO_PUBLIC_KEYCLOAK_CLIENT_ID ?? '',
   oracleUrl: process.env.EXPO_PUBLIC_ORACLE_URL ?? '',
   authBypass: process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true',
+  // Development only: the mock API reads the signed-in user from the X-Mock-User header.
+  mockUser: process.env.EXPO_PUBLIC_MOCK_USER ?? '',
 };
