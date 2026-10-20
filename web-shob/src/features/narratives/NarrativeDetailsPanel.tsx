@@ -57,6 +57,7 @@ function MetricCard({ label, value, icon }: MetricCardProps) {
 export function NarrativeDetailsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const narrativeId = searchParams.get('narrativeId');
+  //const simulationId = searchParams.get('simulationId');
 
   const [narrative, setNarrative] = useState<NarrativeDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -115,6 +116,7 @@ export function NarrativeDetailsPanel() {
 
     const targetUrl =
       `${CREATE_EVENT_URL}?narrativeId=` + encodeURIComponent(displayData.narrativeId);
+      //displayData.simulationId
 
     window.location.assign(targetUrl);
   };
