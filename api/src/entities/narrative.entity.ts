@@ -7,11 +7,6 @@ export enum Arena {
   INTL = 'intl',
 }
 
-const bigintTransformer = {
-  to: (value?: number | null) => value,
-  from: (value?: string | number | null) => (value != null ? Number(value) : value),
-};
-
 @Entity({ schema: 'fresnel', name: 'narrative' })
 export class Narrative {
   @PrimaryColumn({ name: 'narrative_id', type: 'uuid' })
@@ -41,10 +36,10 @@ export class Narrative {
   @Column({ type: 'text', array: true })
   platforms: string[];
 
-  @Column({ name: 'shares_count', type: 'bigint', transformer: bigintTransformer })
+  @Column({ name: 'shares_count', type: 'bigint' })
   sharesCount: number;
 
-  @Column({ name: 'views_count', type: 'bigint', transformer: bigintTransformer })
+  @Column({ name: 'views_count', type: 'bigint' })
   viewsCount: number;
 
   @Column({ type: 'text', array: true })

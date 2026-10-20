@@ -1,4 +1,3 @@
-import { Type } from 'class-transformer';
 import { Arena } from '../../../entities';
 
 export class NarrativeResponseDto {
@@ -10,13 +9,8 @@ export class NarrativeResponseDto {
   detectedAt: Date;
   itemList: string[];
   platforms: string[];
-
-  @Type(() => Number)
   sharesCount: number;
-
-  @Type(() => Number)
   viewsCount: number;
-
   languages: string[];
   isFlagged: boolean;
   embedding?: number[];

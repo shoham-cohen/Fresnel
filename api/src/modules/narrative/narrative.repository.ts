@@ -139,17 +139,7 @@ export class NarrativeRepository {
       skip: (page - 1) * pageSize,
     });
   }
-
-  findOneSimulated(
-    simulationId: string,
-    narrativeId: string,
-  ): Promise<SimulatedNarrative | null> {
-    return this.simulatedNarrativeOrmRepository.findOne({
-      where: { simulationId, narrativeId },
-      relations: { narrative: { events: true } },
-    });
-  }
-
+  
   createSimulated(
     data: CreateSimulatedNarrativeDto,
   ): Promise<SimulatedNarrative> {

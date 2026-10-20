@@ -114,23 +114,6 @@ export class NarrativeService {
     };
   }
 
-  async findOneSimulated(
-    simulationId: string,
-    narrativeId: string,
-  ): Promise<SimulatedNarrativeResponseDto | null> {
-    const simulatedNarrative =
-      await this.narrativeRepository.findOneSimulated(simulationId, narrativeId);
-
-    if (!simulatedNarrative) {
-      return null;
-    }
-
-    return plainToInstance(SimulatedNarrativeResponseDto, {
-      ...this.mapNarrativeToNarrativeResponseDto(simulatedNarrative.narrative),
-      simulationId: simulatedNarrative.simulationId,
-    });
-  }
-
   async createSimulated(
     dtos: CreateSimulatedNarrativeDto[],
   ): Promise<SimulatedNarrativeResponseDto[]> {

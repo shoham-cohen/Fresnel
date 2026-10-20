@@ -10,7 +10,6 @@ import {
   NotFoundException,
   ParseArrayPipe,
 } from '@nestjs/common';
-
 import { NarrativeService } from './narrative.service';
 import { UpdateNarrativeDto } from './dto/update-narrative-dto';
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
@@ -46,25 +45,6 @@ export class NarrativeController {
       @Query() query: FindNarrativesQueryDto,
   ): Promise<SimulatedNarrativeResponseDto[]> {
     return this.narrativeService.findSimulated(query);
-  }
-
-  @Get('simulated/one')
-  async findOneSimulated(
-    @Query('simulationId', new ParseUUIDPipe()) simulationId: string,
-    @Query('narrativeId', new ParseUUIDPipe()) narrativeId: string,
-  ): Promise<SimulatedNarrativeResponseDto> {
-    const simulatedNarrative = await this.narrativeService.findOneSimulated(
-      simulationId,
-      narrativeId,
-    );
-
-    if (!simulatedNarrative) {
-      throw new NotFoundException(
-        `Simulated narrative with narrativeId '${narrativeId}' and simulationId '${simulationId}' not found`,
-      );
-    }
-
-    return simulatedNarrative;
   }
 
   @Post('simulated')
