@@ -1,12 +1,12 @@
-import LogoutIcon from '@mui/icons-material/Logout';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import ButtonBase from '@mui/material/ButtonBase';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
+import { useState, type FC } from 'react';
+import Avatar from '@mui/material/Avatar';
 import MenuItem from '@mui/material/MenuItem';
+import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import LogoutIcon from '@mui/icons-material/Logout';
+import ListItemIcon from '@mui/material/ListItemIcon';
 
 import userAvatarIcon from '@/assets/icons/user-avatar.svg';
 
@@ -19,7 +19,7 @@ export interface UserBadgeProps {
   onLogout: () => void;
 }
 
-export function UserBadge({ userName = DEFAULT_USER_NAME, onLogout }: UserBadgeProps) {
+export const UserBadge: FC<UserBadgeProps> = ({ userName = DEFAULT_USER_NAME, onLogout }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const isOpen = anchorEl !== null;
 
@@ -58,4 +58,4 @@ export function UserBadge({ userName = DEFAULT_USER_NAME, onLogout }: UserBadgeP
       </Menu>
     </Box>
   );
-}
+};

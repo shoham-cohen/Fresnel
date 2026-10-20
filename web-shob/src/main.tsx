@@ -22,7 +22,6 @@ if (!rootElement) {
   throw new Error('Root element #root not found in index.html');
 }
 
-// Before rendering, not in a useEffect: nothing renders until the user is signed in.
 await initAuth();
 
 createRoot(rootElement).render(
