@@ -65,6 +65,33 @@ export const CLOSE_EVENT_LABEL = {
   alreadyClosed: 'האירוע כבר נסגר.',
 } as const;
 
+export const LOGIN_LABEL = {
+  appName: 'Fresnel',
+  appSubtitle: 'ניהול אירוע תודעתי',
+  welcome: 'ברוכים הבאים',
+  description: 'הכניסה היא עם חשבון הארגון. מה שמוצג לך תלוי בהרשאות שלך.',
+  sso: 'כניסה עם SSO',
+} as const;
+
+export const PROFILE_LABEL = {
+  arenas: 'גזרות',
+  roles: 'הרשאות',
+  noArenas: 'אין גזרה. לא יוצגו אירועים.',
+  signOut: 'התנתקות',
+} as const;
+
+export const ARENA_LABEL = {
+  IL: 'ישראל',
+  ARAB: 'מדינות ערב',
+  INTL: 'עולם',
+} as const;
+
+export const ROLE_LABEL: Record<string, string> = {
+  admin: 'מנהל',
+  editor: 'עריכה',
+  viewer: 'צפייה',
+};
+
 export const COMMON_LABEL = {
   loading: 'טוען נתונים...',
   retry: 'נסו שוב',

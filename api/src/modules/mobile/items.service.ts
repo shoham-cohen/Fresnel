@@ -8,11 +8,15 @@ import { ListItemsQuery } from './dto/list-items.query';
 export class ItemsService {
   constructor(private readonly dataLakeClient: DataLakeClient) {}
 
-  list(eventId: string, { page, pageSize }: ListItemsQuery): Promise<SourceItemPage> {
-    return this.dataLakeClient.findEventItems(eventId, page, pageSize);
+  list(
+    eventId: string,
+    { page, pageSize }: ListItemsQuery,
+    authorization?: string,
+  ): Promise<SourceItemPage> {
+    return this.dataLakeClient.findEventItems(eventId, page, pageSize, authorization);
   }
 
-  stats(eventId: string): Promise<EventStats> {
-    return this.dataLakeClient.findEventStats(eventId);
+  stats(eventId: string, authorization?: string): Promise<EventStats> {
+    return this.dataLakeClient.findEventStats(eventId, authorization);
   }
 }

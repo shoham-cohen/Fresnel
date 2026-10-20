@@ -8,11 +8,17 @@ import { EventsClient } from './events.client';
 export class EventsService {
   constructor(private readonly eventsClient: EventsClient) {}
 
-  listOpen({ search, page, pageSize }: ListOpenEventsQuery): Promise<OpenEventPage> {
-    return this.eventsClient.findOpen({ search: search?.trim() || undefined, page, pageSize });
+  listOpen(
+    { search, page, pageSize }: ListOpenEventsQuery,
+    authorization?: string,
+  ): Promise<OpenEventPage> {
+    return this.eventsClient.findOpen(
+      { search: search?.trim() || undefined, page, pageSize },
+      authorization,
+    );
   }
 
-  getById(eventId: string): Promise<EventDetail> {
-    return this.eventsClient.findById(eventId);
+  getById(eventId: string, authorization?: string): Promise<EventDetail> {
+    return this.eventsClient.findById(eventId, authorization);
   }
 }

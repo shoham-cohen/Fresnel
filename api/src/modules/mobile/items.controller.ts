@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Headers, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { EventStats } from './dto/event-stats';
 import { SourceItemPage } from './dto/source-item';
 import { ListItemsQuery } from './dto/list-items.query';
@@ -15,13 +15,17 @@ export class ItemsController {
   list(
     @Param('id', new ParseUUIDPipe()) eventId: string,
     @Query() query: ListItemsQuery,
+    @Headers('authorization') authorization?: string,
   ): Promise<SourceItemPage> {
-    return this.itemsService.list(eventId, query);
+    return this.itemsService.list(eventId, query, authorization);
   }
 
   // The aggregated numbers and top sources in the "תמונת מצב" tab.
   @Get(':id/stats')
-  stats(@Param('id', new ParseUUIDPipe()) eventId: string): Promise<EventStats> {
-    return this.itemsService.stats(eventId);
+  stats(
+    @Param('id', new ParseUUIDPipe()) eventId: string,
+    @Headers('authorization') authorization?: string,
+  ): Promise<EventStats> {
+    return this.itemsService.stats(eventId, authorization);
   }
 }

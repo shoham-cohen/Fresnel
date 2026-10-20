@@ -106,7 +106,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - **מסך ב-`src/app/` דק:** מרכיב קומפוננטות מ-`src/features/<תחום>/`. כל חייל עובד בעיקר בתיקיית התחום שלו.
 - **בורר הלשוניות** (`EventTabs`) הוא קומפוננטה שלנו עם `router.replace`, **בלי** material-top-tabs.
 - **גיליונות** בנויים על `Sheet` (Modal של React Native), לא routes.
-- **כניסה בפיתוח:** `EXPO_PUBLIC_AUTH_BYPASS=true` מדלג על מסך הכניסה, עם משתמש קבוע מה-seed.
+- **כניסה בפיתוח (עד מיראז׳):** אין דילוג. האפליקציה נפתחת תמיד במסך הכניסה, ו"כניסה עם SSO" קורא ל-`POST /api/mobile/auth`, שמביא מה-mock טוקן של משתמש אקראי. הטוקן נשמר בזיכרון בלבד ונשלח ב-`Authorization: Bearer` בכל קריאה. ה-mock מסנן לפי הגזרות שבטוקן.
 - **הספריות הנייטיב כבר בשלד:** `react-native-webview`, `expo-notifications`, `expo-auth-session`, `expo-secure-store`, `expo-web-browser`, `expo-crypto`, `expo-localization`. ה-dev client נבנה איתן פעם אחת.
 - **`src/realtime/` ו-`socket.io-client` כבר לא בשימוש** (אין socket). לא כותבים בהם קוד.
 
@@ -140,10 +140,11 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 **כניסה:** לא route שלנו. עמוד הכניסה של מיראז׳ ב-WebView מחזיר משתמש. ⬜ החוזה.
 
 ### ה-routes שלנו (מודול `mobile` ב-`api/`)
-**כרגע (מול רנדר):** הטלפון צורך רק את אלה. כולם עוברים ב-`api/` לאותו route ברנדר, דרך `getJson` ב-`api/src/modules/mobile/mock-api.ts` (404 ו-403 עוברים כמו שהם, כל כשל אחר הוא 502).
+**כרגע (מול רנדר):** הטלפון צורך רק את אלה. כולם עוברים ב-`api/` לאותו route ברנדר, דרך `getJson` ב-`api/src/modules/mobile/mock-api.ts`, עם ה-`Authorization` של הטלפון (401, 403 ו-404 עוברים כמו שהם, כל כשל אחר הוא 502).
 
 | route | מה |
 |---|---|
+| `POST /api/mobile/auth` | כניסה: טוקן של משתמש mock אקראי, ו-`user { id, name, arenas, roles }` |
 | `GET /api/mobile/events?search=&page=&pageSize=` | הבית: אירועי אמת פתוחים (#94) |
 | `GET /api/mobile/events/:id` | כרטיס האירוע בתמונת המצב |
 | `GET /api/mobile/events/:id/stats` | נתונים מצטברים ומקורות עיקריים |
@@ -170,7 +171,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | מפתחות שאילתות: `['events', search]`, `['event', id]`, `['timeline', id]`, `['stats', id]`, `['items', id]`, `['action-types']` | `src/api/queryKeys.ts` | MAR-01 |
 | `POLL` (זמני המשיכה) | `src/api/polling.ts` | MAR-01 |
 | `Loading`, `EmptyState`, `ErrorState`, `Tag` | `src/components/` | MAR-02 |
-| `useAuth()` עם `user { id, arena, name?, role? }`, `getAccessToken()` ו-`signOut()` | `src/auth/` | MAR-03 |
+| `useAuth()` עם `user { id, name, arenas, roles }`, `getAccessToken()`, `signIn()` ו-`signOut()` | `src/auth/` | MAR-03 |
 | `<OracleView eventId narrativeId />` | `src/features/oracle/` | MAR-08 |
 | `<CloseEventButton eventId />` עם הגיליון | `src/features/actions/close/` | MAR-15 |
 | `usePushStatus()` | `src/notifications/` | MAR-18 |
@@ -297,7 +298,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - **דרישות:** **Node 22.13 ומעלה** (Expo SDK 58 לא רץ על Node 20, ראו `.nvmrc`), JDK 17, Android SDK, `ANDROID_HOME`, Docker Desktop. ב-Mac גם Xcode ו-CocoaPods.
 - **DB מקומי (מהשורש):** `cp .env.example .env`, ואז `docker compose up -d` (פורט 5433). בהרמה הראשונה רצים `db/1.ddl.sql` ואז `db/2.dml.sql`. לנתונים טריים: `docker compose down -v` ואז `up -d`.
 - **השרת (מ-`api/`):** `npm install` ואז `npm run start:dev`. רץ על פורט 3000 (`API_PORT`), וקורא את `DATABASE_URL` מה-`.env` שבשורש. **בלי Docker:** `API_WITHOUT_DB=true` ב-`.env` שבשורש מרים רק את המודולים בלי DB (המודול `mobile`). כתובת ה-mock ניתנת לשינוי ב-`MOCK_API_URL`.
-- **האפליקציה (מ-`mobile/`):** `npm install`, `cp .env.example .env`, ואז `npm run android`. ב-`.env`: `EXPO_PUBLIC_API_URL=http://localhost:3000` ו-`EXPO_PUBLIC_AUTH_BYPASS=true`. **ב-Android** `src/config.ts` מחליף את `localhost` בכתובת של המחשב (המארח של Metro, או `10.0.2.2` באמולטור), כך שאותו `.env` עובד באמולטור, בטלפון אמיתי באותה רשת וב-iOS.
+- **האפליקציה (מ-`mobile/`):** `npm install`, `cp .env.example .env`, ואז `npm run android`. ב-`.env`: `EXPO_PUBLIC_API_URL=http://localhost:3000`. **ב-Android** `src/config.ts` מחליף את `localhost` בכתובת של המחשב (המארח של Metro, או `10.0.2.2` באמולטור), כך שאותו `.env` עובד באמולטור, בטלפון אמיתי באותה רשת וב-iOS.
 - **הבקשה הראשונה לרנדר** אחרי זמן שקט לוקחת 30 עד 60 שניות (השרת מתעורר). המסך מציג טעינה, זה לא באג.
 - **dev client:** נבנה פעם אחת לכל פלטפורמה. אחריו `npm start`, ושינויי JS נטענים בלי בנייה. בונים מחדש רק אחרי שינוי ב-`app.config.ts` או ספרייה נייטיב.
 - **Android:** `npm run android`. האמולטור מתמונת **Google Play**, אחרת אין Push.

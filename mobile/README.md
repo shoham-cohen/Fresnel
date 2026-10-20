@@ -55,7 +55,7 @@ npm run start:dev           # http://localhost:3000/api
 
 ## כניסה בפיתוח
 
-כש-`EXPO_PUBLIC_AUTH_BYPASS=true` ב-`.env`, האפליקציה נכנסת ישר לבית בלי מסך הכניסה.
+האפליקציה תמיד נפתחת במסך הכניסה. "כניסה עם SSO" קורא ל-`POST /api/mobile/auth`, שמביא מה-mock טוקן של משתמש אקראי (כל אחד עם גזרות והרשאות משלו, רשימה ב-`https://fresnel-mock-api.onrender.com/api/mobile/auth/users`). ה-mock מסנן את הנתונים לפי המשתמש שבטוקן. התנתקות מהפרופיל, וכניסה נוספת מגרילה משתמש אחר.
 
 ## פתיחת מסך ישירות
 

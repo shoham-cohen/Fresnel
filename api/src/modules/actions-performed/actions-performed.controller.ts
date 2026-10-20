@@ -14,9 +14,14 @@ import { ActionsPerformedService } from './actions-performed.service';
 import { CloseEventDto } from './dto/close-event.dto';
 import { CreateActionDto, CreatedAction } from './dto/create-action.dto';
 import { ActionTypeItem, TimelineEntry } from './dto/timeline-entry';
+import { MockCaller } from './mock-api.client';
 
-// Development only: X-Mock-User picks the user the mock acts as. It is forwarded as is.
-const MOCK_USER_HEADER = 'x-mock-user';
+type RequestHeaders = Record<string, string | undefined>;
+
+// The phone sends the token from /api/mobile/auth. X-Mock-User (development only) still works for curl.
+function callerFrom(headers: RequestHeaders): MockCaller {
+  return { authorization: headers.authorization, mockUser: headers['x-mock-user'] };
+}
 
 @Controller('actions-performed')
 export class ActionsPerformedController {
@@ -25,14 +30,14 @@ export class ActionsPerformedController {
   @Get('events/:eventId/timeline')
   getTimeline(
     @Param('eventId', new ParseUUIDPipe()) eventId: string,
-    @Headers(MOCK_USER_HEADER) mockUser?: string,
+    @Headers() headers: RequestHeaders,
   ): Promise<TimelineEntry[]> {
-    return this.actionsPerformedService.getTimeline(eventId, mockUser);
+    return this.actionsPerformedService.getTimeline(eventId, callerFrom(headers));
   }
 
   @Get('action-types')
-  getActionTypes(@Headers(MOCK_USER_HEADER) mockUser?: string): Promise<ActionTypeItem[]> {
-    return this.actionsPerformedService.getActionTypes(mockUser);
+  getActionTypes(@Headers() headers: RequestHeaders): Promise<ActionTypeItem[]> {
+    return this.actionsPerformedService.getActionTypes(callerFrom(headers));
   }
 
   @Post('events/:eventId/actions')
@@ -40,18 +45,18 @@ export class ActionsPerformedController {
   createAction(
     @Param('eventId', new ParseUUIDPipe()) eventId: string,
     @Body() dto: CreateActionDto,
-    @Headers(MOCK_USER_HEADER) mockUser?: string,
+    @Headers() headers: RequestHeaders,
   ): Promise<CreatedAction> {
-    return this.actionsPerformedService.createAction(eventId, dto, mockUser);
+    return this.actionsPerformedService.createAction(eventId, dto, callerFrom(headers));
   }
 
   @Delete('actions/:actionId')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteAction(
     @Param('actionId', new ParseUUIDPipe()) actionId: string,
-    @Headers(MOCK_USER_HEADER) mockUser?: string,
+    @Headers() headers: RequestHeaders,
   ): Promise<void> {
-    return this.actionsPerformedService.deleteAction(actionId, mockUser);
+    return this.actionsPerformedService.deleteAction(actionId, callerFrom(headers));
   }
 
   @Post('events/:eventId/close')
@@ -59,8 +64,8 @@ export class ActionsPerformedController {
   closeEvent(
     @Param('eventId', new ParseUUIDPipe()) eventId: string,
     @Body() dto: CloseEventDto,
-    @Headers(MOCK_USER_HEADER) mockUser?: string,
+    @Headers() headers: RequestHeaders,
   ): Promise<void> {
-    return this.actionsPerformedService.closeEvent(eventId, dto, mockUser);
+    return this.actionsPerformedService.closeEvent(eventId, dto, callerFrom(headers));
   }
 }

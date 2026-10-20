@@ -31,6 +31,8 @@ export const colors = {
   cardBackground: '#FFFFFF',
   track: '#E5E7EB',
   indicator: '#64748B',
+  avatarBackground: '#4A5563',
+  avatarFigure: '#E9EDF2',
 };
 
 export const severityColors = {

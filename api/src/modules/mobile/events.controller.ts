@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Headers, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { EventDetail } from './dto/event-detail';
 import { OpenEventPage } from './dto/open-event';
 import { ListOpenEventsQuery } from './dto/list-open-events.query';
@@ -12,13 +12,19 @@ export class EventsController {
 
   // #94: the open real events (open + in_progress) for the mobile home screen, newest first.
   @Get()
-  listOpen(@Query() query: ListOpenEventsQuery): Promise<OpenEventPage> {
-    return this.eventsService.listOpen(query);
+  listOpen(
+    @Query() query: ListOpenEventsQuery,
+    @Headers('authorization') authorization?: string,
+  ): Promise<OpenEventPage> {
+    return this.eventsService.listOpen(query, authorization);
   }
 
   // The event card in the "תמונת מצב" tab.
   @Get(':id')
-  getById(@Param('id', new ParseUUIDPipe()) eventId: string): Promise<EventDetail> {
-    return this.eventsService.getById(eventId);
+  getById(
+    @Param('id', new ParseUUIDPipe()) eventId: string,
+    @Headers('authorization') authorization?: string,
+  ): Promise<EventDetail> {
+    return this.eventsService.getById(eventId, authorization);
   }
 }

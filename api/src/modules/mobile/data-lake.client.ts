@@ -14,18 +14,25 @@ export class DataLakeClient {
     this.baseUrl = config.get<string>('DATA_LAKE_URL') ?? MOCK_API_URL;
   }
 
-  findEventItems(eventId: string, page: number, pageSize: number): Promise<SourceItemPage> {
+  findEventItems(
+    eventId: string,
+    page: number,
+    pageSize: number,
+    authorization?: string,
+  ): Promise<SourceItemPage> {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
     return getJson<SourceItemPage>(
       `${this.baseUrl}/api/events/${encodeURIComponent(eventId)}/items?${params}`,
       'Data Lake',
+      { authorization },
     );
   }
 
-  findEventStats(eventId: string): Promise<EventStats> {
+  findEventStats(eventId: string, authorization?: string): Promise<EventStats> {
     return getJson<EventStats>(
       `${this.baseUrl}/api/events/${encodeURIComponent(eventId)}/stats`,
       'Data Lake',
+      { authorization },
     );
   }
 }

@@ -20,20 +20,26 @@ export class EventsClient {
     this.baseUrl = config.get<string>('MOCK_API_URL') ?? MOCK_API_URL;
   }
 
-  findOpen({ search, page, pageSize }: FindOpenEventsOptions): Promise<OpenEventPage> {
+  findOpen(
+    { search, page, pageSize }: FindOpenEventsOptions,
+    authorization?: string,
+  ): Promise<OpenEventPage> {
     const params = new URLSearchParams({
       isSimulation: 'false',
       page: String(page),
       pageSize: String(pageSize),
     });
     if (search) params.set('search', search);
-    return getJson<OpenEventPage>(`${this.baseUrl}/api/events?${params}`, 'Events source');
+    return getJson<OpenEventPage>(`${this.baseUrl}/api/events?${params}`, 'Events source', {
+      authorization,
+    });
   }
 
-  findById(eventId: string): Promise<EventDetail> {
+  findById(eventId: string, authorization?: string): Promise<EventDetail> {
     return getJson<EventDetail>(
       `${this.baseUrl}/api/events/${encodeURIComponent(eventId)}`,
       'Events source',
+      { authorization },
     );
   }
 }
