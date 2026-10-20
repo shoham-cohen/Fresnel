@@ -6,6 +6,9 @@ export const styles = {
     flexDirection: 'column',
     alignItems: 'center',
   },
+  avatarButton: {
+    borderRadius: '50%',
+  },
   avatar: {
     width: 45,
     height: 45,
@@ -17,5 +20,8 @@ export const styles = {
     color: 'header.text',
     whiteSpace: 'nowrap',
     fontFamily: 'inherit',
+  },
+  logoutIcon: {
+    transform: 'scaleX(-1)',
   },
 } satisfies Record<string, SxProps<Theme>>;

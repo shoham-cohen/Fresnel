@@ -7,7 +7,6 @@ import { NavLink } from 'react-router';
 
 import { navItems } from '@/routes/paths';
 
-import { LogoutButton } from './LogoutButton';
 import { styles } from './Navbar.styles';
 import { RealityToggle } from './RealityToggle';
 import { UserBadge } from './UserBadge';
@@ -37,8 +36,7 @@ export function Navbar({ userName, onLogout }: NavbarProps) {
         </Box>
         <Box sx={styles.endSection}>
           <RealityToggle />
-          <UserBadge userName={userName} />
-          <LogoutButton onLogout={onLogout} />
+          <UserBadge userName={userName} onLogout={onLogout} />
         </Box>
       </Toolbar>
     </AppBar>
