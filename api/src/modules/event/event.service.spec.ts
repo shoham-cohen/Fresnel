@@ -48,6 +48,7 @@ describe('EventService', () => {
         severity: 'high',
         status: 'closed',
         isSimulation: false,
+        simulationId: null,
         narrative: {
           narrativeId: 'narrative-1',
           title: 'Test narrative',
@@ -94,6 +95,7 @@ describe('EventService', () => {
         severity: 'medium',
         status: 'closed',
         isSimulation: false,
+        simulationId: null,
         narrative: {
           title: 'Another narrative',
           summary: 'Second summary',
@@ -128,6 +130,7 @@ describe('EventService', () => {
         severity: 'low',
         status: 'closed',
         isSimulation: false,
+        simulationId: null,
         narrative: {
           title: 'Bounded narrative',
           summary: 'Boundary summary',

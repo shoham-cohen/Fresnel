@@ -5,6 +5,7 @@ import { Event, Narrative, Severity, EventLog, EventStatus } from '../../entitie
 
 export interface FindActiveOptions {
   isSimulation: boolean;
+  simulationId?: string | null;
   search?: string;
   page: number; // 1-based
   pageSize: number;
@@ -24,6 +25,7 @@ export interface CreateEventData {
   narrativeId: string;
   severity: Severity;
   isSimulation: boolean;
+  simulationId?: string | null;
   createdBy: string;
 }
 
@@ -50,6 +52,7 @@ export class EventRepository {
       severity: data.severity,
       status: 'open',
       isSimulation: data.isSimulation,
+      simulationId: data.simulationId ?? null,
       createdBy: data.createdBy,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -60,13 +63,19 @@ export class EventRepository {
     return this.eventOrmRepository.save(event);
   }
 
-  findActive({ isSimulation, search, page, pageSize }: FindActiveOptions): Promise<[Event[], number]> {
+  findActive({ isSimulation, simulationId, search, page, pageSize }: FindActiveOptions): Promise<[Event[], number]> {
     const query = this.eventOrmRepository
       .createQueryBuilder('e')
       .leftJoin('e.narrative', 'n')
       .addSelect(['n.narrativeId', 'n.title', 'n.summary', 'n.arena', 'n.detectedAt'])
       .where(`e.status <> 'closed'`)
-      .andWhere('e.isSimulation = :isSimulation', { isSimulation })
+      .andWhere('e.isSimulation = :isSimulation', { isSimulation });
+
+    if (simulationId !== undefined) {
+      query.andWhere('e.simulation_id = :simulationId', { simulationId });
+    }
+
+    query
       .orderBy('e.createdAt', 'DESC')
       .take(pageSize)
       .skip((page - 1) * pageSize);
@@ -76,6 +85,19 @@ export class EventRepository {
     }
 
     return query.getManyAndCount();
+  }
+
+  async findBySimulationId(simulationId: string): Promise<Event[]> {
+    return this.eventOrmRepository
+      .createQueryBuilder('e')
+      .leftJoinAndSelect('e.narrative', 'n')
+      .leftJoinAndSelect('e.actions', 'a')
+      .leftJoinAndSelect('a.actionType', 'at')
+      .where('e.simulation_id = :simulationId', { simulationId })
+      .andWhere('e.isSimulation = :isSimulation', { isSimulation: true })
+      .orderBy('e.createdAt', 'DESC')
+      .addOrderBy('a.performedAt', 'DESC')
+      .getMany();
   }
 
   async findClosedWithinPeriod({ closedAfter, closedBefore }: FindClosedEventsOptions): Promise<Event[]> {

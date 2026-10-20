@@ -1,6 +1,6 @@
 import { EventActionItem } from './dto/event-action-item';
 import { CreateEventActionDto } from './dto/create-event-action.dto';
-import { Body, Controller, Get, HttpCode, HttpStatus,ParseUUIDPipe, Param, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, ParseUUIDPipe, Param, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
 import { EventListPage } from './dto/event-list-item';
@@ -8,13 +8,14 @@ import { ListEventsQuery } from './dto/list-events.query';
 import { ListClosedEventsQuery } from './dto/list-closed-events.query';
 import { CloseEventDto } from './dto/close-event.dto';
 import { EventService } from './event.service';
+import { EventResponseDto } from './dto/event-response.dto';
 
 @Controller('events')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Get('closed')
-  listClosed(@Query() query: ListClosedEventsQuery) {
+  listClosed(@Query() query: ListClosedEventsQuery): Promise<EventResponseDto[]> {
     return this.eventService.listClosed(query.closed_after, query.closed_before);
   }
 
@@ -66,5 +67,10 @@ export class EventController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateEventDto): Promise<CreatedEventResponse> {
     return this.eventService.create(dto);
+  }
+
+  @Get(':simulationId')
+  getBySimulationId(@Param('simulationId', new ParseUUIDPipe()) simulationId: string): Promise<EventResponseDto[]> {
+    return this.eventService.getEventsBySimulationId(simulationId);
   }
 }
