@@ -16,3 +16,14 @@ export const EVENT_TAB_LABEL = {
   actions: 'פעולות שבוצעו',
   sources: 'מקורות מידע',
 } as const;
+
+export const COMMON_LABEL = {
+  loading: 'טוען…',
+  retry: 'נסו שוב',
+  yesterday: 'אתמול',
+} as const;
+
+export const ERROR_TEXT = {
+  network: 'אין חיבור לשרת. בדקו את החיבור ונסו שוב.',
+  generic: 'משהו השתבש. נסו שוב.',
+} as const;
