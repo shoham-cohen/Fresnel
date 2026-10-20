@@ -34,7 +34,6 @@ export type SourcesResponse = {
 
 type EventSourcesMonitorProps = {
   event: EventSummary;
-  /** Set to true to switch back to real API calls */
   useRealApi?: boolean;
 };
 
@@ -294,7 +293,7 @@ export function EventSourcesMonitor({ event, useRealApi = false }: EventSourcesM
           <List
             disablePadding
             sx={{
-              height: '100%', // Fills the flex-grow parent
+              height: '100%', 
               overflowY: 'auto',
               pr: 0.5,
               display: 'flex',
