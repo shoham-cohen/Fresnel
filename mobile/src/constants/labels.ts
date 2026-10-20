@@ -4,6 +4,8 @@ export const STATUS_LABEL = {
   closed: 'סגור',
 } as const;
 
+export const ANOMALY_LABEL = 'אנומליה';
+
 export const SCREEN_TITLE = {
   login: 'כניסה',
   home: 'ניהול אירוע',

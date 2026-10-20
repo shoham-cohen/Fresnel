@@ -13,6 +13,8 @@ export const colors = {
   border: '#D7E4F2',
   divider: '#E6EDF6',
   input: '#FFFFFF',
+  cardShadow: 'rgba(16, 43, 77, 0.15)',
+  dangerSurface: '#FDECEA',
   iconBackground: '#D6E3F2',
   activeTabBorder: '#C2CEDD',
   text: '#102B4D',
