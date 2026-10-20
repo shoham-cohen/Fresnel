@@ -69,7 +69,6 @@ export default function EventTimelineItem({ selectedAction }: EventTimelineItemP
           sx={{ 
             fontWeight: 'bold', 
             color: '#1B365D', 
-            mb: 1, 
             fontSize: '1.3rem',
             textShadow: '1px 1px 3px rgba(0, 0, 0, 0.2)'
           }}
@@ -77,11 +76,6 @@ export default function EventTimelineItem({ selectedAction }: EventTimelineItemP
           {selectedAction.title}
         </Typography>
 
-        <Typography
-          sx={{ color: '#1B365D', fontSize: '1.1rem' }}
-        >
-          סטטוס: {selectedAction.status} • חומרה: {selectedAction.severity}
-        </Typography>
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'flex-start', pt: 2, pl: 2 }}>

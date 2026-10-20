@@ -5,9 +5,9 @@ import { memo, type FC, type KeyboardEvent } from 'react';
 import { formatDate, formatTime } from '@/lib/formatDateTime';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import { VIEWS_COUNT_MAX } from '../../constants/columns.constant';
+import type { FlagColor } from '../../interfaces/flag-color.interface';
 import { COLUMN_STYLES, TOOLTIP_SLOT_PROPS } from '../../NarrativesTable.styles';
 import { Box, Tooltip, TableRow, TableCell, IconButton, Typography } from '@mui/material';
-import type { FlagColor } from '../../interfaces/flag-color.interface';
 
 const viewsFormat = new Intl.NumberFormat('he-IL');
 
@@ -59,7 +59,14 @@ const NarrativeRowComponent: FC<NarrativeRowProps> = ({
       aria-current={selected ? 'true' : undefined}
       sx={[styles.row, Boolean(onSelect) && styles.clickableRow]}
     >
-      <TableCell sx={[styles.cell, COLUMN_STYLES.number]}>
+      <TableCell sx={[styles.cell, COLUMN_STYLES.number, styles.numberCell]}>
+        {narrative.isAnomaly && (
+          <Box sx={styles.anomalyTag}>
+            <Typography component="span" sx={styles.anomalyTagLabel}>
+              {'מומלץ\nלטפל'}
+            </Typography>
+          </Box>
+        )}
         <Box sx={styles.numberBox}>{rowNumber}</Box>
       </TableCell>
       <TableCell sx={[styles.cell, COLUMN_STYLES.subject, styles.subjectCell]}>

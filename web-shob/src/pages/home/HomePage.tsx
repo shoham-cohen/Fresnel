@@ -2,9 +2,11 @@ import { useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router';
 import { pageStyles } from '@/styles/page.styles';
-import { DETAILS_PANEL_WIDTH, NarrativeDetailsPanel } from '@/features/narratives';
+import { toRowId } from '@/utilities/narrative.utility';
 import { NarrativesTable } from '@/components/NarrativesTable';
 import type { Narrative } from '@/interfaces/narrative.interface';
+import { SELECTION_PARAMS } from '@/features/narratives/constants';
+import { DETAILS_PANEL_WIDTH, NarrativeDetailsPanel } from '@/features/narratives';
 import { useRecentNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
 
 const RECENT_HOURS = 24;
@@ -16,13 +18,29 @@ export const HomePage = () => {
   const { narratives, tableStatus, refetch } = useRecentNarratives(RECENT_HOURS);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const selectedId = searchParams.get('narrativeId');
+  const narrativeId = searchParams.get(SELECTION_PARAMS.narrativeId);
+  const selectedId =
+    narrativeId && toRowId(narrativeId, searchParams.get(SELECTION_PARAMS.simulationId));
 
   const handleSelect = useCallback(
     (narrative: Narrative) => {
       setSearchParams((params) => {
         const next = new URLSearchParams(params);
-        next.set('narrativeId', narrative.narrativeId);
+        const current = next.get(SELECTION_PARAMS.narrativeId);
+        const isSelected =
+          current !== null &&
+          toRowId(current, next.get(SELECTION_PARAMS.simulationId)) === narrative.rowId;
+
+        next.delete(SELECTION_PARAMS.narrativeId);
+        next.delete(SELECTION_PARAMS.simulationId);
+
+        if (!isSelected) {
+          next.set(SELECTION_PARAMS.narrativeId, narrative.narrativeId);
+          if (narrative.simulationId) {
+            next.set(SELECTION_PARAMS.simulationId, narrative.simulationId);
+          }
+        }
+
         return next;
       });
     },

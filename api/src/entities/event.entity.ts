@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { Narrative } from './narrative.entity';
+import { Action } from './action.entity';
 
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
 export type EventStatus = 'open' | 'in_progress' | 'closed';
@@ -10,7 +11,7 @@ export class Event {
   @PrimaryColumn({ name: 'event_id', type: 'uuid', default: () => 'gen_random_uuid()' })
   eventId: string;
 
-  @Column({ name: 'narrative_id', type: 'text' })
+  @Column({ name: 'narrative_id', type: 'uuid' })
   narrativeId: string;
 
   @ManyToOne(() => Narrative, (narrative) => narrative.events)
@@ -44,4 +45,7 @@ export class Event {
 
   @Column({ name: 'closure_summary', type: 'text', nullable: true })
   closureSummary: string | null;
+
+  @OneToMany(() => Action, (action) => action.event)
+  actions: Action[];
 }
