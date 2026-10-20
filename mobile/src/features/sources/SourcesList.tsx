@@ -1,22 +1,33 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { colors, fontSize, radius, spacing, textAlignStart } from '@/theme';
 
 import { SourceRow } from './SourceRow';
-import type { SourceItem } from './types';
+import { useSources } from './useSources';
 
 type Props = {
-  items: SourceItem[];
-  total: number;
+  eventId: string;
 };
 
-export function SourcesList({ items, total }: Props) {
+export function SourcesList({ eventId }: Props) {
+  const sources = useSources(eventId);
+  const { items, total, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = sources;
   const [search, setSearch] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const query = search.trim().toLowerCase();
 
-  // The search runs on the items already loaded (Nexus has no text search).
+  // The search runs on the items already loaded (the Data Lake has no text search).
   const visibleItems = useMemo(() => {
     if (!query) return items;
     return items.filter((item) =>
@@ -26,7 +37,18 @@ export function SourcesList({ items, total }: Props) {
     );
   }, [items, query]);
 
-  const hasMore = items.length < total;
+  // Pull-to-refresh only. The 60-second polling refetches without showing the spinner.
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  };
+
+  const onEndReached = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  };
 
   return (
     <FlatList
@@ -34,10 +56,13 @@ export function SourcesList({ items, total }: Props) {
       keyExtractor={(item) => item.itemId}
       renderItem={({ item }) => <SourceRow item={item} />}
       keyboardShouldPersistTaps="handled"
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.5}
+      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
       ListHeaderComponent={
         <View style={styles.header}>
           <Text style={styles.title}>
-            מקורות מידע <Text style={styles.count}>({total})</Text>
+            מקורות מידע {sources.data ? <Text style={styles.count}>({total})</Text> : null}
           </Text>
           <View style={styles.search}>
             <Ionicons name="search" size={18} color={colors.text} />
@@ -53,10 +78,27 @@ export function SourcesList({ items, total }: Props) {
           </View>
         </View>
       }
-      ListEmptyComponent={<Text style={styles.footer}>לא נמצאו מקורות</Text>}
+      ListEmptyComponent={
+        sources.isPending ? (
+          <ActivityIndicator style={styles.state} color={colors.text} />
+        ) : sources.isError ? (
+          <View style={styles.state}>
+            <Text style={styles.stateText}>לא הצלחנו לטעון את המקורות</Text>
+            <Pressable style={styles.retry} onPress={() => refetch()} accessibilityRole="button">
+              <Text style={styles.retryLabel}>נסה שוב</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Text style={[styles.state, styles.stateText]}>
+            {query ? 'לא נמצאו מקורות' : 'אין מקורות לאירוע'}
+          </Text>
+        )
+      }
       ListFooterComponent={
-        query && hasMore ? (
-          <Text style={styles.footer}>
+        isFetchingNextPage ? (
+          <ActivityIndicator style={styles.state} color={colors.text} />
+        ) : query && hasNextPage ? (
+          <Text style={[styles.state, styles.stateText]}>
             חיפוש ב-{items.length} מתוך {total}
           </Text>
         ) : undefined
@@ -101,10 +143,25 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: textAlignStart,
   },
-  footer: {
+  state: {
     padding: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  stateText: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: 'center',
+  },
+  retry: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: colors.header,
+  },
+  retryLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.onHeader,
   },
 });

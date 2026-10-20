@@ -1,11 +1,14 @@
+import { useLocalSearchParams } from 'expo-router';
+
 import { Screen } from '@/components/Screen';
-import { SOURCES_FIXTURE } from '@/features/sources/fixtures';
 import { SourcesList } from '@/features/sources/SourcesList';
 
 export default function SourcesScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+
   return (
     <Screen>
-      <SourcesList items={SOURCES_FIXTURE.items} total={SOURCES_FIXTURE.total} />
+      <SourcesList eventId={id} />
     </Screen>
   );
 }
