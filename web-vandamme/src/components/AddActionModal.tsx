@@ -9,18 +9,13 @@ import {
   Select,
   MenuItem,
   FormControl,
+  FormHelperText,
   Button,
+  CircularProgress,
 } from '@mui/material'
 import type { SelectChangeEvent } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-
-const MOCK_ACTION_TITLES = [
-  'עדכון סטטוס אירוע',
-  'שיחה עם גורם מוסמך',
-  'שליחת דיווח ראשוני',
-  'בדיקת נתונים בשטח',
-  'סגירת מעגל טיפול',
-]
+import { useActionTypes } from '../hooks/useActionTypes'
 
 const MAX_CHARS = 500
 
@@ -32,6 +27,8 @@ type Props = {
 export default function AddActionModal({ open, onClose }: Props) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+
+  const { actionTypes, loading, error } = useActionTypes(open)
 
   const handleSubmit = () => {
     onClose()
@@ -59,7 +56,7 @@ export default function AddActionModal({ open, onClose }: Props) {
           alignItems: 'center',
           px: 3,
           pt: 2,
-          pb: 1
+          pb: 1,
         }}
       >
         <IconButton onClick={onClose} sx={{ color: 'text.primary' }}>
@@ -68,7 +65,6 @@ export default function AddActionModal({ open, onClose }: Props) {
         <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '20px' }}>
           הוספת פעולה
         </Typography>
-        
       </Box>
 
       <DialogContent sx={{ px: 3, pb: 4 }}>
@@ -80,12 +76,18 @@ export default function AddActionModal({ open, onClose }: Props) {
             >
               כותרת לפעולה <Box component="span" sx={{ color: 'error.main' }}>*</Box>
             </Typography>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" error={!!error}>
               <Select
                 value={title}
                 onChange={(e: SelectChangeEvent) => setTitle(e.target.value)}
                 displayEmpty
+                disabled={loading || !!error}
                 MenuProps={{ dir: 'rtl' }}
+                endAdornment={
+                  loading ? (
+                    <CircularProgress size={18} sx={{ position: 'absolute', left: 32 }} />
+                  ) : null
+                }
                 sx={{
                   '& .MuiSelect-select.MuiSelect-outlined': {
                     color: title ? 'text.primary' : 'text.secondary',
@@ -99,14 +101,15 @@ export default function AddActionModal({ open, onClose }: Props) {
                 }}
               >
                 <MenuItem value="" disabled>
-                  הזן כותרת לפעולה...
+                  {loading ? 'טוען...' : 'בחר כותרת לפעולה...'}
                 </MenuItem>
-                {MOCK_ACTION_TITLES.map((item) => (
-                  <MenuItem key={item} value={item}>
-                    {item}
+                {actionTypes.map((item) => (
+                  <MenuItem key={item.code} value={item.labelHe}>
+                    {item.labelHe}
                   </MenuItem>
                 ))}
               </Select>
+              {error && <FormHelperText>{error}</FormHelperText>}
             </FormControl>
           </Box>
 
