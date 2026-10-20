@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { Narrative } from '../../entities';
 import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
 import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
@@ -14,33 +20,14 @@ export class NarrativeService {
 
   async findAll(): Promise<NarrativeResponseDto[]> {
     const narratives = await this.narrativeRepository.findAll();
-
-    return plainToInstance(
-      NarrativeResponseDto,
-      narratives.map((narrative) => {
-        const { events, ...data } = narrative;
-        return {
-          ...data,
-          isEvent: Boolean(events && events.length > 0),
-        };
-      }),
-    );
+    return narratives.map(toNarrativeResponseDto);
   }
 
   async findPage(query: ListNarrativesQueryDto): Promise<NarrativeListPageDto> {
     const [narratives, total] = await this.narrativeRepository.findPage(query);
 
     return {
-      items: plainToInstance(
-        NarrativeResponseDto,
-        narratives.map((narrative) => {
-          const { events, ...data } = narrative;
-          return {
-            ...data,
-            isEvent: Boolean(events && events.length > 0),
-          };
-        }),
-      ),
+      items: narratives.map(toNarrativeResponseDto),
       total,
       page: query.page,
       pageSize: query.pageSize,
@@ -49,13 +36,7 @@ export class NarrativeService {
 
   async findOne(narrativeId: string): Promise<NarrativeResponseDto | null> {
     const narrative = await this.narrativeRepository.findOne(narrativeId);
-    if (!narrative) return null;
-
-    const { events, ...data } = narrative;
-    return plainToInstance(NarrativeResponseDto, {
-      ...data,
-      isEvent: Boolean(events && events.length > 0),
-    });
+    return narrative ? toNarrativeResponseDto(narrative) : null;
   }
 
   async update(
@@ -68,11 +49,7 @@ export class NarrativeService {
       throw new NotFoundException(`Narrative with id ${narrativeId} not found`);
     }
 
-    const { events, ...data } = updated;
-    return plainToInstance(NarrativeResponseDto, {
-      ...data,
-      isEvent: Boolean(events && events.length > 0),
-    });
+    return toNarrativeResponseDto(updated);
   }
 
   async findSimulated(
@@ -81,38 +58,99 @@ export class NarrativeService {
     const simulatedNarratives =
       await this.narrativeRepository.findSimulated(simulationId);
 
-    return plainToInstance(
-      SimulatedNarrativeResponseDto,
-      simulatedNarratives.map((item) => {
-        const { events, ...narrativeData } = item.narrative ?? {};
-        return {
-          ...narrativeData,
-          narrativeId: item.narrativeId,
-          simulationId: item.simulationId,
-          isEvent: Boolean(events && events.length > 0),
-        };
-      }),
+    return simulatedNarratives.map((item) =>
+      toSimulatedNarrativeResponseDto(
+        item.narrative,
+        item.narrativeId,
+        item.simulationId,
+      ),
     );
   }
 
   async createSimulated(
-    dto: CreateSimulatedNarrativeDto,
-  ): Promise<SimulatedNarrativeResponseDto> {
-    const narrative = await this.narrativeRepository.findOne(dto.narrativeId);
-
-    if (!narrative) {
-      throw new NotFoundException(`Narrative with id ${dto.narrativeId} not found`);
+    dtos: CreateSimulatedNarrativeDto[],
+  ): Promise<SimulatedNarrativeResponseDto[]> {
+    if (dtos.length === 0) {
+      return [];
     }
 
-    const created = await this.narrativeRepository.createSimulated(dto);
+    const uniqueNarrativeIds = validateUniqueSimulatedNarratives(dtos);
+    const narratives =
+      await this.narrativeRepository.findManyByIds(uniqueNarrativeIds);
+    validateAllNarrativesExist(uniqueNarrativeIds, narratives);
 
-    const { events, ...narrativeData } = narrative;
-    return plainToInstance(SimulatedNarrativeResponseDto, {
-      ...narrativeData,
-      narrativeId: created.narrativeId,
-      simulationId: created.simulationId,
-      isEvent: Boolean(events && events.length > 0),
-    });
+    const created = await this.narrativeRepository.createSimulatedMany(dtos);
+    const narrativeMap = new Map(
+      narratives.map((narrative) => [narrative.narrativeId, narrative]),
+    );
+
+    return created.map((item) =>
+      toSimulatedNarrativeResponseDto(
+        narrativeMap.get(item.narrativeId),
+        item.narrativeId,
+        item.simulationId,
+      ),
+    );
   }
 }
+
+const validateUniqueSimulatedNarratives = (
+  dtos: CreateSimulatedNarrativeDto[],
+): string[] => {
+  const seenSimulationsByNarrative = new Map<string, Set<string>>();
+
+  for (const dto of dtos) {
+    const simulationIds = seenSimulationsByNarrative.get(dto.narrativeId);
+    if (simulationIds?.has(dto.simulationId)) {
+      throw new ConflictException(
+        `Duplicate narrative and simulation combination in payload: narrativeId '${dto.narrativeId}', simulationId '${dto.simulationId}'`,
+      );
+    }
+    if (!simulationIds) {
+      seenSimulationsByNarrative.set(
+        dto.narrativeId,
+        new Set([dto.simulationId]),
+      );
+    } else {
+      simulationIds.add(dto.simulationId);
+    }
+  }
+
+  return Array.from(seenSimulationsByNarrative.keys());
+};
+
+const validateAllNarrativesExist = (
+  expectedIds: string[],
+  foundNarratives: Narrative[],
+): void => {
+  if (foundNarratives.length !== expectedIds.length) {
+    const foundIds = new Set(foundNarratives.map((n) => n.narrativeId));
+    const missingIds = expectedIds.filter((id) => !foundIds.has(id));
+    throw new BadRequestException(
+      `Narratives with ids [${missingIds.join(', ')}] not found`,
+    );
+  }
+};
+
+const toNarrativeResponseDto = (narrative: Narrative): NarrativeResponseDto => {
+  const { events, ...data } = narrative;
+  return plainToInstance(NarrativeResponseDto, {
+    ...data,
+    isEvent: Boolean(events && events.length > 0),
+  });
+};
+
+const toSimulatedNarrativeResponseDto = (
+  narrative: Narrative | undefined,
+  narrativeId: string,
+  simulationId: string,
+): SimulatedNarrativeResponseDto => {
+  const { events, ...narrativeData } = narrative ?? {};
+  return plainToInstance(SimulatedNarrativeResponseDto, {
+    ...narrativeData,
+    narrativeId,
+    simulationId,
+    isEvent: Boolean(events && events.length > 0),
+  });
+};
 

@@ -7,6 +7,7 @@ import {
   Query,
   Controller,
   NotFoundException,
+  ParseArrayPipe,
 } from '@nestjs/common';
 
 import { NarrativeService } from './narrative.service';
@@ -40,8 +41,9 @@ export class NarrativeController {
 
   @Post('simulated')
   createSimulated(
-    @Body() createSimulatedNarrativeDto: CreateSimulatedNarrativeDto,
-  ): Promise<SimulatedNarrativeResponseDto> {
+    @Body(new ParseArrayPipe({ items: CreateSimulatedNarrativeDto }))
+    createSimulatedNarrativeDto: CreateSimulatedNarrativeDto[],
+  ): Promise<SimulatedNarrativeResponseDto[]> {
     return this.narrativeService.createSimulated(createSimulatedNarrativeDto);
   }
 
@@ -54,7 +56,6 @@ export class NarrativeController {
     return narrative;
   }
 
-  // Updates the fields in the body (e.g. { isFlagged: true }) and returns the updated narrative.
   @Patch(':id')
   update(
     @Param('id') id: string,

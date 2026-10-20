@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   ILike,
+  In,
   Between,
   Repository,
   ArrayContains,
@@ -10,7 +11,13 @@ import {
   type FindOptionsWhere,
 } from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
+import { POSTGRES_ERROR_CODES } from '../../consts/postgresErrorCode';
 import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
+
+export type CreateSimulatedNarrativeData = {
+  narrativeId: string;
+  simulationId: string;
+};
 
 @Injectable()
 export class NarrativeRepository {
@@ -70,6 +77,15 @@ export class NarrativeRepository {
     });
   }
 
+  findManyByIds(narrativeIds: string[]): Promise<Narrative[]> {
+    if (narrativeIds.length === 0) return Promise.resolve([]);
+
+    return this.narrativeOrmRepository.find({
+      where: { narrativeId: In(narrativeIds) },
+      relations: { events: true },
+    });
+  }
+
   // Returns the updated narrative, or null when there is no narrative with this id.
   async update(
     narrativeId: string,
@@ -91,13 +107,28 @@ export class NarrativeRepository {
     });
   }
 
-  createSimulated(data: {
-    narrativeId: string;
-    simulationId: string;
-  }): Promise<SimulatedNarrative> {
+  createSimulated(
+    data: CreateSimulatedNarrativeData,
+  ): Promise<SimulatedNarrative> {
     const simulatedNarrative = this.simulatedNarrativeOrmRepository.create(data);
     
     return this.simulatedNarrativeOrmRepository.save(simulatedNarrative);
+  }
+
+  async createSimulatedMany(
+    data: CreateSimulatedNarrativeData[],
+  ): Promise<SimulatedNarrative[]> {
+    if (data.length === 0) return [];
+
+    try {
+      const simulatedNarratives = this.simulatedNarrativeOrmRepository.create(data);
+      return await this.simulatedNarrativeOrmRepository.save(simulatedNarratives);
+    } catch (error: any) {
+      if (error?.code === POSTGRES_ERROR_CODES.UNIQUE_VIOLATION) {
+        throw new ConflictException('One or more simulated narratives already exist');
+      }
+      throw error;
+    }
   }
 }
 
