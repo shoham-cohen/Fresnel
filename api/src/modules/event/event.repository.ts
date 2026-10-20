@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Event, Narrative, Severity, EventLog } from '../../entities';
-
+import { Event, Narrative, Severity, EventLog, EventStatus } from '../../entities';
 
 export interface FindActiveOptions {
   isSimulation: boolean;
@@ -71,6 +70,18 @@ export class EventRepository {
     }
 
     return query.getManyAndCount();
+  }
+
+  async findEventById(eventId: string): Promise<Event | null> {
+    return this.eventOrmRepository.findOne({
+      where: {
+        eventId,
+      },
+    });
+  }
+
+  async updateStatus(eventId: string, status: EventStatus): Promise<void> {
+    await this.eventOrmRepository.update(eventId, { status });
   }
 
   async findById(id: string): Promise<Event | null> {

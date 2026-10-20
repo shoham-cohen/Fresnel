@@ -1,8 +1,21 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
-import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
-import { NarrativeResponseDto } from './dto/narrative-response-dto';
-import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
+import {
+  Get,
+  Body,
+  Post,
+  Patch,
+  Param,
+  Query,
+  Controller,
+  NotFoundException,
+} from '@nestjs/common';
+
 import { NarrativeService } from './narrative.service';
+import { UpdateNarrativeDto } from './dto/update-narrative-dto';
+import { NarrativeResponseDto } from './dto/narrative-response-dto';
+import { NarrativeListPageDto } from './dto/narrative-list-page-dto';
+import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
+import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
+import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
 
 @Controller('narratives')
 export class NarrativeController {
@@ -11,6 +24,11 @@ export class NarrativeController {
   @Get()
   findAll(): Promise<NarrativeResponseDto[]> {
     return this.narrativeService.findAll();
+  }
+
+  @Get('page')
+  findPage(@Query() query: ListNarrativesQueryDto): Promise<NarrativeListPageDto> {
+    return this.narrativeService.findPage(query);
   }
 
   @Get('simulated')
@@ -34,6 +52,15 @@ export class NarrativeController {
       throw new NotFoundException(`Narrative with id ${id} not found`);
     }
     return narrative;
+  }
+
+  // Updates the fields in the body (e.g. { isFlagged: true }) and returns the updated narrative.
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateNarrativeDto: UpdateNarrativeDto,
+  ): Promise<NarrativeResponseDto> {
+    return this.narrativeService.update(id, updateNarrativeDto);
   }
 }
 

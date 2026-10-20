@@ -1,5 +1,6 @@
 import { alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
+import { DETAILS_PANEL_WIDTH } from './constants';
 
 export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
   const colors = theme.palette;
@@ -37,16 +38,15 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       mt: 0.5,
     },
 
-    dialogPaper: {
-      width: 420,
-      maxWidth: 'calc(100vw - 32px)',
-      maxHeight: 'calc(100vh - 64px)',
+    panel: {
+      width: DETAILS_PANEL_WIDTH,
+      top: theme.customSizes.headerHeight,
+      height: `calc(100% - ${String(theme.customSizes.headerHeight)}px)`,
       overflowY: 'auto',
+      borderInlineStart: `1px solid ${colors.primary.light}`,
       p: '24px 28px',
       bgcolor: colors.background.paper,
       color: colors.header.background,
-      border: `1px solid ${colors.primary.main}`,
-      direction: 'rtl',
       boxSizing: 'border-box',
       borderRadius: '8px',
     },

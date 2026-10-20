@@ -1,4 +1,3 @@
-
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   Close as CloseIcon,
@@ -8,23 +7,15 @@ import {
   Sensors as SensorsIcon,
 } from '@mui/icons-material';
 
-import {
-  Box,
-  Divider,
-  Dialog,
-  IconButton,
-  Typography,
-} from '@mui/material';
+import { Box, Divider, Drawer, IconButton, Typography } from '@mui/material';
 
-import { alpha, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { useSearchParams } from 'react-router';
 import { getNarrativeDetailsPanelStyles } from './NarrativeDetailsPanel.styles';
 
-import {
-  fetchNarrativeById,
-  MOCK_CREATE_EVENT_URL,
-  type NarrativeDetails,
-} from './mockData';
+import { CREATE_EVENT_URL, DETAILS_PANEL_TRANSITION } from './constants';
+import { narrativeService } from '@/services/narrative.service';
+import type { NarrativeDetails } from '@/interfaces/narrative.interface';
 
 function formatDetectedAt(value: string): string {
   const d = new Date(value);
@@ -54,9 +45,7 @@ function MetricCard({ label, value, icon }: MetricCardProps) {
     <Box sx={styles.metricCard}>
       <Box sx={styles.metricIcon}>{icon}</Box>
 
-      <Typography sx={styles.metricLabel}>
-        {label}
-      </Typography>
+      <Typography sx={styles.metricLabel}>{label}</Typography>
 
       <Typography sx={styles.metricValue}>
         {value == null ? '—' : value.toLocaleString('en-US')}
@@ -69,17 +58,14 @@ export function NarrativeDetailsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const narrativeId = searchParams.get('narrativeId');
 
-  const [narrative, setNarrative] =
-    useState<NarrativeDetails | null>(null);
+  const [narrative, setNarrative] = useState<NarrativeDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
-  const colors = theme.palette;
   const styles = getNarrativeDetailsPanelStyles(theme);
 
   useEffect(() => {
     if (!narrativeId) {
-      setNarrative(null);
       setIsLoading(false);
       return;
     }
@@ -89,7 +75,8 @@ export function NarrativeDetailsPanel() {
     setIsLoading(true);
     setNarrative(null);
 
-    void fetchNarrativeById(narrativeId)
+    void narrativeService
+      .getById(narrativeId)
       .then((data) => {
         if (isMounted) {
           setNarrative(data);
@@ -127,67 +114,50 @@ export function NarrativeDetailsPanel() {
     if (!displayData) return;
 
     const targetUrl =
-      `${MOCK_CREATE_EVENT_URL}?narrativeId=` +
-      encodeURIComponent(displayData.narrativeId);
+      `${CREATE_EVENT_URL}?narrativeId=` + encodeURIComponent(displayData.narrativeId);
 
     window.location.assign(targetUrl);
   };
 
-  const displayData =
-    narrativeId && narrative?.narrativeId === narrativeId
+  const displayData = narrativeId
+    ? narrative?.narrativeId === narrativeId
       ? narrative
-      : null;
+      : null
+    : narrative;
 
   return (
-    <Dialog
+    <Drawer
       open={isOpen}
-      onClose={handleClose}
-      maxWidth={false}
+      anchor="right"
+      variant="persistent"
+      transitionDuration={DETAILS_PANEL_TRANSITION.duration}
       slotProps={{
-        paper: {
-          sx: styles.dialogPaper,
-        },
+        transition: { easing: DETAILS_PANEL_TRANSITION.easing },
+        paper: { component: 'aside', elevation: 4, 'aria-label': 'פרטי ההתראה', sx: styles.panel },
       }}
     >
       <Box sx={styles.closeButtonContainer}>
-        <IconButton
-          onClick={handleClose}
-          aria-label="סגירה"
-          size="small"
-          sx={styles.closeButton}
-        >
+        <IconButton onClick={handleClose} aria-label="סגירה" size="small" sx={styles.closeButton}>
           <CloseIcon fontSize="medium" />
         </IconButton>
       </Box>
 
-      {isLoading && (
-        <Typography sx={styles.statusMessage}>
-          טוען נתונים...
-        </Typography>
-      )}
+      {isLoading && <Typography sx={styles.statusMessage}>טוען נתונים...</Typography>}
 
       {!isLoading && narrativeId && !displayData && (
-        <Typography sx={styles.statusMessage}>
-          לא נמצאו נתונים עבור הנרטיב
-        </Typography>
+        <Typography sx={styles.statusMessage}>לא נמצאו נתונים עבור הנרטיב</Typography>
       )}
 
       {displayData && (
         <Box sx={styles.content}>
-          <Typography sx={styles.title}>
-            {displayData.title}
-          </Typography>
+          <Typography sx={styles.title}>{displayData.title}</Typography>
 
           {displayData.summary && (
-            <Typography sx={styles.summary}>
-              {displayData.summary}
-            </Typography>
+            <Typography sx={styles.summary}>{displayData.summary}</Typography>
           )}
 
           <Box sx={styles.metadata}>
-            <Typography sx={styles.metadataText}>
-              {displayData.arena?.join(', ') ?? '—'}
-            </Typography>
+            <Typography sx={styles.metadataText}>{displayData.arena.join(', ') || '—'}</Typography>
 
             <Typography sx={styles.detectedAt}>
               {formatDetectedAt(displayData.detectedAt)}
@@ -196,32 +166,30 @@ export function NarrativeDetailsPanel() {
 
           <Divider sx={styles.divider} />
 
-          <Typography sx={styles.sectionTitle}>
-            נתונים מרכזיים
-          </Typography>
+          <Typography sx={styles.sectionTitle}>נתונים מרכזיים</Typography>
 
           <Box sx={styles.metricsGrid}>
             <MetricCard
               label="כמות פרסומים"
-              value={displayData.itemList?.length ?? 0}
+              value={displayData.itemList.length}
               icon={<DescriptionOutlinedIcon />}
             />
 
             <MetricCard
               label="כמות מקורות"
-              value={displayData.platforms?.length ?? 0}
+              value={displayData.platforms.length}
               icon={<SensorsIcon />}
             />
 
             <MetricCard
               label="סה״כ צפיות"
-              value={displayData.viewsCount ?? 0}
+              value={displayData.viewsCount}
               icon={<VisibilityOutlinedIcon />}
             />
 
             <MetricCard
               label="כמות שיתופים"
-              value={displayData.sharesCount ?? 0}
+              value={displayData.sharesCount}
               icon={<ShareOutlinedIcon />}
             />
           </Box>
@@ -236,6 +204,6 @@ export function NarrativeDetailsPanel() {
           </Box>
         </Box>
       )}
-    </Dialog>
+    </Drawer>
   );
 }
