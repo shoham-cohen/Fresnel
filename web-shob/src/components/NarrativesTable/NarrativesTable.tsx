@@ -19,6 +19,7 @@ import { useMemo, useState, type FC } from 'react';
 import { MessageRow } from './components/MessageRow/MessageRow';
 import { SORTABLE_COLUMNS } from './constants/columns.constant';
 import type { Narrative } from '@/interfaces/narrative.interface';
+import type { FlagColor } from './interfaces/flag-color.interface';
 import type { SortKey, SortState } from './interfaces/sort.interface';
 import { NarrativeRow } from './components/NarrativeRow/NarrativeRow';
 import { nextSort, sortNarratives } from './utilities/sort-narratives.utility';
@@ -28,6 +29,7 @@ export type NarrativesTableStatus = 'loading' | 'error' | 'ready';
 
 export interface NarrativesTableProps {
   onRetry?: () => void;
+  flagColor?: FlagColor;
   sort?: SortState | null;
   firstRowNumber?: number;
   selectedId?: string | null;
@@ -44,6 +46,7 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
   narratives,
   onSortChange,
   onToggleFlag,
+  flagColor = 'primary',
   status = 'ready',
   selectedId = null,
   firstRowNumber = 1,
@@ -112,6 +115,7 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
         key={narrative.narrativeId}
         onSelect={onSelect}
         narrative={narrative}
+        flagColor={flagColor}
         onToggleFlag={onToggleFlag}
         rowNumber={firstRowNumber + index}
         selected={narrative.narrativeId === selectedId}

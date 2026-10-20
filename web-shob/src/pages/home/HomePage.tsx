@@ -15,7 +15,6 @@ export const HomePage = () => {
   const toggleFlag = useToggleNarrativeFlag();
   const { narratives, tableStatus, refetch } = useRecentNarratives(RECENT_HOURS);
 
-  // The open narrative lives in the URL (?narrativeId=), which the details panel reads too.
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get('narrativeId');
 
@@ -38,12 +37,13 @@ export const HomePage = () => {
         כל ההתראות
       </Typography>
       <NarrativesTable
-        narratives={narratives}
-        status={tableStatus}
+        flagColor="alert"
         onRetry={refetch}
-        onToggleFlag={toggleFlag}
+        status={tableStatus}
         selectedId={selectedId}
         onSelect={handleSelect}
+        narratives={narratives}
+        onToggleFlag={toggleFlag}
       />
       <NarrativeDetailsPanel />
     </>

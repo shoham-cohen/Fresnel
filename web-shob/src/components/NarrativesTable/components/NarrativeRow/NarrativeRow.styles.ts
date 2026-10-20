@@ -1,4 +1,5 @@
 import { alpha, type SxProps, type Theme } from '@mui/material/styles';
+import { TABLE_ROW_HEIGHT } from '../../constants/columns.constant';
 
 export const styles = {
   clickableRow: {
@@ -9,7 +10,7 @@ export const styles = {
       bgcolor: (theme) => alpha(theme.palette.primary.light, 0.8),
     },
     '& > td': {
-      height: 68,
+      height: TABLE_ROW_HEIGHT,
       borderBottom: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
       fontSize: 16,
       fontWeight: 'fontWeightLight',
@@ -64,5 +65,8 @@ export const styles = {
   },
   flagged: {
     color: 'primary.main',
+  },
+  flaggedAlert: {
+    color: '#D82828',
   },
 } satisfies Record<string, SxProps<Theme>>;

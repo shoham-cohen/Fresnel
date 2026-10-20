@@ -1,4 +1,5 @@
 import type { TooltipProps } from '@mui/material';
+import { TABLE_HEAD_HEIGHT } from './constants/columns.constant';
 import type { SxProps, Theme } from '@mui/material/styles';
 
 export const TOOLTIP_SLOT_PROPS = {
@@ -56,7 +57,7 @@ export const styles = {
   },
   headCell: {
     p: 0,
-    height: 58,
+    height: TABLE_HEAD_HEIGHT,
     border: 0,
     bgcolor: 'primary.light',
     fontSize: 16,

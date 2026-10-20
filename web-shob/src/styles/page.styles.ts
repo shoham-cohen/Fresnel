@@ -24,4 +24,26 @@ export const pageStyles = {
     justifyContent: 'space-between',
     '& h1': { my: 0 },
   },
+  fillPage: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  tableArea: {
+    flex: 1,
+    minHeight: 0,
+    overflowY: 'auto',
+  },
+  pagination: {
+    mt: '16px',
+    minHeight: 32,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  paginationRange: {
+    fontSize: 14,
+    color: 'text.secondary',
+    fontWeight: 'fontWeightLight',
+  },
 } satisfies Record<string, SxProps<Theme>>;

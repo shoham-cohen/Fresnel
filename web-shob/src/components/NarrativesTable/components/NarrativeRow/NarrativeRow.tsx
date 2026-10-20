@@ -1,12 +1,13 @@
 import { FlagIcon } from '@/icons/FlagIcon';
-import { formatArenas } from '@/constants/arena.constant';
 import { styles } from './NarrativeRow.styles';
+import { formatArenas } from '@/constants/arena.constant';
 import { memo, type FC, type KeyboardEvent } from 'react';
 import { formatDate, formatTime } from '@/lib/formatDateTime';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import { VIEWS_COUNT_MAX } from '../../constants/columns.constant';
 import { COLUMN_STYLES, TOOLTIP_SLOT_PROPS } from '../../NarrativesTable.styles';
 import { Box, Tooltip, TableRow, TableCell, IconButton, Typography } from '@mui/material';
+import type { FlagColor } from '../../interfaces/flag-color.interface';
 
 const viewsFormat = new Intl.NumberFormat('he-IL');
 
@@ -14,6 +15,7 @@ interface NarrativeRowProps {
   selected: boolean;
   rowNumber: number;
   narrative: Narrative;
+  flagColor: FlagColor;
   onSelect?: (narrative: Narrative) => void;
   onToggleFlag?: (narrative: Narrative) => void;
 }
@@ -23,8 +25,11 @@ const NarrativeRowComponent: FC<NarrativeRowProps> = ({
   rowNumber,
   onSelect,
   narrative,
+  flagColor,
   onToggleFlag,
 }) => {
+  const flaggedStyle = flagColor === 'alert' ? styles.flaggedAlert : styles.flagged;
+
   const views = Math.min(Math.max(narrative.viewsCount, 0), VIEWS_COUNT_MAX);
   const fill = Math.round((views / VIEWS_COUNT_MAX) * 100);
   const viewsLabel = `${viewsFormat.format(narrative.viewsCount)} צפיות`;
@@ -96,7 +101,7 @@ const NarrativeRowComponent: FC<NarrativeRowProps> = ({
             size="small"
             aria-label="סימון התראה"
             aria-pressed={narrative.isFlagged}
-            sx={narrative.isFlagged ? styles.flagged : styles.flag}
+            sx={narrative.isFlagged ? flaggedStyle : styles.flag}
             onClick={(event) => {
               event.stopPropagation();
               onToggleFlag(narrative);
@@ -105,7 +110,7 @@ const NarrativeRowComponent: FC<NarrativeRowProps> = ({
             <FlagIcon filled={narrative.isFlagged} />
           </IconButton>
         ) : (
-          narrative.isFlagged && <FlagIcon filled aria-label="התראה מסומנת" sx={styles.flagged} />
+          narrative.isFlagged && <FlagIcon filled aria-label="התראה מסומנת" sx={flaggedStyle} />
         )}
       </TableCell>
     </TableRow>
