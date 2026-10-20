@@ -1,14 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
-import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
-import { NarrativeResponseDto } from './dto/narrative-response-dto';
-import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
-import { UpdateNarrativeDto } from './dto/update-narrative-dto';
-import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
-import { NarrativeListPageDto } from './dto/narrative-list-page-dto';
-import { NarrativeRepository } from './narrative.repository';
-import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 import { Narrative } from '../../entities';
+import { plainToInstance } from 'class-transformer';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { NarrativeRepository } from './narrative.repository';
+import { UpdateNarrativeDto } from './dto/update-narrative-dto';
+import { NarrativeResponseDto } from './dto/narrative-response-dto';
+import { NarrativeListPageDto } from './dto/narrative-list-page-dto';
+import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
+import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
+import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
+import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
+import { SimulatedNarrativeListPageDto } from './dto/simulated-narrative-list-page-dto';
 
 @Injectable()
 export class NarrativeService {
@@ -90,6 +91,28 @@ export class NarrativeService {
         };
       }),
     );
+  }
+
+  async findSimulatedPage(
+    query: ListNarrativesQueryDto,
+  ): Promise<SimulatedNarrativeListPageDto> {
+    const [simulatedNarratives, total] =
+      await this.narrativeRepository.findSimulatedPage(query);
+
+    return {
+      items: plainToInstance(
+        SimulatedNarrativeResponseDto,
+        simulatedNarratives.map(({ simulationId, narrative }) => {
+          return {
+            simulationId: simulationId,
+            ...this.mapNarrativeToNarrativeResponseDto(narrative),
+          };
+        }),
+      ),
+      total,
+      page: query.page,
+      pageSize: query.pageSize,
+    };
   }
 
   async findOneSimulated(

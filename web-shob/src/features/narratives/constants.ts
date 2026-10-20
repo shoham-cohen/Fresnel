@@ -12,3 +12,16 @@ export const DETAILS_PANEL_TRANSITION = {
 export const PANEL_MARGIN = 10;
 
 export const REALITY_STORAGE_KEY = 'reality';
+
+// URL params of the selected row (the details panel reads narrativeId).
+export const SELECTION_PARAMS = {
+  narrativeId: 'narrativeId',
+  simulationId: 'simulationId',
+} as const;
+
+export const clearSelectionParams = (params: URLSearchParams): URLSearchParams => {
+  const next = new URLSearchParams(params);
+  next.delete(SELECTION_PARAMS.narrativeId);
+  next.delete(SELECTION_PARAMS.simulationId);
+  return next;
+};

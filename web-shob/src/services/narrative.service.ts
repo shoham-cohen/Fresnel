@@ -5,10 +5,16 @@ import type {
   NarrativesQuery,
 } from '@/interfaces/narrative-api.interface';
 
+import type { Reality } from '@/types';
 import type { AxiosInstance } from 'axios';
-import { toNarrative, toNarrativeDetails } from '@/utilities/narrative.utility';
 import { createAxiosInstance } from '@/config/axios.config';
+import { toNarrative, toNarrativeDetails } from '@/utilities/narrative.utility';
 import type { Narrative, NarrativeDetails } from '@/interfaces/narrative.interface';
+
+const PAGE_PATHS: Record<Reality, string> = {
+  real: '/page',
+  exercise: '/simulated/page',
+};
 
 class NarrativeService {
   private api: AxiosInstance;
@@ -17,8 +23,15 @@ class NarrativeService {
     this.api = createAxiosInstance('/narratives');
   }
 
-  public async getPage(query: NarrativesQuery, signal?: AbortSignal): Promise<Page<Narrative>> {
-    const { data } = await this.api.get<Page<NarrativeDto>>('/page', { params: query, signal });
+  public async getPage(
+    reality: Reality,
+    query: NarrativesQuery,
+    signal?: AbortSignal,
+  ): Promise<Page<Narrative>> {
+    const { data } = await this.api.get<Page<NarrativeDto>>(PAGE_PATHS[reality], {
+      params: query,
+      signal,
+    });
     return { ...data, items: data.items.map(toNarrative) };
   }
 

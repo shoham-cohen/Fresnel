@@ -12,13 +12,14 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       bgcolor: alpha(colors.primary.light, 0.35),
       border: `1px solid ${colors.primary.main}`,
       borderRadius: '5px',
-      p: '16px 16px 24px',
+      p: '10px 10px 24px',
       boxSizing: 'border-box',
     },
 
     metricIcon: {
       display: 'flex',
       color: colors.primary.main,
+      mb: 0.5,
     },
 
     metricLabel: {

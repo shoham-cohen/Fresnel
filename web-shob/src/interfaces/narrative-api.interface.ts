@@ -15,13 +15,14 @@ export interface NarrativeDto {
   languages: string[] | null;
   detectedAt: string;
   narrativeId: string;
+  simulationId?: string;
   summary: string | null;
   receivedAt: string | null;
   viewsCount: number | string | null;
   sharesCount: number | string | null;
 }
 
-export type NarrativeUpdate = Partial<Omit<Narrative, 'narrativeId'>>;
+export type NarrativeUpdate = Partial<Omit<Narrative, 'narrativeId' | 'rowId' | 'simulationId'>>;
 
 export interface NarrativesQuery {
   to?: string;

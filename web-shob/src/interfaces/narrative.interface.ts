@@ -1,4 +1,6 @@
 export interface Narrative {
+  rowId: string;
+  simulationId: string | null;
   title: string;
   detectedAt: string;
   narrativeId: string;
