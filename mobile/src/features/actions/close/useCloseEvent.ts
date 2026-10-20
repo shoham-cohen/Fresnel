@@ -8,7 +8,7 @@ export function useCloseEvent(eventId: string) {
 
   return useMutation({
     mutationFn: (body: CloseEventBody) =>
-      apiFetch<void>(`/api/events/${eventId}/close`, { method: 'POST', body }),
+      apiFetch<void>(`/api/actions-performed/events/${eventId}/close`, { method: 'POST', body }),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.eventsAll }),

@@ -10,7 +10,7 @@ export function useTimeline(eventId: string) {
 
   return useQuery({
     queryKey: queryKeys.timeline(eventId),
-    queryFn: () => apiFetch<TimelineEntry[]>(`/api/events/${eventId}/timeline`),
+    queryFn: () => apiFetch<TimelineEntry[]>(`/api/actions-performed/events/${eventId}/timeline`),
     refetchInterval: POLL.timeline,
     subscribed: isFocused,
   });

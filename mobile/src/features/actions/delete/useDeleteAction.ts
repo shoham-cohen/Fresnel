@@ -7,7 +7,7 @@ export function useDeleteAction(eventId: string) {
 
   return useMutation({
     mutationFn: (actionId: string) =>
-      apiFetch<void>(`/api/actions/${actionId}`, { method: 'DELETE' }),
+      apiFetch<void>(`/api/actions-performed/actions/${actionId}`, { method: 'DELETE' }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.timeline(eventId) }),
   });
 }

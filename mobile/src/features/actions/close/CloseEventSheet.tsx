@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ApiError } from '@/api/client';
 import { errorText } from '@/api/errorText';
-import { useAuth } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { Sheet } from '@/components/Sheet';
 import { TextField } from '@/components/TextField';
@@ -19,7 +18,6 @@ type Props = {
 };
 
 export function CloseEventSheet({ eventId, isVisible, onClose }: Props) {
-  const { user } = useAuth();
   const [summary, setSummary] = useState('');
   const closeEvent = useCloseEvent(eventId);
 
@@ -37,8 +35,7 @@ export function CloseEventSheet({ eventId, isVisible, onClose }: Props) {
   };
 
   const submit = () => {
-    if (!user) return;
-    closeEvent.mutate({ closureSummary: summary.trim(), closedBy: user.id }, { onSuccess: goHome });
+    closeEvent.mutate({ closureSummary: summary.trim() }, { onSuccess: goHome });
   };
 
   return (

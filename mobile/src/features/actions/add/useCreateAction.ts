@@ -8,7 +8,7 @@ export function useCreateAction(eventId: string) {
 
   return useMutation({
     mutationFn: (body: CreateActionBody) =>
-      apiFetch<void>(`/api/events/${eventId}/actions`, { method: 'POST', body }),
+      apiFetch<void>(`/api/actions-performed/events/${eventId}/actions`, { method: 'POST', body }),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.timeline(eventId) }),

@@ -23,7 +23,6 @@ export type CreateActionBody = {
 
 export type CloseEventBody = {
   closureSummary: string;
-  closedBy: string;
 };
 
 export type TimelineEntry = {
