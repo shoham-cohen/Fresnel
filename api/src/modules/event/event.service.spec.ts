@@ -4,7 +4,7 @@ jest.mock('@nestjs/typeorm', () => ({
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Action, ActionType, Event } from '../../entities';
+import { Action, ActionType, Event, EventLog, Narrative } from '../../entities';
 import { EventService } from './event.service';
 import { EventRepository } from './event.repository';
 import { ActionRepository } from '../action/action.repository';
@@ -19,7 +19,11 @@ describe('EventService', () => {
   let service: EventService;
 
   beforeEach(() => {
-    eventRepository = new EventRepository({} as Repository<Event>);
+    eventRepository = new EventRepository(
+      {} as Repository<Event>,
+      {} as Repository<EventLog>,
+      {} as Repository<Narrative>,
+    );
     eventRepository.findEventById = jest.fn<Promise<Event | null>, [string]>(async (_eventId: string) => null);
     eventRepository.findActive = jest.fn<Promise<[Event[], number]>, [Parameters<EventRepository['findActive']>[0]]>(
       async () => [[], 0],
@@ -107,7 +111,7 @@ describe('EventService', () => {
 
     eventRepository.findEventById = jest.fn(async () => event);
     actionRepository.createForEvent = jest.fn(async () => action);
-    actionRepository.countByEventId = jest.fn(async () => 0);
+    actionRepository.countByEventId = jest.fn(async () => 1);
 
     const dto: CreateEventActionDto = {
       actionTypeCode: 'monitor',
