@@ -1,6 +1,6 @@
 import type { ActionType } from '../../../api/src/entities'
 
-const API_BASE_URL = '/api'
+const API_BASE_URL = '/api' 
 
 export async function fetchActionTypes(
   signal?: AbortSignal

@@ -163,7 +163,7 @@ export default function EventPanel( { selectedEvent }: EventPanelProps ) {
           </>
           ))}
         </Grid>
-        <AddActionButton />
+        <AddActionButton eventId={selectedEvent.eventId} />
       </Grid>
       </Grid>
       <Grid size={3} sx={{ height: '100%' }}>

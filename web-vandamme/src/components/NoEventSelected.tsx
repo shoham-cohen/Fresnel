@@ -15,29 +15,6 @@ export default function NoEventSelected() {
       <Typography sx={{ color: 'text.secondary', maxWidth: 420, mb: 3 }}>
         בחר אירוע מהרשימה בצד ימין כדי לצפות במידע, לתקשר עם הגורמים הרלוונטיים ולנהל את הטיפול בו.
       </Typography>
-
-      <Button
-        variant="outlined"
-        onClick={() => setIsModalOpen(true)}
-        sx={{
-          border: 2,
-          borderColor: 'primary.main',
-          color: 'primary.main',
-          fontWeight: 600,
-          textTransform: 'none',
-          px: 4,
-          py: 1,
-          borderRadius: 2,
-          '&:hover': {
-            border: 2,
-            bgcolor: 'action.hover',
-          },
-        }}
-      >
-        הוספת פעולה
-      </Button>
-
-      <AddActionModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>
   )
 }
