@@ -1,7 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  ILike,
+  Between,
+  Repository,
+  ArrayContains,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  type FindOptionsWhere,
+} from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
+import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
 
 @Injectable()
 export class NarrativeRepository {
@@ -18,11 +27,61 @@ export class NarrativeRepository {
     });
   }
 
+  findPage({
+    from,
+    to,
+    search,
+    arena,
+    page,
+    pageSize,
+    sortBy,
+    sortDir,
+  }: ListNarrativesQueryDto): Promise<[Narrative[], number]> {
+    const filters: FindOptionsWhere<Narrative> = {
+      ...(arena && { arena: ArrayContains([arena]) }),
+      ...((from || to) && { detectedAt: detectedAtRange(from, to) }),
+    };
+
+    const pattern = search && `%${escapeLike(search)}%`;
+    const where = pattern
+      ? [
+          { ...filters, title: ILike(pattern) },
+          { ...filters, summary: ILike(pattern) },
+        ]
+      : filters;
+
+    return this.narrativeOrmRepository.findAndCount({
+      where,
+      relations: { events: true },
+      order: {
+        isFlagged: 'DESC',
+        [sortBy]: { direction: sortDir, nulls: 'LAST' },
+        narrativeId: 'ASC',
+      },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+    });
+  }
+
   findOne(narrativeId: string): Promise<Narrative | null> {
     return this.narrativeOrmRepository.findOne({
       where: { narrativeId },
       relations: { events: true },
     });
+  }
+
+  // Returns the updated narrative, or null when there is no narrative with this id.
+  async update(
+    narrativeId: string,
+    changes: Partial<Pick<Narrative, 'isFlagged'>>,
+  ): Promise<Narrative | null> {
+    // TypeORM rejects an update with no values, so an empty body just returns the narrative.
+    if (Object.keys(changes).length > 0) {
+      const { affected } = await this.narrativeOrmRepository.update({ narrativeId }, changes);
+      if (!affected) return null;
+    }
+
+    return this.findOne(narrativeId);
   }
 
   findSimulated(simulationId?: string): Promise<SimulatedNarrative[]> {
@@ -42,3 +101,9 @@ export class NarrativeRepository {
   }
 }
 
+const detectedAtRange = (from?: string, to?: string) => {
+  if (from && to) return Between(new Date(from), new Date(to));
+  return from ? MoreThanOrEqual(new Date(from)) : LessThanOrEqual(new Date(to as string));
+};
+
+const escapeLike = (value: string): string => value.replace(/[\\%_]/g, (c) => `\\${c}`);

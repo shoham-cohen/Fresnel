@@ -1,17 +1,19 @@
+import Box from '@mui/material/Box';
 import { Outlet } from 'react-router';
+import type { FC } from 'react';
 
 import { Navbar } from '@/components/layout/Navbar';
 
-import styles from './RootLayout.module.css';
+import { styles } from './RootLayout.styles';
 
-export function RootLayout() {
+export const RootLayout: FC = () => {
   return (
     <>
       {/* TODO: pass the signed-in user's name (from Keycloak) as `userName`. */}
       <Navbar />
-      <main className={styles.main}>
+      <Box component="main" sx={styles.main}>
         <Outlet />
-      </main>
+      </Box>
     </>
   );
-}
+};
