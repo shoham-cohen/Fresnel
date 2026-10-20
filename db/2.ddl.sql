@@ -12,8 +12,7 @@ SET search_path = fresnel, public;
 -- 1a. Drop columns that no longer exist in the entity.
 ALTER TABLE narrative
   DROP COLUMN IF EXISTS location_name,
-  DROP COLUMN IF EXISTS payload,
-  DROP COLUMN IF EXISTS is_event;
+  DROP COLUMN IF EXISTS payload;
 
 -- 1b. received_at exists in the entity as optional, so keep it and make it nullable if not already.
 ALTER TABLE narrative
