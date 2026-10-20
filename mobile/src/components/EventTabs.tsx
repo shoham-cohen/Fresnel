@@ -56,7 +56,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   activeTab: {
-    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.activeTabBorder,
   },
   label: {
     fontSize: fontSize.sm,
