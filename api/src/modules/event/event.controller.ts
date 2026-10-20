@@ -1,4 +1,5 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
+import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
 import { EventListPage } from './dto/event-list-item';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventService } from './event.service';
@@ -11,5 +12,11 @@ export class EventController {
   @Get()
   list(@Query() query: ListEventsQuery): Promise<EventListPage> {
     return this.eventService.list(query);
+  }
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() dto: CreateEventDto): Promise<CreatedEventResponse> {
+    return this.eventService.create(dto);
   }
 }
