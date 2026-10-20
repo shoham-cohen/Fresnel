@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -37,20 +37,17 @@ function scrollProgress(offsetX: number, maxScroll: number) {
 }
 
 export function SnapshotCardsCarousel({ event, stats }: Props) {
-  const trackWidthRef = useRef(TRACK_WIDTH);
-  const [indicatorOffset, setIndicatorOffset] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
-    const maxTrackOffset = Math.max(0, trackWidthRef.current - INDICATOR_WIDTH);
     const maxScrollDistance = Math.max(0, contentSize.width - layoutMeasurement.width);
-
-    setIndicatorOffset(scrollProgress(contentOffset.x, maxScrollDistance) * maxTrackOffset);
+    setProgress(scrollProgress(contentOffset.x, maxScrollDistance));
   }
 
-  function handleTrackLayout(e: { nativeEvent: { layout: { width: number } } }) {
-    trackWidthRef.current = e.nativeEvent.layout.width || TRACK_WIDTH;
-  }
+  // The bar moves with the finger: it starts at the end of the track (the left in RTL) and
+  // reaches the start (the right) on the last card.
+  const indicatorOffset = (1 - progress) * (TRACK_WIDTH - INDICATOR_WIDTH);
 
   return (
     <View style={styles.container}>
@@ -79,7 +76,7 @@ export function SnapshotCardsCarousel({ event, stats }: Props) {
 
       {/* A spacer before the bar, not `left`: row order follows RTL on every platform,
           while `left` means start on Android and iOS but the physical left on web. */}
-      <View style={styles.indicatorTrack} onLayout={handleTrackLayout} pointerEvents="none">
+      <View style={styles.indicatorTrack} pointerEvents="none">
         <View style={{ width: indicatorOffset }} />
         <View style={styles.indicatorBar} />
       </View>

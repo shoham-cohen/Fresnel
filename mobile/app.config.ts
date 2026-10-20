@@ -24,6 +24,10 @@ const config: ExpoConfig = {
   version: '0.1.0',
   orientation: 'portrait',
   userInterfaceStyle: 'light',
+  icon: './assets/icon.png',
+  web: {
+    favicon: './assets/favicon.png',
+  },
   ios: {
     bundleIdentifier: IOS_BUNDLE_ID,
     supportsTablet: false,
@@ -31,6 +35,11 @@ const config: ExpoConfig = {
   android: {
     package: ANDROID_PACKAGE,
     googleServicesFile,
+    // The foreground is the logo shrunk into the launcher's safe zone; the background is its navy.
+    adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
+      backgroundColor: '#0E1A2B',
+    },
     predictiveBackGestureEnabled: false,
   },
   plugins: [
