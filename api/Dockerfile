@@ -6,8 +6,10 @@ RUN npm ci
 FROM deps AS dev
 ENV NODE_ENV=development
 COPY api/ ./
+
 EXPOSE 3000
-CMD ["npm", "run", "start:dev"]
+
+CMD ["sh", "-c", "npm ci && npm run start:dev"]
 
 FROM deps AS build
 COPY api/ ./

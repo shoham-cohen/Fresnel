@@ -1,3 +1,4 @@
+
 FROM node:24-alpine AS deps
 WORKDIR /app
 
@@ -7,8 +8,10 @@ RUN npm ci
 FROM deps AS dev
 ENV NODE_ENV=development
 COPY web-shob/ ./
+
 EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+CMD ["sh", "-c", "npm ci && npm run dev -- --host 0.0.0.0"]
 
 FROM deps AS build
 COPY web-shob/ ./
