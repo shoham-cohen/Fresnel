@@ -1,8 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, FindOptionsWhere, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import {
+  ILike,
+  Between,
+  Repository,
+  ArrayContains,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  type FindOptionsWhere,
+} from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
 import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
+import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
 
 @Injectable()
 export class NarrativeRepository {
@@ -13,31 +22,59 @@ export class NarrativeRepository {
     private readonly simulatedNarrativeOrmRepository: Repository<SimulatedNarrative>,
   ) {}
 
-  private createNarrativeDateFilterOperator (filter?: FindNarrativesQueryDto): FindOptionsWhere<Narrative> | undefined {
-    if (!filter) {
-      return undefined;
-    }
+  private createDetectedAtFilter(
+    from?: Date | string,
+    to?: Date | string,
+  ): FindOptionsWhere<Narrative> {
+    const start = from ? new Date(from) : undefined;
+    const end = to ? new Date(to) : undefined;
 
-    const operator: FindOptionsWhere<Narrative> = {};
-    const {startDate, endDate} = filter;
-
-    if (startDate && endDate) {
-      operator.detectedAt = Between(startDate, endDate);
-    } else if (startDate) {
-      operator.detectedAt = MoreThanOrEqual(startDate);
-    } else if (endDate) {
-      operator.detectedAt = LessThanOrEqual(endDate);
-    }
-
-    return operator;
+    if (start && end) return { detectedAt: Between(start, end) };
+    if (start) return { detectedAt: MoreThanOrEqual(start) };
+    if (end) return { detectedAt: LessThanOrEqual(end) };
+    return {};
   }
 
   findAll(query?: FindNarrativesQueryDto): Promise<Narrative[]> {
-    const dateFilter = this.createNarrativeDateFilterOperator(query);
-    
     return this.narrativeOrmRepository.find({
-      where: {...dateFilter},
+      where: this.createDetectedAtFilter(query?.startDate, query?.endDate),
       relations: { events: true },
+    });
+  }
+
+  findPage({
+    from,
+    to,
+    search,
+    arena,
+    page,
+    pageSize,
+    sortBy,
+    sortDir,
+  }: ListNarrativesQueryDto): Promise<[Narrative[], number]> {
+    const filters: FindOptionsWhere<Narrative> = {
+      ...(arena && { arena: ArrayContains([arena]) }),
+      ...this.createDetectedAtFilter(from, to),
+    };
+
+    const pattern = search && `%${escapeLike(search)}%`;
+    const where = pattern
+      ? [
+          { ...filters, title: ILike(pattern) },
+          { ...filters, summary: ILike(pattern) },
+        ]
+      : filters;
+
+    return this.narrativeOrmRepository.findAndCount({
+      where,
+      relations: { events: true },
+      order: {
+        isFlagged: 'DESC',
+        [sortBy]: { direction: sortDir, nulls: 'LAST' },
+        narrativeId: 'ASC',
+      },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
     });
   }
 
@@ -48,12 +85,23 @@ export class NarrativeRepository {
     });
   }
 
-  findSimulated(query?: FindNarrativesQueryDto): Promise<SimulatedNarrative[]> {
-    const dateFilter = this.createNarrativeDateFilterOperator(query);
+  async update(
+    narrativeId: string,
+    changes: Partial<Pick<Narrative, 'isFlagged'>>,
+  ): Promise<Narrative | null> {
+    // TypeORM rejects an update with no values, so an empty body just returns the narrative.
+    if (Object.keys(changes).length > 0) {
+      const { affected } = await this.narrativeOrmRepository.update({ narrativeId }, changes);
+      if (!affected) return null;
+    }
 
+    return this.findOne(narrativeId);
+  }
+
+  findSimulated(query?: FindNarrativesQueryDto): Promise<SimulatedNarrative[]> {
     return this.simulatedNarrativeOrmRepository.find({
       where: {
-        narrative: {...dateFilter},
+        narrative: this.createDetectedAtFilter(query?.startDate, query?.endDate),
       },
       relations: { narrative: { events: true } },
     });
@@ -76,3 +124,4 @@ export class NarrativeRepository {
   }
 }
 
+const escapeLike = (value: string): string => value.replace(/[\\%_]/g, (c) => `\\${c}`);
