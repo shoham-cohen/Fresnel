@@ -1,9 +1,21 @@
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
-import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
-import { NarrativeResponseDto } from './dto/narrative-response-dto';
-import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
-import { UpdateNarrativeDto } from './dto/update-narrative-dto';
+import {
+  Get,
+  Body,
+  Post,
+  Patch,
+  Param,
+  Query,
+  Controller,
+  NotFoundException,
+} from '@nestjs/common';
+
 import { NarrativeService } from './narrative.service';
+import { UpdateNarrativeDto } from './dto/update-narrative-dto';
+import { NarrativeResponseDto } from './dto/narrative-response-dto';
+import { NarrativeListPageDto } from './dto/narrative-list-page-dto';
+import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
+import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
+import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
 
 @Controller('narratives')
 export class NarrativeController {
@@ -12,6 +24,11 @@ export class NarrativeController {
   @Get()
   findAll(): Promise<NarrativeResponseDto[]> {
     return this.narrativeService.findAll();
+  }
+
+  @Get('page')
+  findPage(@Query() query: ListNarrativesQueryDto): Promise<NarrativeListPageDto> {
+    return this.narrativeService.findPage(query);
   }
 
   @Get('simulated')

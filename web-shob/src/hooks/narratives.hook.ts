@@ -1,78 +1,96 @@
 import {
   narrativeKeys,
-  RECENT_REFETCH_MS,
   RECENT_NARRATIVES_OPTIONS,
   HISTORY_NARRATIVES_OPTIONS,
 } from '@/config/react-query.config';
 
-import { useCallback } from 'react';
-import { useNow } from '@/hooks/now.hook';
+import { useCallback, useEffect, useMemo } from 'react';
 import { toTableStatus } from '@/utilities/narrative.utility';
 import { narrativeService } from '@/services/narrative.service';
 import type { Narrative } from '@/interfaces/narrative.interface';
-import { applyNarrativesQuery } from '@/utilities/narrative-query.utility';
-import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import type { Page, NarrativeUpdate, NarrativesQuery } from '@/interfaces/narrative-api.interface';
+import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 
+const MAX_BATCH_SIZE = 100;
 const HOUR_MS = 60 * 60 * 1000;
-const RECENT_PAGE_SIZE = 100;
+const RECENT_PAGE_SIZE = MAX_BATCH_SIZE;
 
-/*
- * Main and history are two separate queries, each with its own requests and refresh rules
- * (react-query.config.ts). Within a screen, paging and sorting `select` from that screen's list,
- * so they need no request.
- * TODO: once the API filters, sorts and pages, send each screen's query to the server instead
- * of fetching every narrative.
- */
-const fetchNarratives = ({ signal }: { signal: AbortSignal }) => narrativeService.getAll(signal);
-
-const toTableProps = (result: UseQueryResult<Page<Narrative>>) => {
+const toTableProps = (result: UseQueryResult<Page<Narrative>>, refetch: () => void) => {
   return {
+    refetch,
     tableStatus: toTableStatus(result),
     total: result.data?.total ?? 0,
     narratives: result.data?.items ?? [],
-    // True only while refreshing rows already on screen, not on the first load.
     isRefetching: result.isRefetching,
-    refetch: () => void result.refetch(),
   };
 };
 
-export const useNarratives = (query: NarrativesQuery) => {
+const toBatch = ({ page = 1, pageSize = 20, ...filters }: NarrativesQuery) => {
+  const batchSize = pageSize * Math.max(1, Math.floor(MAX_BATCH_SIZE / pageSize));
+  const firstRow = (page - 1) * pageSize;
+
+  return {
+    batchQuery: { ...filters, pageSize: batchSize, page: Math.floor(firstRow / batchSize) + 1 },
+    offset: firstRow % batchSize,
+    isLastPageOfBatch: (firstRow % batchSize) + pageSize >= batchSize,
+  };
+};
+
+const fetchHistoryBatch = (batchQuery: NarrativesQuery) => ({
+  ...HISTORY_NARRATIVES_OPTIONS,
+  queryKey: narrativeKeys.history(batchQuery),
+  queryFn: ({ signal }: { signal: AbortSignal }) => narrativeService.getPage(batchQuery, signal),
+});
+
+export const useNarratives = (query: NarrativesQuery, { enabled = true } = {}) => {
+  const queryClient = useQueryClient();
+  const { page = 1, pageSize = 20 } = query;
+  const { batchQuery, offset, isLastPageOfBatch } = useMemo(() => toBatch(query), [query]);
+
   const select = useCallback(
-    (narratives: Narrative[]) => applyNarrativesQuery(narratives, query),
-    [query],
+    (batch: Page<Narrative>): Page<Narrative> => ({
+      page,
+      pageSize,
+      total: batch.total,
+      items: batch.items.slice(offset, offset + pageSize),
+    }),
+    [page, pageSize, offset],
   );
 
-  return toTableProps(
-    useQuery({
-      ...HISTORY_NARRATIVES_OPTIONS,
-      queryKey: narrativeKeys.history(),
-      queryFn: fetchNarratives,
-      select,
-    }),
-  );
+  const result = useQuery({ ...fetchHistoryBatch(batchQuery), enabled, select });
+
+  const total = result.data?.total ?? 0;
+  const hasNextBatch = batchQuery.page * batchQuery.pageSize < total;
+  useEffect(() => {
+    if (enabled && isLastPageOfBatch && hasNextBatch) {
+      queryClient
+        .query(fetchHistoryBatch({ ...batchQuery, page: batchQuery.page + 1 }))
+        .catch(() => undefined);
+    }
+  }, [enabled, isLastPageOfBatch, hasNextBatch, queryClient, batchQuery]);
+
+  const refetch = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: narrativeKeys.histories() });
+  }, [queryClient]);
+
+  return toTableProps(result, refetch);
 };
 
 export const useRecentNarratives = (hours: number) => {
-  const now = useNow(RECENT_REFETCH_MS);
+  const result = useQuery({
+    ...RECENT_NARRATIVES_OPTIONS,
+    queryKey: narrativeKeys.recent(hours),
+    queryFn: ({ signal }) =>
+      narrativeService.getPage(
+        {
+          pageSize: RECENT_PAGE_SIZE,
+          from: new Date(Date.now() - hours * HOUR_MS).toISOString(),
+        },
+        signal,
+      ),
+  });
 
-  const select = useCallback(
-    (narratives: Narrative[]) =>
-      applyNarrativesQuery(narratives, {
-        pageSize: RECENT_PAGE_SIZE,
-        from: new Date(now - hours * HOUR_MS).toISOString(),
-      }),
-    [hours, now],
-  );
-
-  return toTableProps(
-    useQuery({
-      ...RECENT_NARRATIVES_OPTIONS,
-      queryKey: narrativeKeys.recent(hours),
-      queryFn: fetchNarratives,
-      select,
-    }),
-  );
+  return toTableProps(result, () => void result.refetch());
 };
 
 interface NarrativeUpdateRequest {
@@ -91,19 +109,24 @@ export const useUpdateNarrative = () => {
       narrativeService.update(narrativeId, changes),
     onMutate: async ({ narrativeId, changes }) => {
       await queryClient.cancelQueries({ queryKey });
-      const previous = queryClient.getQueriesData<Narrative[]>({ queryKey });
+      const previous = queryClient.getQueriesData<Page<Narrative>>({ queryKey });
 
-      queryClient.setQueriesData<Narrative[]>({ queryKey }, (narratives) =>
-        narratives?.map((narrative) =>
-          narrative.narrativeId === narrativeId ? { ...narrative, ...changes } : narrative,
-        ),
+      queryClient.setQueriesData<Page<Narrative>>(
+        { queryKey },
+        (page) =>
+          page && {
+            ...page,
+            items: page.items.map((narrative) =>
+              narrative.narrativeId === narrativeId ? { ...narrative, ...changes } : narrative,
+            ),
+          },
       );
 
       return { previous };
     },
     onError: (_error, _request, context) => {
-      context?.previous.forEach(([key, narratives]) => {
-        queryClient.setQueryData(key, narratives);
+      context?.previous.forEach(([key, page]) => {
+        queryClient.setQueryData(key, page);
       });
     },
     onSettled: async () => {

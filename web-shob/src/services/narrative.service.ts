@@ -1,4 +1,9 @@
-import type { NarrativeDto, NarrativeUpdate } from '@/interfaces/narrative-api.interface';
+import type {
+  Page,
+  NarrativeDto,
+  NarrativeUpdate,
+  NarrativesQuery,
+} from '@/interfaces/narrative-api.interface';
 
 import type { AxiosInstance } from 'axios';
 import { toNarrative, toNarrativeDetails } from '@/utilities/narrative.utility';
@@ -12,10 +17,9 @@ class NarrativeService {
     this.api = createAxiosInstance('/narratives');
   }
 
-  // TODO: once it does, take a NarrativesQuery, send it as `params` and return the server's page.
-  public async getAll(signal?: AbortSignal): Promise<Narrative[]> {
-    const { data } = await this.api.get<NarrativeDto[]>('', { signal });
-    return data.map(toNarrative);
+  public async getPage(query: NarrativesQuery, signal?: AbortSignal): Promise<Page<Narrative>> {
+    const { data } = await this.api.get<Page<NarrativeDto>>('/page', { params: query, signal });
+    return { ...data, items: data.items.map(toNarrative) };
   }
 
   public async getById(narrativeId: string, signal?: AbortSignal): Promise<NarrativeDetails> {

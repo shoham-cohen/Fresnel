@@ -4,6 +4,8 @@ import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dt
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
 import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
 import { UpdateNarrativeDto } from './dto/update-narrative-dto';
+import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
+import { NarrativeListPageDto } from './dto/narrative-list-page-dto';
 import { NarrativeRepository } from './narrative.repository';
 
 @Injectable()
@@ -23,6 +25,26 @@ export class NarrativeService {
         };
       }),
     );
+  }
+
+  async findPage(query: ListNarrativesQueryDto): Promise<NarrativeListPageDto> {
+    const [narratives, total] = await this.narrativeRepository.findPage(query);
+
+    return {
+      items: plainToInstance(
+        NarrativeResponseDto,
+        narratives.map((narrative) => {
+          const { events, ...data } = narrative;
+          return {
+            ...data,
+            isEvent: Boolean(events && events.length > 0),
+          };
+        }),
+      ),
+      total,
+      page: query.page,
+      pageSize: query.pageSize,
+    };
   }
 
   async findOne(narrativeId: string): Promise<NarrativeResponseDto | null> {

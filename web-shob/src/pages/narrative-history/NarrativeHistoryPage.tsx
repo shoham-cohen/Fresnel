@@ -29,7 +29,9 @@ export const NarrativeHistoryPage = () => {
     [page, pageSize, sort],
   );
   const toggleFlag = useToggleNarrativeFlag();
-  const { narratives, total, tableStatus, refetch, isRefetching } = useNarratives(query);
+  const { narratives, total, tableStatus, refetch, isRefetching } = useNarratives(query, {
+    enabled: tableAreaHeight > 0,
+  });
 
   const pageCount = Math.ceil(total / pageSize);
   const firstRowNumber = (page - 1) * pageSize + 1;
