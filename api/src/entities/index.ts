@@ -6,6 +6,12 @@ import { Narrative } from './narrative.entity';
 
 import { SimulatedNarrative } from './simulated-narrative.entity';
 
+export enum Arena {
+  IL = 'IL',
+  ARAB = 'ARAB',
+  INTL = 'INTL',
+}
+
 export * from './action.entity';
 export * from './action-type.entity';
 export * from './event.entity';

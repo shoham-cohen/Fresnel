@@ -15,8 +15,8 @@ export class Narrative {
   @Column({ name: 'is_anomaly', type: 'boolean' })
   isAnomaly: boolean;
 
-  @Column({ type: 'text', nullable: true })
-  arena: string | null;
+  @Column({ type: 'text', array: true, nullable: true })
+  arena: string[] | null;
 
   @Column({ name: 'detected_at', type: 'timestamptz' })
   detectedAt: Date;
@@ -42,9 +42,9 @@ export class Narrative {
   @Column({ name: 'is_flagged', type: 'boolean', default: false })
   isFlagged: boolean;
 
-  @Column({name: 'received_at', type: 'timestamptz', nullable: true})
+  @Column({ name: 'received_at', type: 'timestamptz', nullable: true })
   receivedAt?: Date;
 
- @OneToMany(() => Event, event => event.narrative)
+  @OneToMany(() => Event, (event) => event.narrative)
   events: Event[];
 }

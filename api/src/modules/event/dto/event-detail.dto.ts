@@ -3,7 +3,7 @@ export class EventDetailDto {
   narrativeId: string;
   title: string;
   description: string | null;
-  arena: string | null;
+  arena: string[] | null;
   detectedAt: Date;
   openedBy: string;
   closedBy: string | null;
