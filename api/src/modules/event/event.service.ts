@@ -48,10 +48,6 @@ export class EventService {
       throw new NotFoundException(`Event ${eventId} not found`);
     }
 
-    if (event.status === 'closed') {
-      throw new BadRequestException(`Event ${eventId} is closed and cannot accept new actions`);
-    }
-
     const action = await this.actionRepository.createForEvent(eventId, {
       actionTypeCode: dto.actionTypeCode,
       title: dto.title,
