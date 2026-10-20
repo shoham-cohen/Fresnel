@@ -66,7 +66,7 @@ export function ActionsTimeline({ eventId }: Props) {
         ListFooterComponent={
           hasMore && actionCount > 0 ? (
             <ActivityIndicator style={styles.more} color={colors.primary} />
-          ) : null
+          ) : undefined
         }
         ListEmptyComponent={<EmptyState icon={<EmptyActionsIcon />} title={ACTIONS_LABEL.empty} />}
         renderItem={({ item, index }) => {
