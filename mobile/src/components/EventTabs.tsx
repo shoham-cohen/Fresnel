@@ -1,6 +1,5 @@
 import { router, usePathname } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-
 import { EVENT_TAB_LABEL } from '@/constants/labels';
 import { colors, fontSize, radius, spacing } from '@/theme';
 
@@ -43,30 +42,27 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    marginVertical: spacing.sm,
     padding: spacing.xs,
     borderRadius: radius.pill,
-    backgroundColor: '#DCE8F5',
+    backgroundColor: colors.tabs,
   },
   tab: {
     flex: 1,
-    minHeight: 36,
+    minHeight: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.pill,
   },
   activeTab: {
-    borderWidth: 1,
-    borderColor: colors.activeTabBorder,
-    backgroundColor: colors.background,
+    backgroundColor: colors.tabActive,
   },
   label: {
     fontSize: fontSize.sm,
-    color: '#556A82',
-    fontWeight: '500',
+    color: colors.tabLabel,
   },
   activeLabel: {
-    color: colors.navy,
-    fontWeight: '700',
+    color: colors.tabLabelActive,
+    fontWeight: '600',
   },
 });

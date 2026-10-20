@@ -46,8 +46,7 @@ export function OpenEventsList() {
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.title}>
-              אירועים פתוחים{' '}
-              {openEvents.data ? <Text style={styles.count}>({total})</Text> : null}
+              אירועים פתוחים {openEvents.data ? <Text style={styles.count}>({total})</Text> : null}
             </Text>
             <SearchInput value={search} onChangeText={setSearch} />
           </View>
@@ -58,7 +57,9 @@ export function OpenEventsList() {
           ) : openEvents.isError ? (
             <ErrorState message="לא הצלחנו לטעון את האירועים" onRetry={() => refetch()} />
           ) : (
-            <EmptyState text={debouncedSearch ? 'לא נמצאו אירועים' : 'אין אירועים פתוחים בגזרה'} />
+            <EmptyState
+              message={debouncedSearch ? 'לא נמצאו אירועים' : 'אין אירועים פתוחים בגזרה'}
+            />
           )
         }
         ListFooterComponent={

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConditionalModule, ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { ActionTypeModule } from './modules/action-type/action-type.module';
+import { ActionsPerformedModule } from './modules/actions-performed/actions-performed.module';
 import { EventModule } from './modules/event/event.module';
 import { MobileModule } from './modules/mobile/mobile.module';
 import { NarrativeModule } from './modules/narrative/narrative.module';
@@ -19,6 +20,7 @@ const withDb = (env: NodeJS.ProcessEnv) => env.API_WITHOUT_DB !== 'true';
     ConditionalModule.registerWhen(EventModule, withDb),
     ConditionalModule.registerWhen(NarrativeModule, withDb),
     MobileModule,
+    ActionsPerformedModule,
   ],
 })
 export class AppModule {}
