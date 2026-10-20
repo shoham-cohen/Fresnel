@@ -5,12 +5,13 @@ import {
   IsInt,
   IsEnum,
   IsString,
+  IsBoolean,
   MaxLength,
   IsOptional,
   IsDateString,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { Arena } from '../../../entities';
+import { Type, Transform } from 'class-transformer';
 
 export const NARRATIVE_SORT_FIELDS = ['arena', 'detectedAt', 'viewsCount'] as const;
 export type NarrativeSortField = (typeof NARRATIVE_SORT_FIELDS)[number];
@@ -53,4 +54,9 @@ export class ListNarrativesQueryDto {
   @IsOptional()
   @IsIn(['asc', 'desc'])
   sortDir: 'asc' | 'desc' = 'desc';
+
+  @IsOptional()
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
+  @IsBoolean()
+  isSimulation = false;
 }

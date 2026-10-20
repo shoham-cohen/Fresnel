@@ -3,5 +3,5 @@ import { NarrativeResponseDto } from './narrative-response-dto';
 
 export class SimulatedNarrativeResponseDto extends NarrativeResponseDto {
   @IsUUID()
-  simulationId: string;
+  declare simulationId: string;
 }

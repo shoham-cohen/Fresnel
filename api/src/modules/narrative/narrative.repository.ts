@@ -7,6 +7,7 @@ import {
   ArrayContains,
   LessThanOrEqual,
   MoreThanOrEqual,
+  type FindOptionsOrder,
   type FindOptionsWhere,
 } from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
@@ -35,6 +36,37 @@ export class NarrativeRepository {
     return {};
   }
 
+  private createNarrativeFilters({
+    from,
+    to,
+    search,
+    arena,
+  }: ListNarrativesQueryDto): FindOptionsWhere<Narrative>[] {
+    const filters: FindOptionsWhere<Narrative> = {
+      ...(arena && { arena: ArrayContains([arena]) }),
+      ...this.createDetectedAtFilter(from, to),
+    };
+
+    const pattern = search && `%${escapeLike(search)}%`;
+    return pattern
+      ? [
+          { ...filters, title: ILike(pattern) },
+          { ...filters, summary: ILike(pattern) },
+        ]
+      : [filters];
+  }
+
+  private createNarrativeOrder({
+    sortBy,
+    sortDir,
+  }: ListNarrativesQueryDto): FindOptionsOrder<Narrative> {
+    return {
+      isFlagged: 'DESC',
+      [sortBy]: { direction: sortDir, nulls: 'LAST' },
+      narrativeId: 'ASC',
+    };
+  }
+
   findAll(query?: FindNarrativesQueryDto): Promise<Narrative[]> {
     return this.narrativeOrmRepository.find({
       where: this.createDetectedAtFilter(query?.startDate, query?.endDate),
@@ -42,37 +74,13 @@ export class NarrativeRepository {
     });
   }
 
-  findPage({
-    from,
-    to,
-    search,
-    arena,
-    page,
-    pageSize,
-    sortBy,
-    sortDir,
-  }: ListNarrativesQueryDto): Promise<[Narrative[], number]> {
-    const filters: FindOptionsWhere<Narrative> = {
-      ...(arena && { arena: ArrayContains([arena]) }),
-      ...this.createDetectedAtFilter(from, to),
-    };
-
-    const pattern = search && `%${escapeLike(search)}%`;
-    const where = pattern
-      ? [
-          { ...filters, title: ILike(pattern) },
-          { ...filters, summary: ILike(pattern) },
-        ]
-      : filters;
+  findPage(query: ListNarrativesQueryDto): Promise<[Narrative[], number]> {
+    const { page, pageSize } = query;
 
     return this.narrativeOrmRepository.findAndCount({
-      where,
+      where: this.createNarrativeFilters(query),
       relations: { events: true },
-      order: {
-        isFlagged: 'DESC',
-        [sortBy]: { direction: sortDir, nulls: 'LAST' },
-        narrativeId: 'ASC',
-      },
+      order: this.createNarrativeOrder(query),
       take: pageSize,
       skip: (page - 1) * pageSize,
     });
@@ -104,6 +112,20 @@ export class NarrativeRepository {
         narrative: this.createDetectedAtFilter(query?.startDate, query?.endDate),
       },
       relations: { narrative: { events: true } },
+    });
+  }
+
+  findSimulatedPage(
+    query: ListNarrativesQueryDto,
+  ): Promise<[SimulatedNarrative[], number]> {
+    const { page, pageSize } = query;
+
+    return this.simulatedNarrativeOrmRepository.findAndCount({
+      where: this.createNarrativeFilters(query).map((narrative) => ({ narrative })),
+      relations: { narrative: { events: true } },
+      order: { narrative: this.createNarrativeOrder(query) },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
     });
   }
 

@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import type { Reality } from '@/types';
 import type { NarrativesQuery } from '@/interfaces/narrative-api.interface';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -15,9 +16,12 @@ export const queryClient = new QueryClient({
 export const narrativeKeys = {
   all: ['narratives'] as const,
   update: () => [...narrativeKeys.all, 'update'] as const,
-  recent: (hours: number) => [...narrativeKeys.all, 'recent', hours] as const,
-  histories: () => [...narrativeKeys.all, 'history'] as const,
-  history: (query: NarrativesQuery) => [...narrativeKeys.histories(), query] as const,
+  reality: (reality: Reality) => [...narrativeKeys.all, reality] as const,
+  recent: (reality: Reality, hours: number) =>
+    [...narrativeKeys.reality(reality), 'recent', hours] as const,
+  histories: (reality: Reality) => [...narrativeKeys.reality(reality), 'history'] as const,
+  history: (reality: Reality, query: NarrativesQuery) =>
+    [...narrativeKeys.histories(reality), query] as const,
 };
 
 export const RECENT_NARRATIVES_OPTIONS = {
