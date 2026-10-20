@@ -13,9 +13,11 @@ import { useTheme } from '@mui/material/styles';
 import { useSearchParams } from 'react-router';
 import { getNarrativeDetailsPanelStyles } from './NarrativeDetailsPanel.styles';
 
-import { CREATE_EVENT_URL, DETAILS_PANEL_TRANSITION, clearSelectionParams } from './constants';
+import { DETAILS_PANEL_TRANSITION, clearSelectionParams } from './constants';
 import { narrativeService } from '@/services/narrative.service';
 import type { NarrativeDetails } from '@/interfaces/narrative.interface';
+import { eventService } from '@/services/event.service';
+import { Severity } from '@/interfaces/event-api.interface';
 
 function formatDetectedAt(value: string): string {
   const d = new Date(value);
@@ -57,7 +59,7 @@ function MetricCard({ label, value, icon }: MetricCardProps) {
 export function NarrativeDetailsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const narrativeId = searchParams.get('narrativeId');
-  //const simulationId = searchParams.get('simulationId');
+  const simulationId = searchParams.get('simulationId');
 
   const [narrative, setNarrative] = useState<NarrativeDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -107,14 +109,22 @@ export function NarrativeDetailsPanel() {
     setSearchParams(clearSelectionParams);
   };
 
-  const handleCreateEvent = () => {
+  const handleCreateEvent = async () => {
     if (!displayData) return;
 
-    const targetUrl =
-      `${CREATE_EVENT_URL}?narrativeId=` + encodeURIComponent(displayData.narrativeId);
-      //displayData.simulationId
+    try {
+      const createdEvent = await eventService.create({
+        narrativeId: displayData.narrativeId,
+        severity: Severity.LOW,
+        createdBy: 'oran',
+        simulationId: simulationId,
+      });
 
-    window.location.assign(targetUrl);
+      console.log('Event created successfully:', createdEvent);
+
+    } catch (error: unknown) {
+      console.error('Failed to create event:', error);
+    }
   };
 
   const displayData = narrativeId
