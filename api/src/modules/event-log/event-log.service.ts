@@ -24,7 +24,7 @@ export class EventLogService {
       fromValue: params.fromValue ?? null,
       toValue: params.toValue ?? null,
       details: params.details ?? {},
-      client: params.client ?? 'system',
+      client: params.client ?? 'web',
     });
   }
 
@@ -41,7 +41,7 @@ export class EventLogService {
       actorId: params.actorId ?? 'system',
       actionId: params.actionId,
       details: params.details ?? {},
-      client: params.client ?? 'system',
+      client: params.client ?? 'web',
     });
   }
 
@@ -60,7 +60,7 @@ export class EventLogService {
       fromValue: 'active',
       toValue: 'deleted',
       details: params.details ?? {},
-      client: params.client ?? 'system',
+      client: params.client ?? 'web',
     });
   }
 }

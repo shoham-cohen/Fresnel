@@ -49,7 +49,7 @@ export class EventService {
     }
 
     const action = await this.actionRepository.createForEvent(eventId, {
-      actionTypeCode: dto.actionTypeCode,
+      actionType: dto.actionTypeCode,
       title: dto.title,
       description: dto.description ?? null,
       performedBy: dto.performedBy ?? 'vandamme.handler1',
@@ -65,10 +65,10 @@ export class EventService {
       actorId: 'mock_user',
       details: {
         title: action.title,
-        actionTypeCode: action.actionTypeCode,
+        actionType: action.actionTypeCode,
         performedBy: action.performedBy,
       },
-      client: 'system',
+      client: 'web',
     });
 
     return {

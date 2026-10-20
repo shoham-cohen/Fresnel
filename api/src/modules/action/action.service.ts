@@ -24,7 +24,7 @@ export class ActionService {
       actorId: 'mock_user',
       details: {
         title: action.title,
-        actionTypeCode: action.actionTypeCode,
+        actionType: action.actionTypeCode,
       },
       client: 'system',
     });

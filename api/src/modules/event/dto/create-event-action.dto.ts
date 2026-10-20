@@ -1,8 +1,21 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+
+export const ACTION_TYPE_CODES = [
+  'official_response',
+  'consultation',
+  'reporter_contact',
+  'external_contact',
+  'field_collection',
+  'source_analysis',
+  'fact_check',
+  'monitor',
+  'other',
+];
 
 export class CreateEventActionDto {
   @IsString()
   @IsNotEmpty()
+  @IsIn(ACTION_TYPE_CODES)
   actionTypeCode: string;
 
   @IsString()
