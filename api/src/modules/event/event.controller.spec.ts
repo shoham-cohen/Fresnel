@@ -1,3 +1,7 @@
+jest.mock('@nestjs/typeorm', () => ({
+  InjectRepository: () => () => undefined,
+}));
+
 import { EventController } from './event.controller';
 import type { EventService } from './event.service';
 
