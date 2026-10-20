@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { ActionModule } from './modules/action/action.module';
 import { ActionTypeModule } from './modules/action-type/action-type.module';
@@ -9,8 +10,8 @@ import { NarrativeModule } from './modules/narrative/narrative.module';
 
 @Module({
   imports: [
-    // The repo-root .env is shared with docker compose (DATABASE_URL, POSTGRES_*).
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '../.env'] }),
+    AuthModule,
     DatabaseModule,
     ActionModule,
     ActionTypeModule,

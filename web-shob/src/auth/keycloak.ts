@@ -28,4 +28,6 @@ export const authToken = async (): Promise<string | null> => {
 
 export const userName = (): string | undefined => keycloak.tokenParsed?.name as string | undefined;
 
+export const login = () => keycloak.login();
+
 export const logout = () => keycloak.logout({ redirectUri: window.location.origin });
