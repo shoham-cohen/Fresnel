@@ -5,6 +5,13 @@
 **לא ממציאים:** שדה, endpoint או התנהגות שלא מופיעים כאן, ב-`db/1.ddl.sql`, בקוד של `api/` או באפיונים מסומנים כשאלה פתוחה. לא מנחשים.
 **Expo SDK 58.** ה-API של Expo משתנה בין גרסאות. לפני קוד שנוגע ב-Expo, קוראים את `AGENTS.md` ואת התיעוד של v58, ולא סומכים על הזיכרון.
 
+> **עדכון 20.10: כניסה ישירה ל-Keycloak, ו-Guard משלנו.** (מחליף את "כניסה דרך מיראז׳" ו"אין לנו Guard" למטה)
+> - **Client אחד ב-Keycloak לווב ולמובייל: `mirage`** (ציבורי, PKCE). הכניסה ב-`expo-auth-session` בדפדפן המערכת, ה-redirect הוא `fresnel://oauth`. **אין WebView של מיראז׳.** מיראז׳ מגדירים את ה-claims בטוקן.
+> - **בשרת שני Guards:** אחד לווב ואחד למובייל. `MobileAuthGuard` שלנו ב-`api/src/modules/mobile/auth/`, על כל ה-controllers שלנו. `@CurrentUser()` מחזיר `{ id (sub), username, name, arenas, roles }`.
+> - **גזרה:** מה-claim `compartment`, **מערך** (משתמש יכול להיות בכמה גזרות ורואה את כולן). ממופה לקודים של `narrative.arena`: `israel`, `arab`, `intl`.
+> - **Push לפי גזרה:** `POST /api/devices` שומר את הגזרות מהטוקן ב-`device_token.arenas` (`db/4.ddl.sql`). השולח מוצא את הטלפונים לפי גזרה (`DevicesRepository.findTokensByArenas`), בלי מיראז׳.
+> - **פיתוח:** `EXPO_PUBLIC_AUTH_BYPASS=true` באפליקציה ו-`MOBILE_AUTH_BYPASS=true` בשרת, עם אותו משתמש קבוע (`dev-mobile-user`). טלפון אמיתי לא מגיע ל-openport: עובדים על סימולטור ואמולטור.
+
 > **עדכון 18.10 (23:00): Data Lake.** המבזקים מגיעים מ-**Nexus API v1** (צוות טל בן שושן). **רשימת ה-`item_id` של כל נרטיב נשמרת בעמודה בטבלת `narrative` על ידי שחר** (מדורון, יחד עם הנרטיב). אנחנו קוראים אותה לפי `event_id`, ומביאים את המבזקים מ-Nexus לפי הרשימה (טל מוסיף בקשה לפי רשימת מזהים). ב-Nexus אין סכומים לנרטיב, ולכן ארבעת הנתונים המצטברים (פרסומים, צפיות, שיתופים ותגובות) מחושבים אצלנו מ-100 המבזקים האחרונים, ומשמשים גם את השו״ב. פירוט בסעיף Data Lake.
 
 > **עדכון 18.10 (ערב):**
@@ -51,14 +58,14 @@
 - **תרגילית (`is_simulation`):** אירוע ששלח אושר על נרטיב קיים, עם `event_id` חדש. **בווב בלבד. במובייל לא ב-MVP.**
 - **מבזק (item):** פורמט `item.v1`, עם מזהה מורכב (`0:telegram:12345`). **רק רשימת המזהים של כל נרטיב נשמרת אצלנו** (שחר מושך אותה מדורון). התוכן לא נשמר, ונשלף בכל הצגה מה-**Data Lake** (Nexus API, צוות טל בן שושן) לפי הרשימה.
 - **נתונים מצטברים:** ארבעה נתונים: פרסומים, צפיות, שיתופים (`reposts`) ותגובות (`replies` ו-`quotes`), ועוד מקורות עיקריים. **מחושבים אצלנו מ-100 המבזקים האחרונים** בכל הצגה (ב-Nexus אין סכומים לנרטיב), ולא נשמרים. אותה בקשה משמשת את הטלפון, הווב והשו״ב.
-- **גזרה:** `IL` / `ARAB` / `INTL`. גזרת האירוע מהנרטיב. גזרת המשתמש **ממיראז׳** (מזהה + גזרה אחת). כל משתמש רואה רק את הגזרה שלו. **זו ההרשאה היחידה במערכת.**
+- **גזרה:** `israel` / `arab` / `intl` (הקודים של `narrative.arena`). גזרת האירוע מהנרטיב. גזרות המשתמש מה-claim `compartment` בטוקן של Keycloak (מערך). כל משתמש רואה רק את הגזרות שלו. **זו ההרשאה היחידה במערכת.**
 - **פעולה:** תיעוד של משהו שכבר בוצע. סוג מהבנק (`action_type`), כותרת עד 100 (חובה, לא ריקה), תיאור עד 500 (רשות). **מחיקה רכה, רק על ידי מי שביצע.**
 - **Oracle:** מערכת חיצונית (מודל שפה) שמוטמעת בתמונת המצב. אנחנו לא שולחים לה בקשות ולא שומרים שיחות. במובייל: WebView.
 
 ## מה המובייל עושה (MVP, ה׳ 22.10)
 - **Push:** רק על אירוע **אמיתי** חדש, לכל משתמשי הגזרה.
 - **מסכים** (פירוט ב-`team-spec.md`):
-  - **כניסה:** עמוד הכניסה של מיראז׳ ב-WebView.
+  - **כניסה:** Keycloak בדפדפן המערכת (כפתור "כניסה עם SSO").
   - **בית:** רשימת אירועים פתוחים (כולל "בטיפול"), חיפוש לפי כותרת, ואייקון פרופיל בכותרת. **בלי לשונית סגורים ובלי מתג אמת/תרגילית.**
   - **אירוע:** כותרת "ניהול אירוע", חזרה, ושלוש לשוניות: **תמונת מצב** (ברירת מחדל, כולל Oracle ב-WebView), **פעולות שבוצעו**, **מקורות מידע**.
   - **גיליונות:** הוספת פעולה, סגירת אירוע, אישור מחיקת פעולה.
@@ -80,7 +87,8 @@ mobile/
   src/
     app/                              # routes בלבד (expo-router). כל קובץ הוא מסך
       _layout.tsx                     # providers (Query, Auth) ו-Stack.Protected לפי התחברות
-      login.tsx                       # כניסה (WebView של מיראז׳)
+      login.tsx                       # כניסה (Keycloak בדפדפן המערכת)
+      +native-intent.tsx              # ה-redirect של Keycloak לא מגיע ל-router
       (app)/_layout.tsx               # Stack, כותרות, אייקון פרופיל
       (app)/index.tsx                 # בית: פתוחים, חיפוש
       (app)/profile.tsx
@@ -134,10 +142,10 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | `DELETE /api/actions/:id` | מחיקה רכה. 403 אם המשתמש לא המבצע ⬜ | עדן (VD-05) |
 | `POST /api/events/:id/close` | `{ closureSummary }` חובה, בלי מגבלת אורך. 409 אם כבר סגור | עדן (VD-04) |
 | `POST /api/events` | פתיחת אירוע. אחרי commit של אירוע אמיתי חדש קורא ל-`PushService.notifyNewEvent` שלנו | שחר ([07]) |
-| אימות וגזרה | המשתמש המאומת (מזהה וגזרה) בכל route, ו-403 על אירוע מגזרה אחרת. ⬜ איך זה נחשף ל-routes | שחר ([14]) |
+| אימות וגזרה | ב-routes שלנו: `MobileAuthGuard` ו-`@CurrentUser()` (שלנו). ב-routes של עדן ושחר: ה-Guard שלהם. ⬜ איך הם מקבלים את הטוקן של המובייל | שחר ([14]) |
 
 **Oracle:** לא route. WebView לכתובת של Oracle עם הקשר האירוע. ⬜ כתובת, פרמטרים ואימות.
-**כניסה:** לא route שלנו. עמוד הכניסה של מיראז׳ ב-WebView מחזיר משתמש. ⬜ החוזה.
+**כניסה:** לא route. Keycloak ישירות מהטלפון (Authorization Code + PKCE), והטוקן נשלח ב-`Authorization: Bearer` בכל קריאה (בתוך `apiFetch`).
 
 ### ה-routes שלנו (מודול `mobile` ב-`api/`)
 | route | מה | משימה |
@@ -146,11 +154,11 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | `GET /api/events/:id/items?page=&pageSize=20` | `{ items: [{ itemId, platform, url, title, contentText, authorName, sourceId, publishedAt }], total, page, pageSize }`, מהחדש לישן. `total` הוא אורך רשימת המזהים. בלי חיפוש (החיפוש בטלפון, על מה שנטען) | MAR-09 |
 | `GET /api/events/:id/timeline` | מעל הפעולות של עדן (`findActionsByEventId`), עם תווית הסוג ורשומות הלוג. `[{ kind, at, actorId, action? }]`, מהחדש לישן. `kind` הוא `action`, `event_created` או `event_reopened`. `action` הוא `{ actionId, actionType, actionTypeLabel, title, description, performedBy }`. בלי פעולות מחוקות | MAR-11 |
 | `GET /api/debrief/events?closedFrom=&page=&pageSize=` | הצעה: אירועי אמת סגורים עם שדות הנרטיב, חומרה, מי פתח וסגר, `closureSummary` והציר. ⬜ מול ניתאי | MAR-16 |
-| `POST /api/devices`, `DELETE /api/devices/:token` | `{ platform, pushToken }`. upsert על `push_token` ועדכון `last_seen_at`. טוקן שאינו `ExponentPushToken[...]` מחזיר 400. `user_id` מהמשתמש המאומת בלבד | MAR-17 |
-| `PushService.notifyNewEvent(eventId)` (פנימי) | משתמשי הגזרה ממיראז׳, הטלפונים שלהם לפי `user_id`, ושליחה דרך Expo | MAR-19 |
+| `POST /api/devices`, `DELETE /api/devices/:token` | `{ platform, pushToken }`, 204. upsert על `push_token`, עדכון `last_seen_at`, ו-`arenas` מהטוקן. טוקן שאינו `ExponentPushToken[...]` מחזיר 400. `user_id` מהמשתמש המאומת בלבד. מחיקת טוקן של משתמש אחר: 403 | MAR-17 |
+| `PushService.notifyNewEvent(eventId)` (פנימי) | הטלפונים של גזרות הנרטיב (`findTokensByArenas`), ושליחה דרך Expo | MAR-19 |
 
 - **Data Lake:** `stats` ו-`items` עוברים דרך `NarrativeItemsService` (רשימת המזהים מה-DB, המבזקים מ-Nexus, מטמון של 60 שניות) ו-`DataLakeClient` (Nexus או fixtures באותה צורה). סעיף Data Lake.
-- **גזרה:** כל route שלנו על אירוע מחזיר 404 על אירוע שלא קיים ו-403 על אירוע מגזרה אחרת, לפי מנגנון האימות של שחר. עד שהוא ב-dev, משתמש קבוע מה-seed.
+- **גזרה:** כל route שלנו על אירוע מחזיר 404 על אירוע שלא קיים ו-403 על אירוע שאין בינו לבין `user.arenas` חיתוך. ב-`MOBILE_AUTH_BYPASS` המשתמש הקבוע בכל הגזרות.
 
 ### ממשקים משותפים באפליקציה (קבועים מראש, כדי שאף אחד לא יחכה)
 | מה | איפה | משימה |
@@ -159,7 +167,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | מפתחות שאילתות: `['events', search]`, `['event', id]`, `['timeline', id]`, `['stats', id]`, `['items', id]`, `['action-types']` | `src/api/queryKeys.ts` | MAR-01 |
 | `POLL` (זמני המשיכה) | `src/api/polling.ts` | MAR-01 |
 | `Loading`, `EmptyState`, `ErrorState`, `Tag` | `src/components/` | MAR-02 |
-| `useAuth()` עם `user { id, arena, name?, role? }`, `getAccessToken()` ו-`signOut()` | `src/auth/` | MAR-03 |
+| `useAuth()` עם `status`, `user { id, username, name, arenas, roles }`, `signIn()`, `getAccessToken()` ו-`signOut()` | `src/auth/` | MAR-03 |
 | `<OracleView eventId narrativeId />` | `src/features/oracle/` | MAR-08 |
 | `<CloseEventButton eventId />` עם הגיליון | `src/features/actions/close/` | MAR-15 |
 | `usePushStatus()` | `src/notifications/` | MAR-18 |
@@ -198,7 +206,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
   | `other` | אחר |
 - **`action`:** `action_id`, `event_id`, `action_type`, `title` (≤100, חובה), `description` (≤500, רשות), `performed_by`, `performed_at`, `updated_at`, `deleted_at`/`deleted_by` (מחיקה רכה, **גם מהמובייל**, רק המבצע).
 - **`event_log`:** append-only. `kind`, `actor_id`, `from_value`, `to_value`, `details`, `client` (`web`/`mobile`/`system`), `at`.
-- **`device_token` (שלנו):** `device_id`, `user_id`, `platform` (`android`/`ios`), `push_token` (unique, עם CHECK לצורה `ExponentPushToken[...]`), `created_at`, `last_seen_at`. אינדקס על `user_id`. **אין גזרה.** טוקן שנכשל נמחק.
+- **`device_token` (שלנו):** `device_id`, `user_id` (`sub`), `platform` (`android`/`ios`), `push_token` (unique, עם CHECK לצורה `ExponentPushToken[...]`), `arenas` (מהטוקן, מתעדכן בכל רישום, `db/4.ddl.sql`), `created_at`, `last_seen_at`. אינדקס על `user_id` ו-GIN על `arenas`. טוקן שנכשל נמחק.
 - **לא נשמר אצלנו:** תוכן המבזקים (רק רשימת המזהים, אצל שחר), נתונים מצטברים, שיחות Oracle, משתמשים, שמות, תפקידים וגזרות (מיראז׳).
 - **נתוני פיתוח (`db/2.dml.sql`):** 110 נרטיבים, אירועי אמת (פתוח, בטיפול וסגור) ותרגילית, פעולות (אחת מחוקה), רשומות `event_log` וטלפונים רשומים ב-`device_token`. מנקה את הטבלאות בכל הרצה. **רק ל-DB המקומי.**
 
@@ -238,16 +246,23 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - **הגזרה:** הטלפון פונה ל-Oracle ישירות, ולא דרך `api/`. Oracle צריך לאכוף את הגזרה בעצמו. ⬜
 - השיחה לא נשמרת. מעבר לשונית או יציאה מהאירוע טוענים את ה-WebView מחדש.
 
-## כניסה (מיראז׳)
-- צוות מיראז׳ (נועה הרשקו) אחראי על ההרשאות ומסווג כל משתמש לפי גזרה (ישראל, מדינות ערב, עולם).
-- הם חושפים עמוד כניסה (iframe בווב, WebView אצלנו) שכבר מתממשק ל-Keycloak, ומחזיר משתמש עם הפרטים שלו. אנחנו עוברים רק דרכו.
-- `AuthProvider` שומר את ההתחברות ב-`expo-secure-store` בלבד, וחושף `user`, `getAccessToken()` ו-`signOut()`. 401 מהשרת מחזיר לכניסה.
-- ⬜ כתובת העמוד, איך הוא מחזיר לאפליקציה את המשתמש והטוקן, מה השרת מצפה לקבל (מול שחר, [14]), והאם שם ותפקיד מגיעים.
+## כניסה (Keycloak)
+- **Client אחד לווב ולמובייל: `mirage`.** ציבורי, PKCE מסוג S256. ה-redirect של האפליקציה, `fresnel://oauth`, צריך להיות רשום עליו. הערכים ב-`.env`: `EXPO_PUBLIC_KEYCLOAK_ISSUER=https://keycloak.galileo.localhost/realms/galileo`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID=mirage`.
+- **באפליקציה (`src/auth/`):** `keycloak.ts` (discovery, כניסה, רענון, התנתקות), `sessionStore.ts` (רק ה-refresh token, ב-`expo-secure-store`), `claims.ts` (המשתמש מהטוקן, לתצוגה בלבד), `AuthProvider.tsx`.
+  - ה-access token בזיכרון בלבד, ומתרענן כשנותרו פחות מ-30 שניות (`getAccessToken()`, בתוך `apiFetch`).
+  - פתיחה מחדש של האפליקציה: refresh token → access token חדש (`status: 'restoring'`).
+  - 401 מהשרת על טוקן שנשלח, או refresh שנדחה: חזרה לכניסה.
+  - התנתקות: `DELETE /api/devices/:token`, סיום ה-session ב-Keycloak (POST עם ה-refresh token, בלי דפדפן), ומחיקת הכול.
+- **בשרת (`api/src/modules/mobile/auth/`):** `MobileAuthGuard` מאמת את הטוקן (`jose`, RS256, issuer, ו-`azp` או `aud` = `mirage`). טוקן לא תקין: 401. Keycloak לא זמין: 503. משתני סביבה: `KEYCLOAK_ISSUER`, `KEYCLOAK_CLIENT_ID=mirage`, `MOBILE_AUTH_BYPASS`.
+- **Node לא סומך על התעודה של openport** (הוא לא משתמש ב-Keychain של ה-Mac): מריצים את השרת עם `NODE_OPTIONS=--use-system-ca`. השרת רץ מקומית (`npm run start:dev`), לא ב-Docker, כי מתוך הקונטיינר אין openport.
+- **רשת:** סימולטור iOS משתמש ברשת של ה-Mac ולכן מגיע ל-Keycloak. טלפון אמיתי לא (אין עליו openport). ⬜ אמולטור Android: `*.localhost` מצביע על האמולטור עצמו, וצריך לבדוק.
+- **המשתמש:** `id` = `sub`, `username` = `preferred_username`, `name`, `arenas` (מ-`compartment`), `roles` (מ-`resource_access[client].roles`, לא בשימוש כרגע).
 
 ## Push
 - **דרך שירות ה-Push של Expo.** Expo מעביר את ההתראה ל-FCM ב-Android ול-APNs ב-iOS. **קוד אחד לשתי הפלטפורמות**, באפליקציה ובשרת.
 - **טוקן באפליקציה:** `Notifications.getExpoPushTokenAsync({ projectId })`, כש-`projectId` נלקח מ-`Constants.expoConfig?.extra?.eas?.projectId`. הטוקן נראה כמו `ExponentPushToken[...]`, ונשלח ל-`POST /api/devices` אחרי הכניסה. **לא** משתמשים ב-`getDevicePushTokenAsync`.
-- **למי שולחים:** משתמשי הגזרה של הנרטיב ממיראז׳, ואז כל הטוקנים שלהם מ-`device_token` לפי `user_id`. ⬜ איך שואלים את מיראז׳ על כל משתמשי גזרה.
+- **למי שולחים:** כל הטוקנים ב-`device_token` שה-`arenas` שלהם חותך את גזרות הנרטיב (`findTokensByArenas`). הגזרות נשמרות מהטוקן בכל רישום, ולכן שינוי הרשאה נכנס לתוקף בפתיחה הבאה של האפליקציה. ה-Push מכיל רק `event_id`, והשרת אוכף 403 בכל מקרה.
+- **רישום באפליקציה (`src/notifications/`):** `usePushRegistration()` ב-layout של המשתמש המחובר: channels, הרשאה, טוקן, `POST /api/devices`, ורישום מחדש כשהטוקן מתחלף. `usePushStatus()` לפרופיל.
 - **מתי:** שחר קורא ל-`PushService.notifyNewEvent(eventId)` אחרי commit של פתיחת אירוע **אמיתי** חדש ב-`POST /api/events`. לא על תרגילית ולא על אירוע קיים שהוחזר. כשל בשליחה לא מכשיל את הפתיחה.
 - **שליחה מהשרת:** `expo-server-sdk`. `chunkPushNotifications` ואז `sendPushNotificationsAsync`. אין מפתחות Push בשרת.
   ```ts
@@ -279,7 +294,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - **CI/CD:** push → CI → Registry → Argo CD → EKS. סודות דרך Sealed Secrets.
 - **DB:** PostgreSQL על CloudNativePG, עם PostGIS ו-pgvector.
 - **סביבות:** Prod ו-PreProd לכל מדור, עם DB נפרד. שמות ה-Namespaces ⬜.
-- **זהות:** Keycloak עם SSO מול AD, דרך מיראז׳. גזרה ממיראז׳.
+- **זהות:** Keycloak עם SSO מול AD. Client אחד (`mirage`) לווב ולמובייל. הגזרה מה-claim `compartment` שמיראז׳ מגדירים.
 - **רשת:** אין חסמים בפיירוול ל-Expo Push (`exp.host`), FCM, APNs ולסביבת הבנייה. ⬜ האם טלפון אמיתי מגיע ל-Ingress הפרטי, או שההדגמה על אמולטורים.
 
 ## בנייה והרצה
@@ -318,7 +333,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | ואן דאם | עדן טולקין | אירועים, פעולות (כולל מחיקה), סגירה, `db/` |
 | Oracle | ⬜ | WebView בתמונת המצב |
 | Expo Push | בן (חשבון EAS) | Push ל-Android ול-iOS, מעל FCM ו-APNs |
-| מיראז׳ | נועה הרשקו | עמוד הכניסה (מעל Keycloak), משתמש עם גזרה, ומשתמשי גזרה לשולח ה-Push ⬜ |
+| מיראז׳ | נועה הרשקו | ה-claims בטוקן של Keycloak (`compartment`, roles) |
 | Network, Identity & Access | עידו אלון | Keycloak, גישה מטלפון |
 | Platform & Delivery | רון להב | Namespaces, Pipeline, Ingress |
 | Data & AI | ליה אלפנדרי | schema `fresnel` |
@@ -327,12 +342,11 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | CTO | ניב שיין | ארכיטקטורה וסטנדרטים |
 
 ## שאלות פתוחות: לא לנחש
-- ⬜ **כניסה (מיראז׳):** כתובת העמוד, איך הוא מחזיר את המשתמש והטוקן לאפליקציה, מה השרת מצפה לקבל, ושם ותפקיד.
-- ⬜ **אימות בשרת (שחר, [14]):** איך המשתמש המאומת והגזרה נחשפים ל-routes שלנו.
+- ⬜ **Keycloak:** ש-`fresnel://oauth` רשום כ-redirect על `mirage`, והערך של גזרת "עולם" ב-`compartment` (כרגע מנחשים `international`).
+- ⬜ **routes של עדן ושחר מהטלפון:** ה-Guard של הווב מקבל את הטוקן של המובייל? ו-`performedBy`/`closedBy`: לפי איזה שדה בטוקן (`username` או `name`), כדי שהטלפון יזהה "פעולה שלי".
 - ⬜ **Oracle:** כתובת, פרמטרי ההקשר, זיהוי המשתמש ב-WebView, אכיפת גזרה, התאמה לטלפון ו-RTL, ואיש קשר.
 - ⬜ **Data Lake:** שם העמודה ב-`narrative` עם רשימת המזהים, הבקשה של טל לפי רשימת מזהים, טוקן API ו-image להרצה מקומית, וכתובת לכל סביבה.
 - ⬜ **פעולות (עדן):** מיזוג PR #52, ו-export של `EventRepository` (או method ב-`EventService`) שמחזיר פעולות גם לאירוע סגור, בשביל ה-`timeline` והתחקור.
-- ⬜ **Push לפי גזרה:** איך שואלים את מיראז׳ על כל משתמשי גזרה (חוסם את MAR-19).
 - ⬜ **עדן:** `isAnomaly` ברשימה, `GET /api/events/:id`, `POST` ו-`DELETE` של פעולות (כולל 403 למי שלא ביצע), ותיאום על `items` ו-`stats` (היו ב-VD-06).
 - ⬜ **תחקור:** מה ניתאי צריך (push או pull, שדות, תדירות).
 - ⬜ **OpenAPI:** אין `@nestjs/swagger` ב-`api/`, ולכן הטיפוסים ידניים.

@@ -1,10 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { MobileAuthGuard } from './auth/mobile-auth.guard';
 import { OpenEventPage } from './dto/open-event';
 import { ListOpenEventsQuery } from './dto/list-open-events.query';
 import { EventsService } from './events.service';
 
 // Not under /events: GET /api/events belongs to the event module.
 @Controller('mobile/events')
+@UseGuards(MobileAuthGuard)
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
