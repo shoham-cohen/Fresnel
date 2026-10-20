@@ -1,9 +1,11 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query, UseGuards } from '@nestjs/common';
+import { MobileAuthGuard } from './auth/mobile-auth.guard';
 import { SourceItemPage } from './dto/source-item';
 import { ListItemsQuery } from './dto/list-items.query';
 import { ItemsService } from './items.service';
 
 @Controller('events')
+@UseGuards(MobileAuthGuard)
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
