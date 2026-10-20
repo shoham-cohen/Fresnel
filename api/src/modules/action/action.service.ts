@@ -26,7 +26,7 @@ export class ActionService {
         title: action.title,
         actionType: action.actionTypeCode,
       },
-      client: 'system',
+      client: 'web',
     });
   }
 }

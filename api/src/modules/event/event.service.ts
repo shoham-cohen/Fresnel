@@ -49,7 +49,7 @@ export class EventService {
     }
 
     const action = await this.actionRepository.createForEvent(eventId, {
-      actionType: dto.actionTypeCode,
+      actionTypeCode: dto.actionTypeCode,
       title: dto.title,
       description: dto.description ?? null,
       performedBy: dto.performedBy ?? 'vandamme.handler1',

@@ -31,7 +31,7 @@ export class ActionRepository {
   createForEvent(
     eventId: string,
     data: {
-      actionType: string;
+      actionTypeCode: string;
       title: string;
       description: string | null;
       performedBy: string;
@@ -39,7 +39,7 @@ export class ActionRepository {
   ): Promise<Action> {
     const action = this.actionOrmRepository.create({
       eventId,
-      actionTypeCode: data.actionType,
+      actionTypeCode: data.actionTypeCode,
       title: data.title,
       description: data.description,
       performedBy: data.performedBy,

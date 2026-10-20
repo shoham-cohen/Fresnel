@@ -28,7 +28,7 @@ export class EventLogRepository {
       fromValue: params.fromValue ?? null,
       toValue: params.toValue ?? null,
       details: params.details ?? {},
-      client: params.client ?? 'system',
+      client: params.client ?? 'web',
       at: new Date(),
     });
 
