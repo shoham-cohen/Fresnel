@@ -1,5 +1,6 @@
-import { alpha, type SxProps, type Theme } from '@mui/material/styles';
 import { TABLE_ROW_HEIGHT } from '../../constants/columns.constant';
+import { alpha, type SxProps, type Theme } from '@mui/material/styles';
+import { ANOMALY_TAG_LABEL_OFFSET, ANOMALY_TAG_SIZE } from '../../constants/anomaly-tag.constant';
 
 export const styles = {
   clickableRow: {
@@ -18,6 +19,41 @@ export const styles = {
   },
   cell: {
     p: 0,
+  },
+  numberCell: {
+    position: 'relative',
+  },
+  anomalyTag: {
+    position: 'absolute',
+    top: 0,
+    insetInlineStart: 0,
+    width: ANOMALY_TAG_SIZE,
+    height: ANOMALY_TAG_SIZE,
+    pointerEvents: 'none',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      bgcolor: 'header.background',
+      clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
+    },
+  },
+  anomalyTagLabel: {
+    display: 'flex',
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    fontSize: 11,
+    lineHeight: 1.15,
+    whiteSpace: 'pre',
+    textAlign: 'center',
+    alignItems: 'center',
+    color: 'header.text',
+    justifyContent: 'center',
+    transform: 'rotate(45deg)',
+    top: ANOMALY_TAG_LABEL_OFFSET,
+    fontWeight: 'fontWeightMedium',
+    insetInlineStart: ANOMALY_TAG_LABEL_OFFSET,
   },
   numberBox: {
     display: 'grid',

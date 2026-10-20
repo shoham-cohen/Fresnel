@@ -12,10 +12,11 @@ export const toNarrative = (dto: NarrativeDto): Narrative => {
   return {
     title: dto.title,
     summary: dto.summary,
+    arena: dto.arena ?? [],
     isFlagged: dto.isFlagged,
+    isAnomaly: dto.isAnomaly,
     detectedAt: dto.detectedAt,
     narrativeId: dto.narrativeId,
-    arena: dto.arena ?? [],
     viewsCount: Number(dto.viewsCount ?? 0),
   };
 };

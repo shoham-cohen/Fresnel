@@ -4,12 +4,12 @@ export interface Narrative {
   narrativeId: string;
   viewsCount: number;
   isFlagged: boolean;
+  isAnomaly: boolean;
   summary: string | null;
   arena: string[];
 }
 
 export interface NarrativeDetails extends Narrative {
-  isAnomaly: boolean;
   itemList: string[];
   platforms: string[];
   languages: string[];
