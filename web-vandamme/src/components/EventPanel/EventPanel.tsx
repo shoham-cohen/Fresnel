@@ -6,6 +6,7 @@ import type { EventSummary, EventStatus } from '../../api/events';
 import EventTimelineItem from './TimelineItems/EventTimelineItem';
 import { Divider } from '@mui/material';
 import Typography from '@mui/material/Typography';
+import AddActionButton from '../layout/AddActionButton';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '',
@@ -26,6 +27,7 @@ type EventPanelProps = {
 };
     
 export default function EventPanel( { selectedEvent }: EventPanelProps ) {
+
   const mockEventsList: EventSummary[] = [
     {
       eventId: 'שחר צברי',
@@ -156,12 +158,12 @@ export default function EventPanel( { selectedEvent }: EventPanelProps ) {
             <Divider component="li" />
               <EventTimelineItem 
               key={eventItem.eventId + index} 
-              selectedEvent={eventItem} ></EventTimelineItem>
+              selectedAction={eventItem} ></EventTimelineItem>
               <Divider component="li" />
           </>
           ))}
-          
         </Grid>
+        <AddActionButton />
       </Grid>
       </Grid>
       <Grid size={3} sx={{ height: '100%' }}>
