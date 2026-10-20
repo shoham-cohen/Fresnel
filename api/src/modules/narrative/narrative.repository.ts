@@ -140,9 +140,12 @@ export class NarrativeRepository {
     });
   }
 
-  findOneSimulated(simulationId: string): Promise<SimulatedNarrative | null> {
+  findOneSimulated(
+    simulationId: string,
+    narrativeId: string,
+  ): Promise<SimulatedNarrative | null> {
     return this.simulatedNarrativeOrmRepository.findOne({
-      where: { simulationId },
+      where: { simulationId, narrativeId },
       relations: { narrative: { events: true } },
     });
   }

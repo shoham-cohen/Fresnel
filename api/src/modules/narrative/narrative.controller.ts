@@ -48,14 +48,20 @@ export class NarrativeController {
     return this.narrativeService.findSimulated(query);
   }
 
-  @Get('simulated/:simulationId')
+  @Get('simulated/one')
   async findOneSimulated(
-      @Param('simulationId', new ParseUUIDPipe()) simulationId: string,
+    @Query('simulationId', new ParseUUIDPipe()) simulationId: string,
+    @Query('narrativeId', new ParseUUIDPipe()) narrativeId: string,
   ): Promise<SimulatedNarrativeResponseDto> {
-    const simulatedNarrative = await this.narrativeService.findOneSimulated(simulationId);
-    
+    const simulatedNarrative = await this.narrativeService.findOneSimulated(
+      simulationId,
+      narrativeId,
+    );
+
     if (!simulatedNarrative) {
-      throw new NotFoundException(`Simulated narrative with id ${simulationId} not found`);
+      throw new NotFoundException(
+        `Simulated narrative with narrativeId '${narrativeId}' and simulationId '${simulationId}' not found`,
+      );
     }
 
     return simulatedNarrative;
