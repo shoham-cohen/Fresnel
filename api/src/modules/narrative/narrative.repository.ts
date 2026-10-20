@@ -10,6 +10,7 @@ import {
   type FindOptionsWhere,
 } from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
+import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
 
 @Injectable()
@@ -21,8 +22,22 @@ export class NarrativeRepository {
     private readonly simulatedNarrativeOrmRepository: Repository<SimulatedNarrative>,
   ) {}
 
-  findAll(): Promise<Narrative[]> {
+  private createDetectedAtFilter(
+    from?: Date | string,
+    to?: Date | string,
+  ): FindOptionsWhere<Narrative> {
+    const start = from ? new Date(from) : undefined;
+    const end = to ? new Date(to) : undefined;
+
+    if (start && end) return { detectedAt: Between(start, end) };
+    if (start) return { detectedAt: MoreThanOrEqual(start) };
+    if (end) return { detectedAt: LessThanOrEqual(end) };
+    return {};
+  }
+
+  findAll(query?: FindNarrativesQueryDto): Promise<Narrative[]> {
     return this.narrativeOrmRepository.find({
+      where: this.createDetectedAtFilter(query?.startDate, query?.endDate),
       relations: { events: true },
     });
   }
@@ -39,7 +54,7 @@ export class NarrativeRepository {
   }: ListNarrativesQueryDto): Promise<[Narrative[], number]> {
     const filters: FindOptionsWhere<Narrative> = {
       ...(arena && { arena: ArrayContains([arena]) }),
-      ...((from || to) && { detectedAt: detectedAtRange(from, to) }),
+      ...this.createDetectedAtFilter(from, to),
     };
 
     const pattern = search && `%${escapeLike(search)}%`;
@@ -70,7 +85,6 @@ export class NarrativeRepository {
     });
   }
 
-  // Returns the updated narrative, or null when there is no narrative with this id.
   async update(
     narrativeId: string,
     changes: Partial<Pick<Narrative, 'isFlagged'>>,
@@ -84,9 +98,18 @@ export class NarrativeRepository {
     return this.findOne(narrativeId);
   }
 
-  findSimulated(simulationId?: string): Promise<SimulatedNarrative[]> {
+  findSimulated(query?: FindNarrativesQueryDto): Promise<SimulatedNarrative[]> {
     return this.simulatedNarrativeOrmRepository.find({
-      where: simulationId ? { simulationId } : {},
+      where: {
+        narrative: this.createDetectedAtFilter(query?.startDate, query?.endDate),
+      },
+      relations: { narrative: { events: true } },
+    });
+  }
+
+  findOneSimulated(simulationId: string): Promise<SimulatedNarrative | null> {
+    return this.simulatedNarrativeOrmRepository.findOne({
+      where: { simulationId },
       relations: { narrative: { events: true } },
     });
   }
@@ -100,10 +123,5 @@ export class NarrativeRepository {
     return this.simulatedNarrativeOrmRepository.save(simulatedNarrative);
   }
 }
-
-const detectedAtRange = (from?: string, to?: string) => {
-  if (from && to) return Between(new Date(from), new Date(to));
-  return from ? MoreThanOrEqual(new Date(from)) : LessThanOrEqual(new Date(to as string));
-};
 
 const escapeLike = (value: string): string => value.replace(/[\\%_]/g, (c) => `\\${c}`);

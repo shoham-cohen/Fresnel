@@ -9,14 +9,14 @@ export enum Arena {
 
 @Entity({ schema: 'fresnel', name: 'narrative' })
 export class Narrative {
-  @PrimaryColumn({ name: 'narrative_id', type: 'text' })
+  @PrimaryColumn({ name: 'narrative_id', type: 'uuid' })
   narrativeId: string;
 
   @Column({ type: 'text' })
   title: string;
 
-  @Column({ type: 'text', nullable: true })
-  summary: string | null;
+  @Column({ type: 'text' })
+  summary: string;
 
   @Column({ name: 'is_anomaly', type: 'boolean' })
   isAnomaly: boolean;
@@ -28,7 +28,7 @@ export class Narrative {
   detectedAt: Date;
 
   @Column({ type: 'vector', length: 1024, nullable: true, select: false })
-  embedding: number[] | null;
+  embedding?: number[];
 
   @Column({ name: 'item_list', type: 'text', array: true })
   itemList: string[];
@@ -48,9 +48,9 @@ export class Narrative {
   @Column({ name: 'is_flagged', type: 'boolean', default: false })
   isFlagged: boolean;
 
-  @Column({name: 'received_at', type: 'timestamptz', nullable: true})
-  receivedAt?: Date;
+  @Column({name: 'received_at', type: 'timestamptz'})
+  receivedAt: Date;
 
  @OneToMany(() => Event, event => event.narrative)
-  events: Event[];
+  events?: Event[];
 }

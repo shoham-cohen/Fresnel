@@ -10,7 +10,7 @@ export class Event {
   @PrimaryColumn({ name: 'event_id', type: 'uuid', default: () => 'gen_random_uuid()' })
   eventId: string;
 
-  @Column({ name: 'narrative_id', type: 'text' })
+  @Column({ name: 'narrative_id', type: 'uuid' })
   narrativeId: string;
 
   @ManyToOne(() => Narrative, (narrative) => narrative.events)
