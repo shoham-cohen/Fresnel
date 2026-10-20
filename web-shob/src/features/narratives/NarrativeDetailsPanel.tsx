@@ -13,7 +13,7 @@ import { useTheme } from '@mui/material/styles';
 import { useSearchParams } from 'react-router';
 import { getNarrativeDetailsPanelStyles } from './NarrativeDetailsPanel.styles';
 
-import { CREATE_EVENT_URL, DETAILS_PANEL_TRANSITION } from './constants';
+import { CREATE_EVENT_URL, DETAILS_PANEL_TRANSITION, clearSelectionParams } from './constants';
 import { narrativeService } from '@/services/narrative.service';
 import type { NarrativeDetails } from '@/interfaces/narrative.interface';
 
@@ -103,11 +103,7 @@ export function NarrativeDetailsPanel() {
   const isOpen = Boolean(narrativeId);
 
   const handleClose = () => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete('narrativeId');
-      return next;
-    });
+    setSearchParams(clearSelectionParams);
   };
 
   const handleCreateEvent = () => {

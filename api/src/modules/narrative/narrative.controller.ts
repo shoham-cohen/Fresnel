@@ -11,13 +11,14 @@ import {
 } from '@nestjs/common';
 
 import { NarrativeService } from './narrative.service';
-import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 import { UpdateNarrativeDto } from './dto/update-narrative-dto';
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
 import { NarrativeListPageDto } from './dto/narrative-list-page-dto';
+import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
 import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
 import { SimulatedNarrativeResponseDto } from './dto/simulated-narrative-response-dto';
+import { SimulatedNarrativeListPageDto } from './dto/simulated-narrative-list-page-dto';
 
 @Controller('narratives')
 export class NarrativeController {
@@ -31,8 +32,12 @@ export class NarrativeController {
   }
 
   @Get('page')
-  findPage(@Query() query: ListNarrativesQueryDto): Promise<NarrativeListPageDto> {
-    return this.narrativeService.findPage(query);
+  findPage(
+    @Query() query: ListNarrativesQueryDto,
+  ): Promise<NarrativeListPageDto | SimulatedNarrativeListPageDto> {
+    return query.isSimulation
+      ? this.narrativeService.findSimulatedPage(query)
+      : this.narrativeService.findPage(query);
   }
 
   @Get('simulated')
@@ -54,7 +59,6 @@ export class NarrativeController {
 
     return simulatedNarrative;
   }
-
 
   @Post('simulated')
   createSimulated(
