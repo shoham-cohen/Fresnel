@@ -1,4 +1,3 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -7,10 +6,10 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
+import { SearchInput } from '@/components/SearchInput';
 import { colors, fontSize, radius, spacing, textAlignStart } from '@/theme';
 
 import { SourceRow } from './SourceRow';
@@ -64,18 +63,7 @@ export function SourcesList({ eventId }: Props) {
           <Text style={styles.title}>
             מקורות מידע {sources.data ? <Text style={styles.count}>({total})</Text> : null}
           </Text>
-          <View style={styles.search}>
-            <Ionicons name="search" size={18} color={colors.text} />
-            <TextInput
-              style={styles.searchInput}
-              value={search}
-              onChangeText={setSearch}
-              placeholder="חפש.."
-              placeholderTextColor={colors.textMuted}
-              returnKeyType="search"
-              clearButtonMode="while-editing"
-            />
-          </View>
+          <SearchInput value={search} onChangeText={setSearch} />
         </View>
       }
       ListEmptyComponent={
@@ -124,24 +112,6 @@ const styles = StyleSheet.create({
   },
   count: {
     fontSize: fontSize.md,
-  },
-  search: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 40,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    backgroundColor: colors.input,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    fontSize: fontSize.md,
-    color: colors.text,
-    textAlign: textAlignStart,
   },
   state: {
     padding: spacing.lg,
