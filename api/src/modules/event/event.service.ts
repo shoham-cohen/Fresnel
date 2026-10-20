@@ -5,6 +5,7 @@ import { EventListPage } from './dto/event-list-item';
 import { EventDetailDto } from './dto/event-detail.dto';
 import { ListEventsQuery } from './dto/list-events.query';
 import { EventRepository } from './event.repository';
+import { CloseEventDto } from './dto/close-event.dto';
 import { SERVITY } from './consts';
 
 @Injectable()
@@ -61,6 +62,29 @@ export class EventService {
     };
   }
   
+  async closeEvent(id: string, dto: CloseEventDto): Promise<void> {
+    const event = await this.eventRepository.findById(id);
+
+    if (!event) {
+      throw new Error(`error occured when tried to close an event with id ${id}`);
+    }
+
+    await this.eventRepository.close(id, {
+      closedBy: dto.closedBy,
+      closureSummary: dto.closureSummary,
+    });
+  }
+
+  async reopenEvent(id: string): Promise<void> {
+    const event = await this.eventRepository.findById(id);
+
+    if (!event) {
+      throw new Error(`error occured when tried to reopen event with ${id}`);
+    }
+
+    await this.eventRepository.reopen(id);
+  }
+
   async create(dto: CreateEventDto): Promise<CreatedEventResponse> {
     const narrativeId = dto.narrativeId;
     if (!narrativeId) {
