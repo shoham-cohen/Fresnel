@@ -1,6 +1,7 @@
 import { EventActionItem } from './dto/event-action-item';
 import { CreateEventActionDto } from './dto/create-event-action.dto';
-import { Body, Controller, Get, HttpCode, HttpStatus,ParseUUIDPipe, Param, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus,ParseUUIDPipe, Param, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../../common/auth';
 import { Response } from 'express';
 import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
 import { EventListPage } from './dto/event-list-item';
@@ -10,6 +11,7 @@ import { CloseEventDto } from './dto/close-event.dto';
 import { EventService } from './event.service';
 
 @Controller('events')
+@UseGuards(AuthGuard)
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 

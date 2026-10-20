@@ -13,6 +13,7 @@ import '@fontsource/rubik/700.css'
 
 import { theme, simulationTheme } from './theme'
 import App from './App'
+import { initAuth } from './auth/keycloak'
 import {
   EnvironmentProvider,
   useEnvironment,
@@ -35,6 +36,9 @@ function ThemedApp() {
     </ThemeProvider>
   )
 }
+
+// Before the first render (not in useEffect), so the app never renders without a token.
+await initAuth()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

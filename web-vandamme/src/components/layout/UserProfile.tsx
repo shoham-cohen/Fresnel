@@ -1,11 +1,17 @@
+import { useState } from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { Box, Typography } from '@mui/material'
-import { mockUser } from '../../mock/userMock';
+import { Box, Menu, MenuItem, Typography } from '@mui/material'
+import { currentUser, logout } from '../../auth/keycloak';
 
 
 export default function UserProfile() {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const user = currentUser()
+
   return (
+    <>
     <Box
+      onClick={(e) => setAnchor(e.currentTarget)}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -25,8 +31,12 @@ export default function UserProfile() {
           whiteSpace: 'nowrap',
         }}
       >
-       {mockUser.fullName}
+       {user.fullName || user.username}
       </Typography>
       </Box>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+        <MenuItem onClick={logout}>התנתקות</MenuItem>
+      </Menu>
+    </>
   )
 }

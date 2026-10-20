@@ -32,6 +32,9 @@ services:
       NODE_ENV: development
       API_PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:-fresnel}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}@db:5432/${POSTGRES_DB:-fresnel}
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-https://keycloak.galileo.localhost}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-galileo}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-vandamme}
     ports:
       - "127.0.0.1:3000:3000"
     volumes:

@@ -1,8 +1,10 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../../common/auth';
 import { ActionType } from '../../entities';
 import { ActionTypeService } from './action-type.service';
 
 @Controller('action-types')
+@UseGuards(AuthGuard)
 export class ActionTypeController {
   constructor(private readonly actionTypeService: ActionTypeService) {}
 

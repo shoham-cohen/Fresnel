@@ -16,6 +16,7 @@
     "@fontsource/rubik": "^5.3.0",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
+    "keycloak-js": "^26.2.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "stylis": "^4.4.0",

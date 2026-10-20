@@ -1,3 +1,5 @@
+import { apiFetch } from './apiFetch'
+
 export type EventStatus = 'open' | 'in_progress' | 'closed'
 export type Severity = 'low' | 'medium' | 'high' | 'critical'
 
@@ -34,7 +36,7 @@ export async function fetchActiveEvents(
   })
   if (search) params.set('search', search)
 
-  const res = await fetch(`/api/events?${params}`, { signal })
+  const res = await apiFetch(`/api/events?${params}`, { signal })
   if (!res.ok) throw new Error(`GET /api/events failed: ${res.status}`)
   return res.json()
 }

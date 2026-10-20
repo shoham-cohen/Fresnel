@@ -1,3 +1,4 @@
+import { apiFetch } from './apiFetch'
 import type {
   CreateEventActionPayload,
   EventActionItem,
@@ -9,7 +10,7 @@ export async function createEventAction(
   eventId: string,
   payload: CreateEventActionPayload
 ): Promise<EventActionItem> {
-  const response = await fetch(`${API_BASE_URL}/events/${eventId}/actions`, {
+  const response = await apiFetch(`${API_BASE_URL}/events/${eventId}/actions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
