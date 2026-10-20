@@ -3,14 +3,14 @@ import { Event } from './event.entity';
 
 @Entity({ schema: 'fresnel', name: 'narrative' })
 export class Narrative {
-  @PrimaryColumn({ name: 'narrative_id', type: 'text' })
+  @PrimaryColumn({ name: 'narrative_id', type: 'uuid' })
   narrativeId: string;
 
   @Column({ type: 'text' })
   title: string;
 
-  @Column({ type: 'text', nullable: true })
-  summary: string | null;
+  @Column({ type: 'text' })
+  summary: string;
 
   @Column({ name: 'is_anomaly', type: 'boolean' })
   isAnomaly: boolean;
@@ -25,14 +25,26 @@ export class Narrative {
   detectedAt: Date;
 
   @Column({ type: 'vector', length: 1024, nullable: true, select: false })
-  embedding: number[] | null;
+  embedding?: number[];
 
   @Column({ type: 'jsonb', nullable: false, default: {} })
   payload: Record<string, any>;
 
-  @Column({ name: 'received_at', type: 'timestamptz', nullable: false, default: () => 'now()' })
+  @Column({ name: 'shares_count', type: 'bigint' })
+  sharesCount: number;
+
+  @Column({ name: 'views_count', type: 'bigint' })
+  viewsCount: number;
+
+  @Column({ type: 'text', array: true })
+  languages: string[];
+
+  @Column({ name: 'is_flagged', type: 'boolean', default: false })
+  isFlagged: boolean;
+
+  @Column({name: 'received_at', type: 'timestamptz'})
   receivedAt: Date;
 
-  @OneToMany(() => Event, (event) => event.narrative)
-  events: Event[];
+ @OneToMany(() => Event, event => event.narrative)
+  events?: Event[];
 }

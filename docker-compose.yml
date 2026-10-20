@@ -1,27 +1,78 @@
-# Local PostgreSQL for the Fresnel section, with pgvector (needed by narrative.embedding).
-# Setup:  copy .env.example to .env and set POSTGRES_PASSWORD (.env is git-ignored)
-# Start:  docker compose up -d
-# Reset:  docker compose down -v   (drops the data; the schema is re-applied on the next start)
-# Host port 5433 by default, so it does not clash with a PostgreSQL already installed on 5432.
+# Local development: Vite + NestJS watch mode + PostgreSQL.
+# Run: docker compose up --build
 services:
   db:
     image: pgvector/pgvector:pg16
-    container_name: fresnel-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-fresnel}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}
       POSTGRES_DB: ${POSTGRES_DB:-fresnel}
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     volumes:
       - fresnel-db-data:/var/lib/postgresql/data
-      # *.sql files in ./db run once, in name order, when the data volume is created
-      - ./db:/docker-entrypoint-initdb.d:ro
+      - ./db/1.ddl.sql:/docker-entrypoint-initdb.d/1.ddl.sql:ro
+      - ./db/2.ddl.sql:/docker-entrypoint-initdb.d/2.ddl.sql:ro
+      - ./db/3.dml.sql:/docker-entrypoint-initdb.d/3.dml.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
+      retries: 20
+      start_period: 5s
+    networks: [fresnel]
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+      target: dev
+    environment:
+      NODE_ENV: development
+      API_PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fresnel}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}@db:5432/${POSTGRES_DB:-fresnel}
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./api:/app
+      - api-node-modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/events').then(() => process.exit(0)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 3s
       retries: 10
+      start_period: 20s
+    networks: [fresnel]
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: web-shob/Dockerfile
+      target: dev
+    environment:
+      NODE_ENV: development
+    ports:
+      - "127.0.0.1:5173:5173"
+    volumes:
+      - ./web-shob:/app
+      - web-node-modules:/app/node_modules
+    depends_on:
+      api:
+        condition: service_started
+    networks: [fresnel]
+    restart: unless-stopped
+
+networks:
+  fresnel:
+    name: fresnel-network
+    driver: bridge
 
 volumes:
   fresnel-db-data:
+  api-node-modules:
+  web-node-modules:

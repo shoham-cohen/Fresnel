@@ -25,7 +25,6 @@ export class FetchedNarrativeDto {
   @IsBoolean()
   isAnomaly: boolean;
 
-  // IDs of the items (post/article/video) that belong to this narrative.
   @IsOptional() 
   @IsArray()
   @IsString({ each: true })

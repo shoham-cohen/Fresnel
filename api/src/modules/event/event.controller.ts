@@ -1,4 +1,6 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
+import { EventActionItem } from './dto/event-action-item';
+import { CreateEventActionDto } from './dto/create-event-action.dto';
+import { Body, Controller, Get, HttpCode, HttpStatus,ParseUUIDPipe, Param, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
 import { EventDetailDto } from './dto/event-detail.dto';
@@ -19,6 +21,19 @@ export class EventController {
   @Get(':id')
   getById(@Param('id') id: string): Promise<EventDetailDto> {
     return this.eventService.getEventById(id);
+  }
+  
+  @Post(':id/actions')
+  createAction(
+    @Param('id', new ParseUUIDPipe()) eventId: string,
+    @Body() dto: CreateEventActionDto,
+  ): Promise<EventActionItem> {
+    return this.eventService.createActionForEvent(eventId, dto);
+  }
+
+  @Get(':id/actions')
+  getActions(@Param('id', new ParseUUIDPipe()) eventId: string): Promise<EventActionItem[]> {
+    return this.eventService.getActionsForEvent(eventId);
   }
 
   @Post(':id/close')
