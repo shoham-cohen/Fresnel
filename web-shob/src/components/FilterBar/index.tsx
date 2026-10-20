@@ -12,7 +12,7 @@ export interface FilterBarProps {
   onSearchChange: (value: string) => void;
   onStartDateChange: (date: string) => void;
   onEndDateChange: (date: string) => void;
-  onLocationChange: (locations: string[]) => void;
+  onLocationChange: (locations: string) => void;
 }
 
 export const FilterBar: FC<FilterBarProps> = ({
