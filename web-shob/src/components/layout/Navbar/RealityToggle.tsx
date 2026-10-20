@@ -1,20 +1,30 @@
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
+import { useSearchParams } from 'react-router';
 
 import { useReality } from '@/hooks';
-import type { Reality } from '@/types';
+import { REALITY, type Reality } from '@/types';
+import { clearSelectionParams } from '@/features/narratives/constants';
 
 import { styles } from './RealityToggle.styles';
 
 export type { Reality };
 
 const options: readonly { value: Reality; label: string }[] = [
-  { value: 'real', label: 'אמת' },
-  { value: 'exercise', label: 'תרגילית' },
+  { value: REALITY.real, label: 'אמת' },
+  { value: REALITY.simulation, label: 'תרגילית' },
 ];
 
 export function RealityToggle() {
   const { reality, setReality } = useReality();
+  const [, setSearchParams] = useSearchParams();
+
+  const handleChange = (next: Reality) => {
+    if (next === reality) return;
+
+    setReality(next);
+    setSearchParams(clearSelectionParams, { replace: true });
+  };
 
   return (
     <Box role="radiogroup" aria-label="מציאות" sx={styles.track}>
@@ -27,7 +37,7 @@ export function RealityToggle() {
             role="radio"
             aria-checked={isSelected}
             onClick={() => {
-              setReality(option.value);
+              handleChange(option.value);
             }}
             sx={styles.option(isSelected)}
           >

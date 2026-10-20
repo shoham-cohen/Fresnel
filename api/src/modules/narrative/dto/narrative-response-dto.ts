@@ -16,4 +16,5 @@ export class NarrativeResponseDto {
   embedding?: number[];
   receivedAt: Date;
   isEvent: boolean;
+  simulationId?: string | null;
 }

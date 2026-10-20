@@ -1,8 +1,6 @@
 import { alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
-import { DETAILS_PANEL_WIDTH } from './constants';
-
-const PANEL_MARGIN = 10;
+import { DETAILS_PANEL_WIDTH, PANEL_MARGIN } from './constants';
 
 export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
   const colors = theme.palette;
@@ -14,13 +12,14 @@ export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
       bgcolor: alpha(colors.primary.light, 0.35),
       border: `1px solid ${colors.primary.main}`,
       borderRadius: '5px',
-      p: '16px 16px 24px',
+      p: '10px 10px 24px',
       boxSizing: 'border-box',
     },
 
     metricIcon: {
       display: 'flex',
       color: colors.primary.main,
+      mb: 0.5,
     },
 
     metricLabel: {

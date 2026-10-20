@@ -112,13 +112,13 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
 
     return sorted.map((narrative, index) => (
       <NarrativeRow
-        key={narrative.narrativeId}
+        key={narrative.rowId}
         onSelect={onSelect}
         narrative={narrative}
         flagColor={flagColor}
         onToggleFlag={onToggleFlag}
         rowNumber={firstRowNumber + index}
-        selected={narrative.narrativeId === selectedId}
+        selected={narrative.rowId === selectedId}
       />
     ));
   };
