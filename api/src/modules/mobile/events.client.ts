@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventDetail } from './dto/event-detail';
 import { OpenEventPage } from './dto/open-event';
 import { getJson, MOCK_API_URL } from './mock-api';
 
@@ -27,5 +28,12 @@ export class EventsClient {
     });
     if (search) params.set('search', search);
     return getJson<OpenEventPage>(`${this.baseUrl}/api/events?${params}`, 'Events source');
+  }
+
+  findById(eventId: string): Promise<EventDetail> {
+    return getJson<EventDetail>(
+      `${this.baseUrl}/api/events/${encodeURIComponent(eventId)}`,
+      'Events source',
+    );
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventStats } from './dto/event-stats';
 import { SourceItemPage } from './dto/source-item';
 import { getJson, MOCK_API_URL } from './mock-api';
 
@@ -17,6 +18,13 @@ export class DataLakeClient {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
     return getJson<SourceItemPage>(
       `${this.baseUrl}/api/events/${encodeURIComponent(eventId)}/items?${params}`,
+      'Data Lake',
+    );
+  }
+
+  findEventStats(eventId: string): Promise<EventStats> {
+    return getJson<EventStats>(
+      `${this.baseUrl}/api/events/${encodeURIComponent(eventId)}/stats`,
       'Data Lake',
     );
   }

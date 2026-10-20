@@ -16,7 +16,7 @@ export function useSources(eventId: string) {
     queryKey: queryKeys.items(eventId),
     queryFn: ({ pageParam }) =>
       apiFetch<Page<SourceItem>>(
-        `/api/events/${encodeURIComponent(eventId)}/items?page=${pageParam}&pageSize=${PAGE_SIZE}`,
+        `/api/mobile/events/${encodeURIComponent(eventId)}/items?page=${pageParam}&pageSize=${PAGE_SIZE}`,
       ),
     initialPageParam: 1,
     // Items missing from the Data Lake are not returned, so the last page is found by page count, not by rows.

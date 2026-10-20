@@ -37,7 +37,6 @@ function scrollProgress(offsetX: number, maxScroll: number) {
 }
 
 export function SnapshotCardsCarousel({ event, stats }: Props) {
-  const scrollViewRef = useRef<ScrollView>(null);
   const trackWidthRef = useRef(TRACK_WIDTH);
   const [indicatorOffset, setIndicatorOffset] = useState(0);
 
@@ -56,7 +55,6 @@ export function SnapshotCardsCarousel({ event, stats }: Props) {
   return (
     <View style={styles.container}>
       <ScrollView
-        ref={scrollViewRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
