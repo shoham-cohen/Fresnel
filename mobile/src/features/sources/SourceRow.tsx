@@ -2,10 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { SourceItem } from '@/api/types';
 import { colors, fontSize, radius, spacing, textAlignStart } from '@/theme';
 import { formatTime } from '@/utils/formatTime';
-
-import type { SourceItem } from './types';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 

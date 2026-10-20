@@ -1,16 +1,11 @@
 import { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
+import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
+import { Loading } from '@/components/Loading';
 import { SearchInput } from '@/components/SearchInput';
-import { colors, fontSize, radius, spacing, textAlignStart } from '@/theme';
+import { colors, fontSize, spacing, textAlignStart } from '@/theme';
 
 import { SourceRow } from './SourceRow';
 import { useSources } from './useSources';
@@ -68,25 +63,18 @@ export function SourcesList({ eventId }: Props) {
       }
       ListEmptyComponent={
         sources.isPending ? (
-          <ActivityIndicator style={styles.state} color={colors.text} />
+          <Loading />
         ) : sources.isError ? (
-          <View style={styles.state}>
-            <Text style={styles.stateText}>לא הצלחנו לטעון את המקורות</Text>
-            <Pressable style={styles.retry} onPress={() => refetch()} accessibilityRole="button">
-              <Text style={styles.retryLabel}>נסה שוב</Text>
-            </Pressable>
-          </View>
+          <ErrorState message="לא הצלחנו לטעון את המקורות" onRetry={() => refetch()} />
         ) : (
-          <Text style={[styles.state, styles.stateText]}>
-            {query ? 'לא נמצאו מקורות' : 'אין מקורות לאירוע'}
-          </Text>
+          <EmptyState text={query ? 'לא נמצאו מקורות' : 'אין מקורות לאירוע'} />
         )
       }
       ListFooterComponent={
         isFetchingNextPage ? (
-          <ActivityIndicator style={styles.state} color={colors.text} />
+          <ActivityIndicator style={styles.footer} color={colors.text} />
         ) : query && hasNextPage ? (
-          <Text style={[styles.state, styles.stateText]}>
+          <Text style={[styles.footer, styles.footerText]}>
             חיפוש ב-{items.length} מתוך {total}
           </Text>
         ) : undefined
@@ -113,25 +101,12 @@ const styles = StyleSheet.create({
   count: {
     fontSize: fontSize.md,
   },
-  state: {
+  footer: {
     padding: spacing.lg,
-    alignItems: 'center',
-    gap: spacing.md,
   },
-  stateText: {
+  footerText: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: 'center',
-  },
-  retry: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
-    backgroundColor: colors.header,
-  },
-  retryLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.onHeader,
   },
 });

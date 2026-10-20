@@ -1,14 +1,9 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
+import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
+import { Loading } from '@/components/Loading';
 import { SearchInput } from '@/components/SearchInput';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { colors, fontSize, radius, spacing, textAlignStart } from '@/theme';
@@ -59,23 +54,16 @@ export function OpenEventsList() {
         }
         ListEmptyComponent={
           openEvents.isPending ? (
-            <ActivityIndicator style={styles.state} color={colors.text} />
+            <Loading />
           ) : openEvents.isError ? (
-            <View style={styles.state}>
-              <Text style={styles.stateText}>לא הצלחנו לטעון את האירועים</Text>
-              <Pressable style={styles.retry} onPress={() => refetch()} accessibilityRole="button">
-                <Text style={styles.retryLabel}>נסה שוב</Text>
-              </Pressable>
-            </View>
+            <ErrorState message="לא הצלחנו לטעון את האירועים" onRetry={() => refetch()} />
           ) : (
-            <Text style={[styles.state, styles.stateText]}>
-              {debouncedSearch ? 'לא נמצאו אירועים' : 'אין אירועים פתוחים בגזרה'}
-            </Text>
+            <EmptyState text={debouncedSearch ? 'לא נמצאו אירועים' : 'אין אירועים פתוחים בגזרה'} />
           )
         }
         ListFooterComponent={
           isFetchingNextPage ? (
-            <ActivityIndicator style={styles.state} color={colors.text} />
+            <ActivityIndicator style={styles.nextPage} color={colors.text} />
           ) : undefined
         }
       />
@@ -89,7 +77,7 @@ const styles = StyleSheet.create({
     margin: spacing.md,
     overflow: 'hidden',
     borderRadius: radius.md,
-    backgroundColor: colors.card,
+    backgroundColor: colors.cardBackground,
     boxShadow: `0 1px 4px ${colors.cardShadow}`,
   },
   header: {
@@ -109,25 +97,7 @@ const styles = StyleSheet.create({
   count: {
     fontSize: fontSize.md,
   },
-  state: {
+  nextPage: {
     padding: spacing.lg,
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  stateText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-  retry: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
-    backgroundColor: colors.header,
-  },
-  retryLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.onHeader,
   },
 });

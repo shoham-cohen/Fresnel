@@ -1,12 +1,11 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { OpenEvent } from '@/api/types';
 import { Tag } from '@/components/Tag';
 import { ANOMALY_LABEL, STATUS_LABEL } from '@/constants/labels';
 import { colors, fontSize, radius, severityColors, spacing, textAlignStart } from '@/theme';
 import { formatTime } from '@/utils/formatTime';
-
-import type { OpenEvent } from './types';
 
 type Props = {
   event: OpenEvent;
