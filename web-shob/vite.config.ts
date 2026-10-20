@@ -6,6 +6,12 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
+  // The API (NestJS, port 3000 by default) has no CORS, so dev requests go through Vite.
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

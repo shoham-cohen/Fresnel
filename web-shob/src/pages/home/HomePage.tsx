@@ -1,44 +1,58 @@
+import { useCallback } from 'react';
+import { Box, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router';
+import { pageStyles } from '@/styles/page.styles';
+import { DETAILS_PANEL_WIDTH, NarrativeDetailsPanel } from '@/features/narratives';
+import { NarrativesTable } from '@/components/NarrativesTable';
+import type { Narrative } from '@/interfaces/narrative.interface';
+import { useRecentNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
 
-import { NarrativeDetailsPanel } from '@/features/narratives';
+const RECENT_HOURS = 24;
+// TODO: the signed-in user's area (arena), once it comes from Keycloak / Mirage.
+const AREA_LABEL = 'ישראל';
 
-export function HomePage() {
-  const [, setSearchParams] = useSearchParams();
+export const HomePage = () => {
+  const toggleFlag = useToggleNarrativeFlag();
+  const { narratives, tableStatus, refetch } = useRecentNarratives(RECENT_HOURS);
 
-  /*
-   * The narratives table will be written by someone else and placed here.
-   * Clicking a row in the table sets ?narrativeId=<id> in the URL,
-   * which automatically triggers NarrativeDetailsPanel to slide open.
-   */
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedId = searchParams.get('narrativeId');
+
+  const handleSelect = useCallback(
+    (narrative: Narrative) => {
+      setSearchParams((params) => {
+        const next = new URLSearchParams(params);
+        next.set('narrativeId', narrative.narrativeId);
+        return next;
+      });
+    },
+    [setSearchParams],
+  );
+
   return (
     <>
       <title>מסך ראשי · Palantir</title>
-      <div style={{ padding: '24px 32px' }}>
-        <h1>מסך ראשי</h1>
-
-        {/* Demo row trigger until the table component is plugged in */}
-        <div style={{ marginBlockStart: '20px' }}>
-          <button
-            type="button"
-            onClick={() => {
-              setSearchParams({ narrativeId: 'nar-0001' });
-            }}
-            style={{
-              padding: '10px 18px',
-              backgroundColor: '#f2f2f2',
-              border: '1px solid #d9d9d9',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 500,
-              fontFamily: 'inherit',
-            }}
-          >
-            פתח פאנל התראה לדוגמה (עלייה חריגה בשיח סביב פעילות צהל בגבול הצפון)
-          </button>
-        </div>
-      </div>
-
+      <Box sx={pageStyles.areaTag}>{AREA_LABEL}</Box>
+      <Typography component="h1" sx={pageStyles.title}>
+        כל ההתראות
+      </Typography>
+      <Box
+        sx={{
+          ...pageStyles.besideDetailsPanel,
+          marginInlineEnd: selectedId ? `${String(DETAILS_PANEL_WIDTH)}px` : 0,
+        }}
+      >
+        <NarrativesTable
+          flagColor="alert"
+          onRetry={refetch}
+          status={tableStatus}
+          selectedId={selectedId}
+          onSelect={handleSelect}
+          narratives={narratives}
+          onToggleFlag={toggleFlag}
+        />
+      </Box>
       <NarrativeDetailsPanel />
     </>
   );
-}
+};
