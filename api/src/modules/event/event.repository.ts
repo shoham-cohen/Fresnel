@@ -40,6 +40,13 @@ export class EventRepository {
     });
   }
 
+  findById(eventId: string): Promise<Event | null> {
+    return this.eventOrmRepository.findOne({
+      where: { eventId },
+      relations: { narrative: true },
+    });
+  }
+
   create(data: CreateEventData): Promise<Event> {
     const event = this.eventOrmRepository.create({
       narrativeId: data.narrativeId,
@@ -71,10 +78,6 @@ export class EventRepository {
     }
 
     return query.getManyAndCount();
-  }
-
-  async findById(id: string): Promise<Event | null> {
-    return this.eventOrmRepository.findOne({ where: { eventId: id } });
   }
 
   async close(id: string, payload: CloseEventPayload): Promise<void> {

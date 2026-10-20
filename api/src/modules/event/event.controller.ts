@@ -1,7 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateEventDto, CreatedEventResponse } from './dto/create-event.dto';
+import { EventDetailDto } from './dto/event-detail.dto';
 import { EventListPage } from './dto/event-list-item';
+import { EventInfoDto, EventStatsDto } from './dto/event-stats.dto';
 import { ListEventsQuery } from './dto/list-events.query';
 import { CloseEventDto } from './dto/close-event.dto';
 import { EventService } from './event.service';
@@ -41,6 +43,21 @@ export class EventController {
     }
   }
   
+  @Get(':id')
+  getById(@Param('id') id: string): Promise<EventDetailDto> {
+    return this.eventService.getById(id);
+  }
+
+  @Get(':id/stats')
+  getStats(@Param('id') id: string): Promise<EventStatsDto> {
+    return this.eventService.getStats(id);
+  }
+
+  @Get(':id/info')
+  getInfo(@Param('id') id: string): Promise<EventInfoDto> {
+    return this.eventService.getEventInfo(id);
+  }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateEventDto): Promise<CreatedEventResponse> {

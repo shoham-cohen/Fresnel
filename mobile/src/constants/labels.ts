@@ -63,10 +63,22 @@ export const CLOSE_EVENT_LABEL = {
 } as const;
 
 export const COMMON_LABEL = {
-  loading: 'טוען…',
+  loading: 'טוען נתונים...',
   retry: 'נסו שוב',
+  empty: '—',
   backHome: 'חזרה לבית',
   yesterday: 'אתמול',
+} as const;
+
+export const SNAPSHOT_LABEL = {
+  eventTitle: 'כותרת האירוע',
+  detectedAt: 'זיהוי האירוע',
+  updatedAt: 'עדכון אחרון',
+  totalPosts: 'סה״כ פרסומים',
+  totalViews: 'סה״כ צפיות',
+  topSources: 'מקורות מידע',
+  noData: 'אין נתונים לאירוע',
+  errorLoading: 'שגיאה בטעינת נתוני האירוע',
 } as const;
 
 export const ERROR_TEXT = {

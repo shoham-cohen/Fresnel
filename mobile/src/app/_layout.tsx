@@ -5,7 +5,8 @@ import { Platform } from 'react-native';
 import { queryClient } from '@/api/queryClient';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
 
-if (Platform.OS === 'web') {
+// Android and iOS are forced to RTL by expo-localization (app.config.ts). Web is not, so set it here.
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
   document.documentElement.dir = 'rtl';
   document.documentElement.lang = 'he';
 }

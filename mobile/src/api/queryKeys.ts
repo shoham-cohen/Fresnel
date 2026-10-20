@@ -1,3 +1,4 @@
+// Query keys shared by every screen, so an invalidate in one place refreshes the others.
 export const queryKeys = {
   eventsAll: ['events'] as const,
   events: (search: string) => ['events', search] as const,

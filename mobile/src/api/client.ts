@@ -14,6 +14,7 @@ export class ApiError extends Error {
 
 type ApiInit = Omit<RequestInit, 'body'> & { body?: unknown };
 
+// Every call from the phone goes through here. The server writes X-Client to event_log.client.
 export async function apiFetch<T>(path: string, { body, ...init }: ApiInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');

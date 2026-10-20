@@ -9,7 +9,7 @@ export default function EventLayout() {
 
   return (
     <View style={styles.container}>
-      <EventTabs eventId={id} />
+      <EventTabs eventId={id ?? ''} />
       <Slot />
     </View>
   );

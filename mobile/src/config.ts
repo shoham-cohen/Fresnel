@@ -1,6 +1,6 @@
 // EXPO_PUBLIC_* values are bundled into the app. Never put secrets here.
 export const config = {
-  apiUrl: process.env.EXPO_PUBLIC_API_URL ?? '',
+  apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://fresnel-mock-api.onrender.com',
   socketUrl: process.env.EXPO_PUBLIC_SOCKET_URL ?? '',
   keycloakIssuer: process.env.EXPO_PUBLIC_KEYCLOAK_ISSUER ?? '',
   keycloakClientId: process.env.EXPO_PUBLIC_KEYCLOAK_CLIENT_ID ?? '',

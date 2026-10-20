@@ -13,11 +13,13 @@ export const queryClient = new QueryClient({
   },
 });
 
+// Polling stops while the app is in the background, and the open screen refetches when it comes back.
+// On web TanStack Query already follows the browser tab.
 if (Platform.OS !== 'web') {
-  focusManager.setEventListener((handleFocus) => {
-    const subscription = AppState.addEventListener('change', (state) => {
-      handleFocus(state === 'active');
-    });
+  focusManager.setEventListener((setFocused) => {
+    const subscription = AppState.addEventListener('change', (state) =>
+      setFocused(state === 'active'),
+    );
     return () => subscription.remove();
   });
 }
