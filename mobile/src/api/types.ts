@@ -35,3 +35,33 @@ export type Stats = {
   asOf: string;
 };
 
+// A page of any list route: { items, total, page, pageSize }.
+export type Page<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+// One row in GET /api/mobile/events (the home screen).
+export type OpenEvent = {
+  eventId: string;
+  title: string;
+  status: EventStatus;
+  severity: Severity;
+  createdAt: string;
+  isAnomaly: boolean;
+};
+
+// One row in GET /api/events/:id/items (the sources tab). total is the length of the item id list.
+export type SourceItem = {
+  itemId: string;
+  platform: string;
+  url: string | null;
+  title: string | null;
+  contentText: string | null;
+  authorName: string | null;
+  sourceId: string | null;
+  publishedAt: string;
+};
+

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   View,
@@ -25,25 +26,27 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+// How far the cards are scrolled, from 0 (the first card, on the right) to 1 (the last card).
+// The app is RTL, and each platform reports a horizontal offset in RTL differently:
+// web counts from 0 down to -max, Android from max down to 0, and iOS from 0 up to max.
+function scrollProgress(offsetX: number, maxScroll: number) {
+  if (maxScroll <= 0) return 0;
+  const fromStart =
+    Platform.OS === 'web' ? -offsetX : Platform.OS === 'android' ? maxScroll - offsetX : offsetX;
+  return clamp(fromStart / maxScroll, 0, 1);
+}
+
 export function SnapshotCardsCarousel({ event, stats }: Props) {
   const scrollViewRef = useRef<ScrollView>(null);
   const trackWidthRef = useRef(TRACK_WIDTH);
   const [indicatorOffset, setIndicatorOffset] = useState(0);
 
   function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
-    const scrollX = e.nativeEvent.contentOffset.x;
-    const contentWidth = e.nativeEvent.contentSize.width;
-    const viewportWidth = e.nativeEvent.layoutMeasurement.width;
+    const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
     const maxTrackOffset = Math.max(0, trackWidthRef.current - INDICATOR_WIDTH);
-    const maxScrollDistance = Math.max(0, contentWidth - viewportWidth);
+    const maxScrollDistance = Math.max(0, contentSize.width - layoutMeasurement.width);
 
-    if (maxScrollDistance <= 0 || maxTrackOffset <= 0) {
-      setIndicatorOffset(0);
-      return;
-    }
-
-    const nextOffset = clamp((scrollX / maxScrollDistance) * maxTrackOffset, 0, maxTrackOffset);
-    setIndicatorOffset(nextOffset);
+    setIndicatorOffset(scrollProgress(contentOffset.x, maxScrollDistance) * maxTrackOffset);
   }
 
   function handleTrackLayout(e: { nativeEvent: { layout: { width: number } } }) {
@@ -76,14 +79,11 @@ export function SnapshotCardsCarousel({ event, stats }: Props) {
         </View>
       </ScrollView>
 
-      <View style={styles.indicatorTrack} onLayout={handleTrackLayout}>
-        <View
-          style={[
-            styles.indicatorBar,
-            { left: indicatorOffset },
-          ]}
-          pointerEvents="none"
-        />
+      {/* A spacer before the bar, not `left`: row order follows RTL on every platform,
+          while `left` means start on Android and iOS but the physical left on web. */}
+      <View style={styles.indicatorTrack} onLayout={handleTrackLayout} pointerEvents="none">
+        <View style={{ width: indicatorOffset }} />
+        <View style={styles.indicatorBar} />
       </View>
     </View>
   );
@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     marginEnd: spacing.md,
   },
   indicatorTrack: {
+    flexDirection: 'row',
     width: TRACK_WIDTH,
     height: 6,
     borderRadius: radius.pill,
@@ -111,12 +112,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: spacing.md,
     overflow: 'hidden',
-    position: 'relative',
   },
   indicatorBar: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
     width: INDICATOR_WIDTH,
     height: 6,
     borderRadius: radius.pill,
