@@ -3,12 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event, Narrative, Severity, EventLog } from '../../entities';
 
-
 export interface FindActiveOptions {
   isSimulation: boolean;
   search?: string;
   page: number; // 1-based
   pageSize: number;
+}
+
+export interface FindClosedEventsOptions {
+  closedAfter: Date;
+  closedBefore?: Date;
 }
 
 export interface CloseEventPayload {
@@ -59,7 +63,8 @@ export class EventRepository {
   findActive({ isSimulation, search, page, pageSize }: FindActiveOptions): Promise<[Event[], number]> {
     const query = this.eventOrmRepository
       .createQueryBuilder('e')
-      .innerJoinAndSelect('e.narrative', 'n')
+      .leftJoin('e.narrative', 'n')
+      .addSelect(['n.narrativeId', 'n.title', 'n.summary', 'n.arena', 'n.detectedAt'])
       .where(`e.status <> 'closed'`)
       .andWhere('e.isSimulation = :isSimulation', { isSimulation })
       .orderBy('e.createdAt', 'DESC')
@@ -71,6 +76,25 @@ export class EventRepository {
     }
 
     return query.getManyAndCount();
+  }
+
+  async findClosedWithinPeriod({ closedAfter, closedBefore }: FindClosedEventsOptions): Promise<Event[]> {
+    const query = this.eventOrmRepository
+      .createQueryBuilder('e')
+      .leftJoin('e.narrative', 'n')
+      .addSelect(['n.narrativeId', 'n.title', 'n.summary', 'n.arena', 'n.detectedAt'])
+      .leftJoinAndSelect('e.actions', 'a')
+      .leftJoinAndSelect('a.actionType', 'at')
+      .where('e.status = :status', { status: 'closed' })
+      .andWhere('e.closedAt >= :closedAfter', { closedAfter })
+      .orderBy('e.closedAt', 'DESC')
+      .addOrderBy('a.performedAt', 'DESC');
+
+    if (closedBefore) {
+      query.andWhere('e.closedAt < :closedBefore', { closedBefore });
+    }
+
+    return query.getMany();
   }
 
   async findById(id: string): Promise<Event | null> {

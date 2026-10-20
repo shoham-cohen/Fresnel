@@ -32,6 +32,41 @@ export class EventService {
     };
   }
 
+  async listClosed(closedAfter: string, closedBefore?: string) {
+    const from = new Date(closedAfter);
+    if (Number.isNaN(from.getTime())) {
+      throw new BadRequestException('closed_after must be a valid ISO-8601 timestamp');
+    }
+
+    const to = closedBefore ? new Date(closedBefore) : undefined;
+    if (to && Number.isNaN(to.getTime())) {
+      throw new BadRequestException('closed_before must be a valid ISO-8601 timestamp');
+    }
+
+    const events = await this.eventRepository.findClosedWithinPeriod({
+      closedAfter: from,
+      closedBefore: to,
+    });
+
+    return events.map((event) => ({
+      eventId: event.eventId,
+      narrativeId: event.narrativeId,
+      title: event.narrative.title,
+      summary: event.narrative.summary,
+      arena: event.narrative.arena,
+      createdAt: event.createdAt,
+      createdBy: event.createdBy,
+      detectedAt: event.narrative.detectedAt,
+      closedAt: event.closedAt,
+      closedBy: event.closedBy,
+      closedSummary: event.closureSummary,
+      severity: event.severity,
+      status: event.status,
+      isSimulation: event.isSimulation,
+      actions: event.actions ?? [],
+    }));
+  }
+
   async closeEvent(id: string, dto: CloseEventDto): Promise<void> {
     const event = await this.eventRepository.findById(id);
 
@@ -79,7 +114,7 @@ export class EventService {
 
     return {
       ...event,
-      title: narrative.title
+      title: narrative.title,
     };
   }
 }
