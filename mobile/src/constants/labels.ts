@@ -37,9 +37,23 @@ export const DELETE_ACTION_LABEL = {
   eventClosed: 'האירוע נסגר, ולא ניתן למחוק בו פעולות.',
 } as const;
 
+export const ADD_ACTION_LABEL = {
+  button: 'הוסף פעולה',
+  title: 'הוספת פעולה',
+  type: 'סוג פעולה',
+  actionTitle: 'כותרת לפעולה',
+  actionTitlePlaceholder: 'הזן/י כותרת לפעולה...',
+  description: 'תיאור קצר',
+  descriptionPlaceholder: 'הזן/י תיאור קצר של מה שבוצע...',
+  submit: 'הוסף פעולה',
+  typesError: 'לא הצלחנו לטעון את סוגי הפעולות.',
+  eventClosed: 'האירוע נסגר, ולא ניתן להוסיף בו פעולות.',
+} as const;
+
 export const COMMON_LABEL = {
   loading: 'טוען…',
   retry: 'נסו שוב',
+  backHome: 'חזרה לבית',
   yesterday: 'אתמול',
 } as const;
 

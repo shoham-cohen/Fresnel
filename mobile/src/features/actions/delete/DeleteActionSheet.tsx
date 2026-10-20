@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { errorText } from '@/api/errorText';
 import type { TimelineAction } from '@/api/types';
+import { Button } from '@/components/Button';
 import { Sheet } from '@/components/Sheet';
 import { DELETE_ACTION_LABEL } from '@/constants/labels';
 import { colors, fontSize, radius, spacing } from '@/theme';
@@ -50,26 +51,20 @@ export function DeleteActionSheet({ eventId, action, onClose }: Props) {
           </Text>
         ) : null}
         <View style={styles.buttons}>
-          <Pressable
-            style={[styles.button, styles.confirm]}
+          <Button
+            label={DELETE_ACTION_LABEL.confirm}
+            variant="danger"
             onPress={confirm}
-            disabled={deleteAction.isPending}
-            accessibilityRole="button"
-          >
-            {deleteAction.isPending ? (
-              <ActivityIndicator color={colors.onPrimary} />
-            ) : (
-              <Text style={styles.confirmLabel}>{DELETE_ACTION_LABEL.confirm}</Text>
-            )}
-          </Pressable>
-          <Pressable
-            style={[styles.button, styles.cancel]}
+            isLoading={deleteAction.isPending}
+            style={styles.button}
+          />
+          <Button
+            label={DELETE_ACTION_LABEL.cancel}
+            variant="secondary"
             onPress={close}
-            disabled={deleteAction.isPending}
-            accessibilityRole="button"
-          >
-            <Text style={styles.cancelLabel}>{DELETE_ACTION_LABEL.cancel}</Text>
-          </Pressable>
+            isDisabled={deleteAction.isPending}
+            style={styles.button}
+          />
         </View>
       </View>
     </Sheet>
@@ -110,26 +105,5 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-  },
-  confirm: {
-    backgroundColor: colors.danger,
-  },
-  confirmLabel: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: colors.onPrimary,
-  },
-  cancel: {
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cancelLabel: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: colors.text,
   },
 });
