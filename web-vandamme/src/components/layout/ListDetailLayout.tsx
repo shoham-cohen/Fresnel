@@ -1,6 +1,6 @@
 import {  type ReactNode } from 'react'
 import { Box, Paper } from '@mui/material'
-import EventPanel from '../EventPanel'
+import EventPanel from '../EventPanel/EventPanel'
 import type { EventSummary } from '../../api/events'
 
 type Props = {

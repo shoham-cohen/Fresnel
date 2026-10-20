@@ -158,7 +158,7 @@ export default function AddActionModal({ open, onClose }: Props) {
               textTransform: 'none',
               boxShadow: 'none',
               '&:hover': {
-                bgcolor: '#0d1d2b',
+                bgcolor: '#white',
                 boxShadow: 'none',
               },
             }}
