@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text } from 'react-native';
 import { errorText } from '@/api/errorText';
 import type { TimelineAction, TimelineEntry } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { FresnelLogo } from '@/components/FresnelLogo';
 import { Loading } from '@/components/Loading';
 import { ACTIONS_LABEL, EVENT_TAB_LABEL } from '@/constants/labels';
 import { useManualRefresh } from '@/hooks/useManualRefresh';
 import { colors, fontSize, spacing } from '@/theme';
 import { DeleteActionSheet } from './delete/DeleteActionSheet';
+import { EmptyActionsIcon } from './EmptyActionsIcon';
 import { TimelineItem } from './TimelineItem';
 import { TimelineSystemRow } from './TimelineSystemRow';
 import { useTimeline } from './useTimeline';
@@ -26,11 +26,14 @@ const ERROR_BY_STATUS = {
   404: ACTIONS_LABEL.notFound,
 };
 
+const PAGE_SIZE = 20;
+
 export function ActionsTimeline({ eventId }: Props) {
   const { user } = useAuth();
   const timeline = useTimeline(eventId);
   const { isRefreshing, onRefresh } = useManualRefresh(timeline.refetch);
   const [actionToDelete, setActionToDelete] = useState<TimelineAction | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   if (timeline.isPending) return <Loading />;
   if (timeline.isError) {
@@ -44,20 +47,28 @@ export function ActionsTimeline({ eventId }: Props) {
 
   const entries = timeline.data;
   const actionCount = entries.filter((entry) => entry.kind === 'action').length;
+  const hasMore = visibleCount < entries.length;
 
   return (
     <>
       <FlatList
-        data={actionCount > 0 ? entries : []}
+        data={actionCount > 0 ? entries.slice(0, visibleCount) : []}
         keyExtractor={keyOf}
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        onEndReached={hasMore ? () => setVisibleCount((count) => count + PAGE_SIZE) : undefined}
+        onEndReachedThreshold={0.5}
         ListHeaderComponent={
           <Text style={styles.title}>
             {EVENT_TAB_LABEL.actions} ({actionCount})
           </Text>
         }
-        ListEmptyComponent={<EmptyState icon={<FresnelLogo />} title={ACTIONS_LABEL.empty} />}
+        ListFooterComponent={
+          hasMore && actionCount > 0 ? (
+            <ActivityIndicator style={styles.more} color={colors.primary} />
+          ) : null
+        }
+        ListEmptyComponent={<EmptyState icon={<EmptyActionsIcon />} title={ACTIONS_LABEL.empty} />}
         renderItem={({ item, index }) => {
           const position = { isFirst: index === 0, isLast: index === entries.length - 1 };
           if (item.kind !== 'action') {
@@ -107,5 +118,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  more: {
+    paddingVertical: spacing.lg,
   },
 });

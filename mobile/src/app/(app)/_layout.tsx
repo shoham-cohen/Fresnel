@@ -1,8 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, Stack } from 'expo-router';
+import { Link, Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable } from 'react-native';
-import { SCREEN_TITLE } from '@/constants/labels';
+import { COMMON_LABEL, SCREEN_TITLE } from '@/constants/labels';
 import { colors } from '@/theme';
 
 export default function AppLayout() {
@@ -32,7 +32,23 @@ export default function AppLayout() {
           }}
         />
         <Stack.Screen name="profile" options={{ title: SCREEN_TITLE.profile }} />
-        <Stack.Screen name="events/[id]" options={{ title: SCREEN_TITLE.event }} />
+        <Stack.Screen
+          name="events/[id]"
+          options={{
+            title: SCREEN_TITLE.event,
+            headerBackVisible: false,
+            headerLeft: () => (
+              <Pressable
+                onPress={() => router.dismissTo('/')}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel={COMMON_LABEL.back}
+              >
+                <Ionicons name="chevron-forward" size={26} color={colors.onHeader} />
+              </Pressable>
+            ),
+          }}
+        />
       </Stack>
     </>
   );

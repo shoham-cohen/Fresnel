@@ -66,6 +66,7 @@ export const COMMON_LABEL = {
   loading: 'טוען נתונים...',
   retry: 'נסו שוב',
   empty: '—',
+  back: 'חזרה',
   backHome: 'חזרה לבית',
   yesterday: 'אתמול',
 } as const;
