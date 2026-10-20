@@ -15,23 +15,24 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-import { useMemo, useState, type FC } from 'react';
+import type { FC } from 'react';
+import { useTableRows } from './hooks/table-rows.hook';
+import type { SortState } from './interfaces/sort.interface';
 import { MessageRow } from './components/MessageRow/MessageRow';
 import { SORTABLE_COLUMNS } from './constants/columns.constant';
 import type { Narrative } from '@/interfaces/narrative.interface';
 import type { FlagColor } from './interfaces/flag-color.interface';
-import type { SortKey, SortState } from './interfaces/sort.interface';
+import type { NarrativesTablePaging } from './interfaces/paging.interface';
 import { NarrativeRow } from './components/NarrativeRow/NarrativeRow';
-import { nextSort, sortNarratives } from './utilities/sort-narratives.utility';
+import { TablePagination } from './components/TablePagination/TablePagination';
 import { COLUMN_STYLES, styles, TOOLTIP_SLOT_PROPS } from './NarrativesTable.styles';
 
 export type NarrativesTableStatus = 'loading' | 'error' | 'ready';
-
 export interface NarrativesTableProps {
   onRetry?: () => void;
   flagColor?: FlagColor;
   sort?: SortState | null;
-  firstRowNumber?: number;
+  paging?: NarrativesTablePaging;
   selectedId?: string | null;
   status?: NarrativesTableStatus;
   narratives: readonly Narrative[];
@@ -41,6 +42,7 @@ export interface NarrativesTableProps {
 }
 
 export const NarrativesTable: FC<NarrativesTableProps> = ({
+  paging,
   onRetry,
   onSelect,
   narratives,
@@ -49,27 +51,19 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
   flagColor = 'primary',
   status = 'ready',
   selectedId = null,
-  firstRowNumber = 1,
   sort: controlledSort,
 }: NarrativesTableProps) => {
-  const [localSort, setLocalSort] = useState<SortState | null>(null);
-
-  const isSortControlled = controlledSort !== undefined;
-  const sort = isSortControlled ? controlledSort : localSort;
-
-  const sorted = useMemo(
-    () => (isSortControlled ? narratives : sortNarratives(narratives, localSort)),
-    [narratives, localSort, isSortControlled],
-  );
-
-  const handleSort = (key: SortKey) => {
-    const next = nextSort(sort, key);
-
-    if (!isSortControlled) {
-      setLocalSort(next);
-    }
-    onSortChange?.(next);
-  };
+  const {
+    sort,
+    rows,
+    page,
+    total,
+    areaRef,
+    pageSize,
+    handleSort,
+    firstRowNumber,
+    handlePageChange,
+  } = useTableRows({ narratives, controlledSort, onSortChange, paging });
 
   const renderBody = () => {
     if (status === 'loading') {
@@ -102,7 +96,7 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
       );
     }
 
-    if (sorted.length === 0) {
+    if (rows.length === 0) {
       return (
         <MessageRow>
           <Typography color="text.secondary">אין התראות להצגה</Typography>
@@ -110,7 +104,7 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
       );
     }
 
-    return sorted.map((narrative, index) => (
+    return rows.map((narrative, index) => (
       <NarrativeRow
         key={narrative.rowId}
         onSelect={onSelect}
@@ -124,70 +118,80 @@ export const NarrativesTable: FC<NarrativesTableProps> = ({
   };
 
   return (
-    <TableContainer sx={styles.container}>
-      <Table aria-busy={status === 'loading'} sx={styles.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell sx={[styles.headCell, COLUMN_STYLES.number]}>
-              <Box component="span" sx={styles.visuallyHidden}>
-                מספר
-              </Box>
-            </TableCell>
-            <TableCell sx={[styles.headCell, COLUMN_STYLES.subject, styles.subjectHeadCell]}>
-              נושא ההתראה
-            </TableCell>
-            {SORTABLE_COLUMNS.map(({ key, label, tooltip }) => {
-              const direction = sort?.key === key ? sort.direction : null;
-
-              const button = (
-                <TableSortLabel
-                  active={direction !== null}
-                  direction={direction ?? 'asc'}
-                  onClick={() => {
-                    handleSort(key);
-                  }}
-                >
-                  {label}
-                </TableSortLabel>
-              );
-
-              const sortLabel = tooltip ? (
-                <Tooltip
-                  arrow
-                  describeChild
-                  title={tooltip}
-                  placement="top"
-                  slotProps={TOOLTIP_SLOT_PROPS}
-                >
-                  {button}
-                </Tooltip>
-              ) : (
-                button
-              );
-
-              return (
-                <TableCell
-                  key={key}
-                  sortDirection={direction ?? false}
-                  sx={[styles.headCell, COLUMN_STYLES[key]]}
-                >
-                  {key === 'viewsCount' ? (
-                    <Box sx={styles.trafficHeadLabel}>{sortLabel}</Box>
-                  ) : (
-                    sortLabel
-                  )}
+    <Box sx={styles.root}>
+      <Box ref={areaRef} sx={styles.area}>
+        <TableContainer sx={styles.container}>
+          <Table aria-busy={status === 'loading'} sx={styles.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={[styles.headCell, COLUMN_STYLES.number]}>
+                  <Box component="span" sx={styles.visuallyHidden}>
+                    מספר
+                  </Box>
                 </TableCell>
-              );
-            })}
-            <TableCell sx={[styles.headCell, COLUMN_STYLES.flag]}>
-              <Box component="span" sx={styles.visuallyHidden}>
-                סימון
-              </Box>
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>{renderBody()}</TableBody>
-      </Table>
-    </TableContainer>
+                <TableCell sx={[styles.headCell, COLUMN_STYLES.subject, styles.subjectHeadCell]}>
+                  נושא ההתראה
+                </TableCell>
+                {SORTABLE_COLUMNS.map(({ key, label, tooltip }) => {
+                  const direction = sort?.key === key ? sort.direction : null;
+
+                  const button = (
+                    <TableSortLabel
+                      active={direction !== null}
+                      direction={direction ?? 'asc'}
+                      onClick={() => {
+                        handleSort(key);
+                      }}
+                    >
+                      {label}
+                    </TableSortLabel>
+                  );
+
+                  const sortLabel = tooltip ? (
+                    <Tooltip
+                      arrow
+                      describeChild
+                      title={tooltip}
+                      placement="top"
+                      slotProps={TOOLTIP_SLOT_PROPS}
+                    >
+                      {button}
+                    </Tooltip>
+                  ) : (
+                    button
+                  );
+
+                  return (
+                    <TableCell
+                      key={key}
+                      sortDirection={direction ?? false}
+                      sx={[styles.headCell, COLUMN_STYLES[key]]}
+                    >
+                      {key === 'viewsCount' ? (
+                        <Box sx={styles.trafficHeadLabel}>{sortLabel}</Box>
+                      ) : (
+                        sortLabel
+                      )}
+                    </TableCell>
+                  );
+                })}
+                <TableCell sx={[styles.headCell, COLUMN_STYLES.flag]}>
+                  <Box component="span" sx={styles.visuallyHidden}>
+                    סימון
+                  </Box>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>{renderBody()}</TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      <TablePagination
+        page={page}
+        total={total}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+      />
+    </Box>
   );
 };

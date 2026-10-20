@@ -49,6 +49,17 @@ export const COLUMN_STYLES = {
 } satisfies Record<string, SxProps<Theme>>;
 
 export const styles = {
+  root: {
+    height: '100%',
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  area: {
+    flex: 1,
+    minHeight: 0,
+    overflowY: 'auto',
+  },
   container: {
     borderRadius: '10px',
   },
