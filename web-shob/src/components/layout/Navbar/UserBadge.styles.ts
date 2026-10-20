@@ -3,11 +3,13 @@ import type { SxProps, Theme } from '@mui/material/styles';
 export const styles = {
   badge: {
     display: 'flex',
+    alignItems: 'center',
+    gap: '22px',
+  },
+  user: {
+    display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-  },
-  avatarButton: {
-    borderRadius: '50%',
   },
   avatar: {
     width: 45,
@@ -20,6 +22,9 @@ export const styles = {
     color: 'header.text',
     whiteSpace: 'nowrap',
     fontFamily: 'inherit',
+  },
+  logoutButton: {
+    color: 'header.text',
   },
   logoutIcon: {
     transform: 'scaleX(-1)',

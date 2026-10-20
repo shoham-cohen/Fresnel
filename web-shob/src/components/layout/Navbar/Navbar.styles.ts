@@ -44,7 +44,7 @@ export const styles = {
   },
   endSection: {
     display: 'flex',
-    padding:"7px",
+    padding: '10px',
     alignItems: 'center',
     gap: '56px',
     marginInlineStart: 'auto',
