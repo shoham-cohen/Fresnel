@@ -24,6 +24,11 @@ export const colors = {
   onPrimary: '#FFFFFF',
   danger: '#D93025',
   backdrop: 'rgba(0, 0, 0, 0.35)',
+  navy: '#0E2B47',
+  cardBorder: '#E2E8F0',
+  cardBackground: '#FFFFFF',
+  track: '#E5E7EB',
+  indicator: '#64748B',
 };
 
 export const severityColors = {
@@ -39,6 +44,7 @@ export const spacing = {
   md: 12,
   lg: 16,
   xl: 24,
+  xxl: 32,
 };
 
 export const radius = {
@@ -49,8 +55,10 @@ export const radius = {
 };
 
 export const fontSize = {
+  xs: 11,
   sm: 13,
   md: 15,
   lg: 18,
   xl: 22,
+  xxl: 26,
 };
