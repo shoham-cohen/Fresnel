@@ -2,4 +2,8 @@
 export const POLL = {
   list: 15_000, // events list, event card, timeline
   dataLake: 60_000, // stats and items
+  // legacy aliases kept for compatibility
+  event: 15_000,
+  stats: 60_000,
+  items: 60_000,
 };
