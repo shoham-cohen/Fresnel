@@ -15,7 +15,7 @@ export interface NarrativeDto {
   languages: string[] | null;
   detectedAt: string;
   narrativeId: string;
-  simulationId?: string;
+  simulationId?: string | null;
   summary: string | null;
   receivedAt: string | null;
   viewsCount: number | string | null;

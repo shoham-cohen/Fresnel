@@ -32,8 +32,12 @@ export class NarrativeController {
   }
 
   @Get('page')
-  findPage(@Query() query: ListNarrativesQueryDto): Promise<NarrativeListPageDto> {
-    return this.narrativeService.findPage(query);
+  findPage(
+    @Query() query: ListNarrativesQueryDto,
+  ): Promise<NarrativeListPageDto | SimulatedNarrativeListPageDto> {
+    return query.isSimulation
+      ? this.narrativeService.findSimulatedPage(query)
+      : this.narrativeService.findPage(query);
   }
 
   @Get('simulated')
@@ -41,13 +45,6 @@ export class NarrativeController {
       @Query() query: FindNarrativesQueryDto,
   ): Promise<SimulatedNarrativeResponseDto[]> {
     return this.narrativeService.findSimulated(query);
-  }
-
-  @Get('simulated/page')
-  findSimulatedPage(
-    @Query() query: ListNarrativesQueryDto,
-  ): Promise<SimulatedNarrativeListPageDto> {
-    return this.narrativeService.findSimulatedPage(query);
   }
 
   @Get('simulated/:simulationId')
