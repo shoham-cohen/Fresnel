@@ -1,31 +1,43 @@
 import { config } from '@/config';
 
+/** status 0 means the request never reached the server (network error). */
 export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    options?: ErrorOptions,
   ) {
-    super(message);
+    super(message, options);
     this.name = 'ApiError';
   }
 }
 
+type ApiInit = Omit<RequestInit, 'body'> & { body?: unknown };
+
 // Every call from the phone goes through here. The server writes X-Client to event_log.client.
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function apiFetch<T>(path: string, { body, ...init }: ApiInit = {}): Promise<T> {
+  const headers = new Headers(init.headers);
+  headers.set('Accept', 'application/json');
+  headers.set('X-Client', 'mobile');
+  if (body !== undefined) {
+    headers.set('Content-Type', 'application/json');
+  }
+  if (config.mockUser) {
+    headers.set('X-Mock-User', config.mockUser);
+  }
+
   const response = await fetch(`${config.apiUrl}${path}`, {
     ...init,
-    headers: {
-      Accept: 'application/json',
-      'X-Client': 'mobile',
-      ...init?.headers,
-    },
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  }).catch((error) => {
+    throw new ApiError(0, 'Network request failed', { cause: error });
   });
 
   if (!response.ok) {
-    throw new ApiError(response.status, `${init?.method ?? 'GET'} ${path} failed: ${response.status}`);
+    throw new ApiError(response.status, `HTTP ${response.status}`);
   }
-  if (response.status === 204) {
-    return undefined as T;
-  }
-  return response.json() as Promise<T>;
+
+  const text = await response.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }

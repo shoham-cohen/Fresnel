@@ -1,24 +1,24 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { COMMON_LABEL } from '@/constants/labels';
 import { colors, fontSize, radius, spacing } from '@/theme';
 
 type Props = {
-  message?: string;
-  onRetry: () => void;
+  message: string;
+  onRetry?: () => void;
 };
 
-export function ErrorState({ message = COMMON_LABEL.loading, onRetry }: Props) {
-  function handleRetry() {
-    onRetry();
-  }
-
+export function ErrorState({ message, onRetry }: Props) {
   return (
     <View style={styles.container}>
+      <Ionicons name="cloud-offline-outline" size={40} color={colors.textMuted} />
       <Text style={styles.message}>{message}</Text>
-      <Pressable style={styles.button} onPress={handleRetry} accessibilityRole="button">
-        <Text style={styles.buttonText}>{COMMON_LABEL.retry}</Text>
-      </Pressable>
+      {onRetry ? (
+        <Pressable style={styles.retry} onPress={onRetry} accessibilityRole="button">
+          <Text style={styles.retryLabel}>{COMMON_LABEL.retry}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -28,28 +28,25 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing.md,
     padding: spacing.xl,
   },
   message: {
     fontSize: fontSize.md,
-    color: colors.danger,
+    color: colors.text,
     textAlign: 'center',
-    marginBottom: spacing.lg,
   },
-  button: {
-    minWidth: 120,
-    minHeight: 44,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    alignItems: 'center',
+  retry: {
+    minHeight: 40,
+    paddingHorizontal: spacing.xl,
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
-  buttonText: {
-    color: colors.onPrimary,
+  retryLabel: {
     fontSize: fontSize.md,
     fontWeight: '600',
+    color: colors.primary,
   },
 });
-

@@ -67,7 +67,7 @@ export function SourcesList({ eventId }: Props) {
         ) : sources.isError ? (
           <ErrorState message="לא הצלחנו לטעון את המקורות" onRetry={() => refetch()} />
         ) : (
-          <EmptyState text={query ? 'לא נמצאו מקורות' : 'אין מקורות לאירוע'} />
+          <EmptyState message={query ? 'לא נמצאו מקורות' : 'אין מקורות לאירוע'} />
         )
       }
       ListFooterComponent={
