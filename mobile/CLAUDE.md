@@ -6,7 +6,7 @@
 **Expo SDK 58.** ה-API של Expo משתנה בין גרסאות. לפני קוד שנוגע ב-Expo, קוראים את `AGENTS.md` ואת התיעוד של v58, ולא סומכים על הזיכרון.
 
 > **עדכון 20.10: כניסה ישירה ל-Keycloak, ו-Guard משלנו.** (מחליף את "כניסה דרך מיראז׳" ו"אין לנו Guard" למטה)
-> - לאפליקציה **Client נפרד ב-Keycloak** (ציבורי, PKCE). הכניסה ב-`expo-auth-session` בדפדפן המערכת, ה-redirect הוא `fresnel://oauth`. **אין WebView של מיראז׳.** מיראז׳ מגדירים את ה-claims בטוקן.
+> - **Client אחד ב-Keycloak לווב ולמובייל: `mirage`** (ציבורי, PKCE). הכניסה ב-`expo-auth-session` בדפדפן המערכת, ה-redirect הוא `fresnel://oauth`. **אין WebView של מיראז׳.** מיראז׳ מגדירים את ה-claims בטוקן.
 > - **בשרת שני Guards:** אחד לווב ואחד למובייל. `MobileAuthGuard` שלנו ב-`api/src/modules/mobile/auth/`, על כל ה-controllers שלנו. `@CurrentUser()` מחזיר `{ id (sub), username, name, arenas, roles }`.
 > - **גזרה:** מה-claim `compartment`, **מערך** (משתמש יכול להיות בכמה גזרות ורואה את כולן). ממופה לקודים של `narrative.arena`: `israel`, `arab`, `intl`.
 > - **Push לפי גזרה:** `POST /api/devices` שומר את הגזרות מהטוקן ב-`device_token.arenas` (`db/4.ddl.sql`). השולח מוצא את הטלפונים לפי גזרה (`DevicesRepository.findTokensByArenas`), בלי מיראז׳.
@@ -247,13 +247,13 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - השיחה לא נשמרת. מעבר לשונית או יציאה מהאירוע טוענים את ה-WebView מחדש.
 
 ## כניסה (Keycloak)
-- **Client נפרד למובייל** ב-Keycloak: ציבורי, PKCE מסוג S256, redirect `fresnel://oauth`. הערכים ב-`.env`: `EXPO_PUBLIC_KEYCLOAK_ISSUER`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID`.
+- **Client אחד לווב ולמובייל: `mirage`.** ציבורי, PKCE מסוג S256. ה-redirect של האפליקציה, `fresnel://oauth`, צריך להיות רשום עליו. הערכים ב-`.env`: `EXPO_PUBLIC_KEYCLOAK_ISSUER=https://keycloak.galileo.localhost/realms/galileo`, `EXPO_PUBLIC_KEYCLOAK_CLIENT_ID=mirage`.
 - **באפליקציה (`src/auth/`):** `keycloak.ts` (discovery, כניסה, רענון, התנתקות), `sessionStore.ts` (רק ה-refresh token, ב-`expo-secure-store`), `claims.ts` (המשתמש מהטוקן, לתצוגה בלבד), `AuthProvider.tsx`.
   - ה-access token בזיכרון בלבד, ומתרענן כשנותרו פחות מ-30 שניות (`getAccessToken()`, בתוך `apiFetch`).
   - פתיחה מחדש של האפליקציה: refresh token → access token חדש (`status: 'restoring'`).
   - 401 מהשרת על טוקן שנשלח, או refresh שנדחה: חזרה לכניסה.
   - התנתקות: `DELETE /api/devices/:token`, סיום ה-session ב-Keycloak (POST עם ה-refresh token, בלי דפדפן), ומחיקת הכול.
-- **בשרת (`api/src/modules/mobile/auth/`):** `MobileAuthGuard` מאמת את הטוקן (`jose`, RS256, issuer, ו-`azp` או `aud` = ה-Client של המובייל). טוקן לא תקין: 401. Keycloak לא זמין: 503. משתני סביבה: `KEYCLOAK_ISSUER`, `KEYCLOAK_MOBILE_CLIENT_ID`, `MOBILE_AUTH_BYPASS`.
+- **בשרת (`api/src/modules/mobile/auth/`):** `MobileAuthGuard` מאמת את הטוקן (`jose`, RS256, issuer, ו-`azp` או `aud` = `mirage`). טוקן לא תקין: 401. Keycloak לא זמין: 503. משתני סביבה: `KEYCLOAK_ISSUER`, `KEYCLOAK_CLIENT_ID=mirage`, `MOBILE_AUTH_BYPASS`.
 - **Node לא סומך על התעודה של openport** (הוא לא משתמש ב-Keychain של ה-Mac): מריצים את השרת עם `NODE_OPTIONS=--use-system-ca`. השרת רץ מקומית (`npm run start:dev`), לא ב-Docker, כי מתוך הקונטיינר אין openport.
 - **רשת:** סימולטור iOS משתמש ברשת של ה-Mac ולכן מגיע ל-Keycloak. טלפון אמיתי לא (אין עליו openport). ⬜ אמולטור Android: `*.localhost` מצביע על האמולטור עצמו, וצריך לבדוק.
 - **המשתמש:** `id` = `sub`, `username` = `preferred_username`, `name`, `arenas` (מ-`compartment`), `roles` (מ-`resource_access[client].roles`, לא בשימוש כרגע).
@@ -294,7 +294,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 - **CI/CD:** push → CI → Registry → Argo CD → EKS. סודות דרך Sealed Secrets.
 - **DB:** PostgreSQL על CloudNativePG, עם PostGIS ו-pgvector.
 - **סביבות:** Prod ו-PreProd לכל מדור, עם DB נפרד. שמות ה-Namespaces ⬜.
-- **זהות:** Keycloak עם SSO מול AD. Client נפרד למובייל. הגזרה מה-claim `compartment` שמיראז׳ מגדירים.
+- **זהות:** Keycloak עם SSO מול AD. Client אחד (`mirage`) לווב ולמובייל. הגזרה מה-claim `compartment` שמיראז׳ מגדירים.
 - **רשת:** אין חסמים בפיירוול ל-Expo Push (`exp.host`), FCM, APNs ולסביבת הבנייה. ⬜ האם טלפון אמיתי מגיע ל-Ingress הפרטי, או שההדגמה על אמולטורים.
 
 ## בנייה והרצה
@@ -342,7 +342,7 @@ db/1.ddl.sql  db/2.dml.sql            # ה-schema ונתוני הפיתוח. dev
 | CTO | ניב שיין | ארכיטקטורה וסטנדרטים |
 
 ## שאלות פתוחות: לא לנחש
-- ⬜ **Keycloak:** שם ה-Client של המובייל, והערך של גזרת "עולם" ב-`compartment` (כרגע מנחשים `international`).
+- ⬜ **Keycloak:** ש-`fresnel://oauth` רשום כ-redirect על `mirage`, והערך של גזרת "עולם" ב-`compartment` (כרגע מנחשים `international`).
 - ⬜ **routes של עדן ושחר מהטלפון:** ה-Guard של הווב מקבל את הטוקן של המובייל? ו-`performedBy`/`closedBy`: לפי איזה שדה בטוקן (`username` או `name`), כדי שהטלפון יזהה "פעולה שלי".
 - ⬜ **Oracle:** כתובת, פרמטרי ההקשר, זיהוי המשתמש ב-WebView, אכיפת גזרה, התאמה לטלפון ו-RTL, ואיש קשר.
 - ⬜ **Data Lake:** שם העמודה ב-`narrative` עם רשימת המזהים, הבקשה של טל לפי רשימת מזהים, טוקן API ו-image להרצה מקומית, וכתובת לכל סביבה.

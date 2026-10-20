@@ -11,7 +11,7 @@ export interface AuthUser {
   name: string | null;
   /** From `compartment`. Only arenas we know; an unknown value is dropped. */
   arenas: Arena[];
-  /** `resource_access[<mobile client>].roles` */
+  /** `resource_access[<client>].roles` */
   roles: string[];
 }
 

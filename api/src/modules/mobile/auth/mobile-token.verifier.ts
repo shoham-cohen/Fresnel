@@ -12,13 +12,13 @@ export class SigningKeysUnavailableError extends Error {}
 
 export interface MobileTokenVerifierOptions {
   issuer: string;
-  /** The Keycloak client of the mobile app (KEYCLOAK_MOBILE_CLIENT_ID). */
+  /** The section's Keycloak client, shared by web and mobile (KEYCLOAK_CLIENT_ID, e.g. mirage). */
   clientId: string;
   /** Signing keys. Defaults to the realm's JWKS. */
   keys?: JWTVerifyGetKey;
 }
 
-// Verifies a Keycloak access token issued to the mobile client (signature, issuer, expiry, client).
+// Verifies a Keycloak access token issued to our client (signature, issuer, expiry, client).
 // Provided through a factory in MobileModule (fromConfig).
 export class MobileTokenVerifier {
   private readonly issuer: string;
@@ -35,13 +35,13 @@ export class MobileTokenVerifier {
   static fromConfig(config: ConfigService): MobileTokenVerifier {
     return new MobileTokenVerifier({
       issuer: config.get<string>('KEYCLOAK_ISSUER') ?? DEFAULT_ISSUER,
-      clientId: config.get<string>('KEYCLOAK_MOBILE_CLIENT_ID') ?? '',
+      clientId: config.get<string>('KEYCLOAK_CLIENT_ID') ?? '',
     });
   }
 
   async verify(token: string): Promise<AuthUser> {
     if (!this.clientId) {
-      throw new InvalidTokenError('KEYCLOAK_MOBILE_CLIENT_ID is not set');
+      throw new InvalidTokenError('KEYCLOAK_CLIENT_ID is not set');
     }
 
     let payload;
@@ -57,10 +57,10 @@ export class MobileTokenVerifier {
       throw new InvalidTokenError(error.code);
     }
 
-    // The token must be meant for the mobile client: in `aud` (Audience mapper) or as the authorized party.
+    // The token must be meant for our client: in `aud` (Audience mapper) or as the authorized party.
     const audience = Array.isArray(payload.aud) ? payload.aud : payload.aud ? [payload.aud] : [];
     if (!audience.includes(this.clientId) && payload.azp !== this.clientId) {
-      throw new InvalidTokenError('token was not issued for the mobile client');
+      throw new InvalidTokenError('token was not issued for our client');
     }
     if (!payload.sub) {
       throw new InvalidTokenError('token has no sub');

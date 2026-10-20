@@ -23,7 +23,7 @@ export const DEV_USER: AuthUser = {
   roles: [],
 };
 
-// The mobile app's guard: a valid Keycloak access token of the mobile client → request.user.
+// The mobile app's guard: a valid Keycloak access token of our client → request.user.
 // The web has its own guard (a different client and flow).
 @Injectable()
 export class MobileAuthGuard implements CanActivate {
