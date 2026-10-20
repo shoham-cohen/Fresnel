@@ -50,6 +50,7 @@ export const ADD_ACTION_LABEL = {
   description: 'תיאור קצר',
   descriptionPlaceholder: 'הזן/י תיאור קצר של מה שבוצע...',
   submit: 'הוסף פעולה',
+  typePlaceholder: 'בחר/י סוג פעולה',
   typesError: 'לא הצלחנו לטעון את סוגי הפעולות.',
   eventClosed: 'האירוע נסגר, ולא ניתן להוסיף בו פעולות.',
 } as const;

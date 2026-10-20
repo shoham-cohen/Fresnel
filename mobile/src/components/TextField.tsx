@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
   },
   webRtl: {
     textAlign: 'right',
+    writingDirection: 'rtl',
   },
   counter: {
     alignSelf: 'flex-end',
