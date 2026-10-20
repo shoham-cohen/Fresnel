@@ -1,20 +1,48 @@
-import { useCallback } from 'react';
 import { pageStyles } from '@/styles/page.styles';
-import { useRecentNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
-import { Box, Typography } from '@mui/material';
-import { NarrativesTable } from '@/components/NarrativesTable';
-import { DETAILS_PANEL_WIDTH, NarrativeDetailsPanel } from '@/features/narratives';
-import { useSearchParams } from 'react-router';
-import { FilterBar } from '@/components/FilterBar';
+import { useCallback, useMemo, useState } from 'react';
+import { toSortParams } from '@/utilities/narrative.utility';
+import { useElementHeight } from '@/hooks/element-height.hook';
+import type { Narrative } from '@/interfaces/narrative.interface';
+import type { NarrativesQuery } from '@/interfaces/narrative-api.interface';
+import { useNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
+import { Box, Button, Pagination, Typography, CircularProgress } from '@mui/material';
+import { NarrativesTable, rowsThatFit, type SortState } from '@/components/NarrativesTable';
 import { useNarrativeFilters } from './useAlertFilters';
+import { FilterBar } from '@/components/FilterBar';
 
-const RECENT_HOURS = 24;
-const AREA_LABEL = 'ישראל';
+const DEFAULT_PAGE_SIZE = 10;
 
 export const NarrativeHistoryPage = () => {
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<SortState | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const [tableAreaRef, tableAreaHeight] = useElementHeight<HTMLDivElement>();
+  const pageSize = tableAreaHeight ? rowsThatFit(tableAreaHeight) : DEFAULT_PAGE_SIZE;
+
+  const [lastPageSize, setLastPageSize] = useState(pageSize);
+  if (pageSize !== lastPageSize) {
+    setLastPageSize(pageSize);
+    setPage(1);
+  }
+
+  const query = useMemo<NarrativesQuery>(
+    () => ({ page, pageSize, ...toSortParams(sort) }),
+    [page, pageSize, sort],
+  );
   const toggleFlag = useToggleNarrativeFlag();
-  const { narratives, tableStatus, refetch } = useRecentNarratives(RECENT_HOURS);
-  
+  const { narratives, total, tableStatus, refetch, isRefetching } = useNarratives(query, {
+    enabled: tableAreaHeight > 0,
+  });
+
+  const pageCount = Math.ceil(total / pageSize);
+  const firstRowNumber = (page - 1) * pageSize + 1;
+  const lastRowNumber = Math.min(page * pageSize, total);
+
+  const handleSelect = useCallback((narrative: Narrative) => {
+    setSelectedId((current) => (current === narrative.narrativeId ? null : narrative.narrativeId));
+  }, []);
+
   const {
     searchTerm,
     startDate,
@@ -27,57 +55,78 @@ export const NarrativeHistoryPage = () => {
     filteredAlerts,
   } = useNarrativeFilters(narratives);
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const selectedId = searchParams.get('narrativeId');
-
-  const handleSelect = useCallback(
-    (narrative: any) => {
-      setSearchParams((params) => {
-        const next = new URLSearchParams(params);
-        next.set('narrativeId', narrative.narrativeId);
-        return next;
-      });
-    },
-    [setSearchParams],
-  );
-
   return (
-    <>
-      <title>מסך היסטוריית התראות · Palantir</title>
-      <Box sx={pageStyles.areaTag}>{AREA_LABEL}</Box>
-      <Typography component="h1" sx={pageStyles.title}>
-        היסטוריית התראות
-      </Typography>
-
-      {/* מיפוי מפורש בין המשתנים של ה-Hook לבין מה ש-FilterBar דורשת */}
-      <FilterBar
-        searchTerm={searchTerm}
-        startDate={startDate}
-        endDate={endDate}
-        selectedLocation={selectedLocation}
-        onSearchChange={setSearchTerm}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-        onLocationChange={setSelectedLocation}
-      />
-
-      <Box
-        sx={{
-          ...pageStyles.besideDetailsPanel,
-          marginInlineEnd: selectedId ? `${String(DETAILS_PANEL_WIDTH)}px` : 0,
-        }}
-      >
-        <NarrativesTable
-          flagColor="alert"
-          onRetry={refetch}
-          status={tableStatus}
-          selectedId={selectedId}
-          onSelect={handleSelect}
-          narratives={filteredAlerts}
-          onToggleFlag={toggleFlag}
-        />
+    <Box sx={pageStyles.fillPage}>
+      <title>היסטוריית התראות · Palantir</title>
+      <Box sx={pageStyles.titleRow}>
+        <Typography component="h1" sx={pageStyles.title}>
+          היסטוריית התראות
+        </Typography>
       </Box>
-      <NarrativeDetailsPanel />
-    </>
+      <FilterBar
+          searchTerm={searchTerm}
+          startDate={startDate}
+          endDate={endDate}
+          selectedLocation={selectedLocation}
+          onSearchChange={setSearchTerm}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onLocationChange={setSelectedLocation}
+      />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: '10px' }}>
+        <Button
+          color="inherit"
+          variant="outlined"
+          onClick={refetch}
+          disabled={isRefetching}
+          startIcon={
+            isRefetching ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : undefined
+          }
+          sx={{
+            height: 25,
+            minWidth: 20,
+            px: 2,
+            whiteSpace: 'nowrap',
+            borderRadius: 2,
+            flexShrink: 0,
+          }}
+        >
+          רענון
+        </Button>
+      </Box>
+      <Box ref={tableAreaRef} sx={pageStyles.tableArea}>
+        <NarrativesTable
+          sort={sort}
+          onRetry={refetch}
+          onToggleFlag={toggleFlag}
+          status={tableStatus}
+          narratives={filteredAlerts}
+          selectedId={selectedId}
+          firstRowNumber={firstRowNumber}
+          onSortChange={(next) => {
+            setSort(next);
+            setPage(1);
+          } }
+          onSelect={handleSelect} />
+      </Box>
+      <Box sx={pageStyles.pagination}>
+        {pageCount > 1 && (
+          <>
+            <Typography sx={pageStyles.paginationRange}>
+              {`מציג ${String(firstRowNumber)}–${String(lastRowNumber)} מתוך ${String(total)}`}
+            </Typography>
+            <Pagination
+              page={page}
+              color="primary"
+              count={pageCount}
+              onChange={(_event, nextPage) => {
+                setPage(nextPage);
+              } } />
+          </>
+        )}
+      </Box>
+    </Box>
   );
 };
