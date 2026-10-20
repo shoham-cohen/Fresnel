@@ -220,7 +220,7 @@ export function EventSourcesMonitor({ event, useRealApi = false }: EventSourcesM
       }}
     >
       {/* Header Section */}
-      <Box sx={{ px: 3, pt: 3, pb: 1.5, textAlign: 'right', flexShrink: 0 }}>
+      <Box sx={{ px: 3, pt: 3, pb: 1.5, alignItems: 'flex-start', flexShrink: 0 }}>
         <Typography
           variant="h5"
           component="h2"

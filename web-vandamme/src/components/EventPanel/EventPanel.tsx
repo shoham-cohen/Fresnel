@@ -7,7 +7,7 @@ import EventTimelineItem from './TimelineItems/EventTimelineItem';
 import { Divider } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import AddActionButton from '../layout/AddActionButton';
-import { EventSourcesMonitor } from './Sources';
+import { EventSourcesMonitor } from './EventSourcesMonitor';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '',
