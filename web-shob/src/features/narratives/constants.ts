@@ -8,3 +8,7 @@ export const DETAILS_PANEL_TRANSITION = {
   duration: 300,
   easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
 } as const;
+
+export const PANEL_MARGIN = 10;
+
+export const REALITY_STORAGE_KEY = 'reality';

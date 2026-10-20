@@ -1,8 +1,6 @@
 import { alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
-import { DETAILS_PANEL_WIDTH } from './constants';
-
-const PANEL_MARGIN = 10;
+import { DETAILS_PANEL_WIDTH, PANEL_MARGIN } from './constants';
 
 export const getNarrativeDetailsPanelStyles = (theme: Theme) => {
   const colors = theme.palette;
