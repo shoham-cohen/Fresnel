@@ -1,7 +1,12 @@
 export const colors = {
   background: '#FFFFFF',
   surface: '#E8F1FC',
-  header: '#D9D9D9',
+  header: '#102B4D',
+  headerText: '#FFFFFF',
+  tabs: '#D6E3F2',
+  tabActive: '#E8F1FC',
+  tabLabel: '#254061',
+  tabLabelActive: '#193657',
   border: '#D6E3F2',
   text: '#193657',
   textMuted: '#5B7089',
