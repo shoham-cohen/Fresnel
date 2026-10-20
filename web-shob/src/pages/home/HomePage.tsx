@@ -48,7 +48,7 @@ export const HomePage = () => {
   );
 
   return (
-    <>
+    <Box sx={pageStyles.fillPage}>
       <title>מסך ראשי · Palantir</title>
       <Box sx={pageStyles.areaTag}>{AREA_LABEL}</Box>
       <Typography component="h1" sx={pageStyles.title}>
@@ -56,6 +56,7 @@ export const HomePage = () => {
       </Typography>
       <Box
         sx={{
+          ...pageStyles.tableColumn,
           ...pageStyles.besideDetailsPanel,
           marginInlineEnd: selectedId ? `${String(DETAILS_PANEL_WIDTH)}px` : 0,
         }}
@@ -64,13 +65,13 @@ export const HomePage = () => {
           flagColor="alert"
           onRetry={refetch}
           status={tableStatus}
+          narratives={narratives}
           selectedId={selectedId}
           onSelect={handleSelect}
-          narratives={narratives}
           onToggleFlag={toggleFlag}
         />
       </Box>
       <NarrativeDetailsPanel />
-    </>
+    </Box>
   );
 };
