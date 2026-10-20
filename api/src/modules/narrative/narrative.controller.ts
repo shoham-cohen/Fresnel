@@ -13,15 +13,29 @@ export class NarrativeController {
   findAll(
     @Query() query: FindNarrativesQueryDto,
   ): Promise<NarrativeResponseDto[]> {
-    return this.narrativeService.findAll(query.startDate, query.endDate);
+    return this.narrativeService.findAll(query);
   }
 
   @Get('simulated')
   findSimulated(
-    @Query('simulationId') simulationId?: string,
+      @Query() query: FindNarrativesQueryDto,
   ): Promise<SimulatedNarrativeResponseDto[]> {
-    return this.narrativeService.findSimulated(simulationId);
+    return this.narrativeService.findSimulated(query);
   }
+
+  @Get('simulated/:simulationId')
+  async findOneSimulated(
+      @Param('simulationId') simulationId: string,
+  ): Promise<SimulatedNarrativeResponseDto> {
+    const simulatedNarrative = await this.narrativeService.findOneSimulated(simulationId);
+    
+    if (!simulatedNarrative) {
+      throw new NotFoundException(`Simulated narrative with id ${simulationId} not found`);
+    }
+
+    return simulatedNarrative;
+  }
+
 
   @Post('simulated')
   createSimulated(

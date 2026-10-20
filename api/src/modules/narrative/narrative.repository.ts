@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, FindOptionsWhere, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
+import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 
 @Injectable()
 export class NarrativeRepository {
@@ -12,8 +13,13 @@ export class NarrativeRepository {
     private readonly simulatedNarrativeOrmRepository: Repository<SimulatedNarrative>,
   ) {}
 
-  findAll(startDate?: Date, endDate?: Date): Promise<Narrative[]> {
+  private createNarrativeDateFilterOperator (filter?: FindNarrativesQueryDto): FindOptionsWhere<Narrative> | undefined {
+    if (!filter) {
+      return undefined;
+    }
+
     const operator: FindOptionsWhere<Narrative> = {};
+    const {startDate, endDate} = filter;
 
     if (startDate && endDate) {
       operator.detectedAt = Between(startDate, endDate);
@@ -23,8 +29,14 @@ export class NarrativeRepository {
       operator.detectedAt = LessThanOrEqual(endDate);
     }
 
+    return operator;
+  }
+
+  findAll(query?: FindNarrativesQueryDto): Promise<Narrative[]> {
+    const dateFilter = this.createNarrativeDateFilterOperator(query);
+    
     return this.narrativeOrmRepository.find({
-      where: operator,
+      where: {...dateFilter},
       relations: { events: true },
     });
   }
@@ -36,9 +48,20 @@ export class NarrativeRepository {
     });
   }
 
-  findSimulated(simulationId?: string): Promise<SimulatedNarrative[]> {
+  findSimulated(query?: FindNarrativesQueryDto): Promise<SimulatedNarrative[]> {
+    const dateFilter = this.createNarrativeDateFilterOperator(query);
+
     return this.simulatedNarrativeOrmRepository.find({
-      where: simulationId ? { simulationId } : {},
+      where: {
+        narrative: {...dateFilter},
+      },
+      relations: { narrative: { events: true } },
+    });
+  }
+
+  findOneSimulated(simulationId: string): Promise<SimulatedNarrative | null> {
+    return this.simulatedNarrativeOrmRepository.findOne({
+      where: { simulationId },
       relations: { narrative: { events: true } },
     });
   }
