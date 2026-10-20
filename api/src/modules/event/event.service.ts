@@ -55,7 +55,7 @@ export class EventService {
       performedBy: dto.performedBy ?? 'vandamme.handler1',
     });
 
-    if ((await this.actionRepository.countByEventId(eventId)) === 0 && event.status === 'open') {
+    if ((await this.actionRepository.countByEventId(eventId)) === 1 && event.status === 'open') {
       await this.eventRepository.updateStatus(eventId, 'in_progress');
     }
 
