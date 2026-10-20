@@ -9,6 +9,7 @@ import { ListEventsQuery } from './dto/list-events.query';
 import { EventRepository } from './event.repository';
 import { CloseEventDto } from './dto/close-event.dto';
 import { SERVITY } from './consts';
+import { EventResponseDto } from './dto/event-response.dto';
 
 @Injectable()
 export class EventService {
@@ -18,9 +19,11 @@ export class EventService {
     private readonly eventLogService: EventLogService,
   ) {}
 
-  async list({ isSimulation, search, page, pageSize }: ListEventsQuery): Promise<EventListPage> {
+  async list({ isSimulation, simulationId, search, page, pageSize }: ListEventsQuery): Promise<EventListPage> {
+    const resolvedIsSimulation = isSimulation ?? false;
     const [events, total] = await this.eventRepository.findActive({
-      isSimulation,
+      isSimulation: resolvedIsSimulation,
+      simulationId,
       search: search?.trim() || undefined,
       page,
       pageSize,
@@ -40,7 +43,7 @@ export class EventService {
     };
   }
 
-  async listClosed(closedAfter: string, closedBefore?: string) {
+  async listClosed(closedAfter: string, closedBefore?: string): Promise<EventResponseDto[]> {
     const from = new Date(closedAfter);
     if (Number.isNaN(from.getTime())) {
       throw new BadRequestException('closed_after must be a valid ISO-8601 timestamp');
@@ -71,8 +74,9 @@ export class EventService {
       severity: event.severity,
       status: event.status,
       isSimulation: event.isSimulation,
+      simulationId: event.simulationId,
       actions: event.actions ?? [],
-    }));
+    } as EventResponseDto));
   }
   async createActionForEvent(eventId: string, dto: CreateEventActionDto): Promise<EventActionItem> {
     const event = await this.eventRepository.findEventById(eventId);
@@ -169,12 +173,14 @@ export class EventService {
 
     const severity = dto.severity ?? SERVITY.MEDIUM;
     const isSimulation = dto.isSimulation ?? false;
+    const simulationId = dto.simulationId ?? null;
     const createdBy = dto.createdBy ?? 'shob.operator';
 
     const event = await this.eventRepository.create({
       narrativeId,
       severity,
       isSimulation,
+      simulationId,
       createdBy,
     });
 
@@ -182,5 +188,28 @@ export class EventService {
       ...event,
       title: narrative.title,
     };
+  }
+
+  async getEventsBySimulationId(simulationId: string): Promise<EventResponseDto[]> {
+    const events = await this.eventRepository.findBySimulationId(simulationId);
+
+    return events.map((event) => ({
+      eventId: event.eventId,
+      narrativeId: event.narrativeId,
+      title: event.narrative.title,
+      summary: event.narrative.summary,
+      arena: event.narrative.arena,
+      createdAt: event.createdAt,
+      createdBy: event.createdBy,
+      detectedAt: event.narrative.detectedAt,
+      closedAt: event.closedAt,
+      closedBy: event.closedBy,
+      closedSummary: event.closureSummary,
+      severity: event.severity,
+      status: event.status,
+      isSimulation: event.isSimulation,
+      simulationId: event.simulationId,
+      actions: event.actions ?? [],
+    } as EventResponseDto));
   }
 }

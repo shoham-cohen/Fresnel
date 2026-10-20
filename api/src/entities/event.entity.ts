@@ -27,6 +27,9 @@ export class Event {
   @Column({ name: 'is_simulation', type: 'boolean' })
   isSimulation: boolean;
 
+  @Column({ name: 'simulation_id', type: 'uuid', nullable: true })
+  simulationId: string | null;
+
   @Column({ name: 'created_by', type: 'text' })
   createdBy: string;
 

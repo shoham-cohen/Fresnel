@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { EventStatus, Severity } from '../../../entities';
 import { SERVITY } from '../consts';
 
@@ -18,6 +18,10 @@ export class CreateEventDto {
   isSimulation?: boolean = false;
 
   @IsOptional()
+  @IsUUID()
+  simulationId?: string | null = null;
+
+  @IsOptional()
   @IsString()
   createdBy?: string;
 }
@@ -29,6 +33,7 @@ export interface CreatedEventResponse {
   status: EventStatus;
   severity: Severity;
   isSimulation: boolean;
+  simulationId: string | null;
   createdBy: string;
   createdAt: Date;
 }

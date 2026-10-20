@@ -4,6 +4,7 @@ import type { Arena } from '@/interfaces/narrative-api.interface';
 export const ARENA_LABELS: Record<Arena, string> = {
   israel: 'ישראל',
   arab: 'ערבי',
+  arabic: 'ערבי',
   intl: 'בינלאומי',
 };
 

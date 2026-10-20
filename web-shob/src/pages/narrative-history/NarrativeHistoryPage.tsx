@@ -1,43 +1,34 @@
 import { pageStyles } from '@/styles/page.styles';
 import { useCallback, useMemo, useState } from 'react';
 import { toSortParams } from '@/utilities/narrative.utility';
-import { useElementHeight } from '@/hooks/element-height.hook';
 import type { Narrative } from '@/interfaces/narrative.interface';
+import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import type { NarrativesQuery } from '@/interfaces/narrative-api.interface';
+import { NarrativesTable, type SortState } from '@/components/NarrativesTable';
 import { useNarratives, useToggleNarrativeFlag } from '@/hooks/narratives.hook';
-import { Box, Button, Pagination, Typography, CircularProgress } from '@mui/material';
-import { NarrativesTable, rowsThatFit, type SortState } from '@/components/NarrativesTable';
 import { useNarrativeFilters } from './useAlertFilters';
 import { FilterBar } from '@/components/FilterBar';
-
-const DEFAULT_PAGE_SIZE = 10;
 
 export const NarrativeHistoryPage = () => {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortState | null>(null);
+  const [pageSize, setPageSize] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const [tableAreaRef, tableAreaHeight] = useElementHeight<HTMLDivElement>();
-  const pageSize = tableAreaHeight ? rowsThatFit(tableAreaHeight) : DEFAULT_PAGE_SIZE;
-
-  const [lastPageSize, setLastPageSize] = useState(pageSize);
-  if (pageSize !== lastPageSize) {
-    setLastPageSize(pageSize);
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
     setPage(1);
-  }
+  }, []);
 
   const query = useMemo<NarrativesQuery>(
-    () => ({ page, pageSize, ...toSortParams(sort) }),
+    () => ({ page, pageSize: pageSize ?? undefined, ...toSortParams(sort) }),
     [page, pageSize, sort],
   );
+  
   const toggleFlag = useToggleNarrativeFlag();
   const { narratives, total, tableStatus, refetch, isRefetching } = useNarratives(query, {
-    enabled: tableAreaHeight > 0,
+    enabled: pageSize !== null,
   });
-
-  const pageCount = Math.ceil(total / pageSize);
-  const firstRowNumber = (page - 1) * pageSize + 1;
-  const lastRowNumber = Math.min(page * pageSize, total);
 
   const handleSelect = useCallback((narrative: Narrative) => {
     setSelectedId((current) => (current === narrative.narrativeId ? null : narrative.narrativeId));
@@ -96,7 +87,7 @@ export const NarrativeHistoryPage = () => {
           רענון
         </Button>
       </Box>
-      <Box ref={tableAreaRef} sx={pageStyles.tableArea}>
+      <Box sx={pageStyles.tableColumn}>
         <NarrativesTable
           sort={sort}
           onRetry={refetch}
@@ -104,28 +95,12 @@ export const NarrativeHistoryPage = () => {
           status={tableStatus}
           narratives={filteredAlerts}
           selectedId={selectedId}
-          firstRowNumber={firstRowNumber}
+          paging={{ page, total, onPageChange: setPage, onPageSizeChange: handlePageSizeChange }}
           onSortChange={(next) => {
             setSort(next);
             setPage(1);
           } }
           onSelect={handleSelect} />
-      </Box>
-      <Box sx={pageStyles.pagination}>
-        {pageCount > 1 && (
-          <>
-            <Typography sx={pageStyles.paginationRange}>
-              {`מציג ${String(firstRowNumber)}–${String(lastRowNumber)} מתוך ${String(total)}`}
-            </Typography>
-            <Pagination
-              page={page}
-              color="primary"
-              count={pageCount}
-              onChange={(_event, nextPage) => {
-                setPage(nextPage);
-              } } />
-          </>
-        )}
       </Box>
     </Box>
   );

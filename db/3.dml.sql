@@ -98,26 +98,26 @@ BEGIN
   WHERE n.title = 'תיעוד אירוע ביטחוני בצפון (תרגיל)';
 
   -- event (one open real event per narrative; simulations may repeat)
-  INSERT INTO event (narrative_id, severity, status, is_simulation, created_by, created_at)
+  INSERT INTO event (narrative_id, severity, status, is_simulation, simulation_id, created_by, created_at)
   VALUES
     ((SELECT narrative_id FROM narrative WHERE title = 'תמונות מזויפות מהגבול הצפוני'),
-     'high', 'in_progress', false, 'user-alice', now() - interval '3 days'),
+     'high', 'in_progress', false, NULL, 'user-alice', now() - interval '3 days'),
     ((SELECT narrative_id FROM narrative WHERE title = 'קמפיין בערבית נגד הסכמי נורמליזציה'),
-     'critical', 'open', false, 'user-alice', now() - interval '30 hours'),
+     'critical', 'open', false, NULL, 'user-alice', now() - interval '30 hours'),
     ((SELECT narrative_id FROM narrative WHERE title = 'סרטון מניפולטיבי על פעילות צה"ל בעזה'),
-     'high', 'in_progress', false, 'user-carol', now() - interval '20 hours'),
+     'high', 'in_progress', false, NULL, 'user-carol', now() - interval '20 hours'),
     ((SELECT narrative_id FROM narrative WHERE title = 'תיעוד אירוע ביטחוני בצפון (תרגיל)'),
-     'medium', 'in_progress', true, 'system', now() - interval '5 hours');
+     'medium', 'in_progress', true, (SELECT simulation_id FROM simulated_narrative WHERE narrative_id = (SELECT narrative_id FROM narrative WHERE title = 'תיעוד אירוע ביטחוני בצפון (תרגיל)') LIMIT 1), 'system', now() - interval '5 hours');
 
-  INSERT INTO event (narrative_id, severity, status, is_simulation, created_by, created_at,
+  INSERT INTO event (narrative_id, severity, status, is_simulation, simulation_id, created_by, created_at,
                      closed_at, closed_by, closure_summary)
   VALUES
     ((SELECT narrative_id FROM narrative WHERE title = 'שמועה על מחסור בדלק'),
-     'medium', 'closed', false, 'user-bob', now() - interval '2 days',
+     'medium', 'closed', false, NULL, 'user-bob', now() - interval '2 days',
      now() - interval '1 day', 'user-bob',
      'השמועה הופרכה והופצה הודעת דו"צ. אין התפתחויות נוספות.'),
     ((SELECT narrative_id FROM narrative WHERE title = 'תיעוד אירוע ביטחוני בצפון (תרגיל)'),
-     'low', 'closed', true, 'system', now() - interval '10 days',
+     'low', 'closed', true, (SELECT simulation_id FROM simulated_narrative WHERE narrative_id = (SELECT narrative_id FROM narrative WHERE title = 'תיעוד אירוע ביטחוני בצפון (תרגיל)') LIMIT 1), 'system', now() - interval '10 days',
      now() - interval '9 days', 'user-bob', 'תרגיל הושלם בהצלחה.');
 
   -- action (event found through its narrative)

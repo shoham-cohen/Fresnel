@@ -86,3 +86,12 @@ CREATE TABLE IF NOT EXISTS simulated_narrative (
 
 CREATE INDEX IF NOT EXISTS simulated_narrative_simulation_idx
   ON simulated_narrative (simulation_id);
+
+-- ---------------------------------------------------------------------------
+-- 3. event: add optional simulation_id for compatibility with the new entity
+-- ---------------------------------------------------------------------------
+ALTER TABLE event
+  ADD COLUMN IF NOT EXISTS simulation_id uuid;
+
+CREATE INDEX IF NOT EXISTS event_simulation_id_idx
+  ON event (simulation_id);

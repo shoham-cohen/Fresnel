@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   ILike,
+  In,
   Between,
   Repository,
   ArrayContains,
@@ -11,8 +12,10 @@ import {
   type FindOptionsWhere,
 } from 'typeorm';
 import { Narrative, SimulatedNarrative } from '../../entities';
+import { POSTGRES_ERROR_CODES } from '../../consts/postgresErrorCode';
 import { FindNarrativesQueryDto } from './dto/find-narratives-query-dto';
 import { ListNarrativesQueryDto } from './dto/list-narratives-query-dto';
+import { CreateSimulatedNarrativeDto } from './dto/create-simulated-narrative-dto';
 
 @Injectable()
 export class NarrativeRepository {
@@ -93,6 +96,14 @@ export class NarrativeRepository {
     });
   }
 
+  findManyByIds(narrativeIds: string[]): Promise<Narrative[]> {
+    if (narrativeIds.length === 0) return Promise.resolve([]);
+
+    return this.narrativeOrmRepository.find({
+      where: { narrativeId: In(narrativeIds) },
+      relations: { events: true },
+    });
+  }
   async update(
     narrativeId: string,
     changes: Partial<Pick<Narrative, 'isFlagged'>>,
@@ -128,21 +139,29 @@ export class NarrativeRepository {
       skip: (page - 1) * pageSize,
     });
   }
-
-  findOneSimulated(simulationId: string): Promise<SimulatedNarrative | null> {
-    return this.simulatedNarrativeOrmRepository.findOne({
-      where: { simulationId },
-      relations: { narrative: { events: true } },
-    });
-  }
-
-  createSimulated(data: {
-    narrativeId: string;
-    simulationId: string;
-  }): Promise<SimulatedNarrative> {
+  
+  createSimulated(
+    data: CreateSimulatedNarrativeDto,
+  ): Promise<SimulatedNarrative> {
     const simulatedNarrative = this.simulatedNarrativeOrmRepository.create(data);
     
     return this.simulatedNarrativeOrmRepository.save(simulatedNarrative);
+  }
+
+  async createSimulatedMany(
+    data: CreateSimulatedNarrativeDto[],
+  ): Promise<SimulatedNarrative[]> {
+    if (data.length === 0) return [];
+
+    try {
+      const simulatedNarratives = this.simulatedNarrativeOrmRepository.create(data);
+      return await this.simulatedNarrativeOrmRepository.save(simulatedNarratives);
+    } catch (error: any) {
+      if (error?.code === POSTGRES_ERROR_CODES.UNIQUE_VIOLATION) {
+        throw new ConflictException('One or more simulated narratives already exist');
+      }
+      throw error;
+    }
   }
 }
 

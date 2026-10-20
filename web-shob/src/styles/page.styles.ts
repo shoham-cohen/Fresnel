@@ -30,24 +30,13 @@ export const pageStyles = {
     display: 'flex',
     flexDirection: 'column',
   },
-  tableArea: {
-    flex: 1,
-    minHeight: 0,
-    overflowY: 'auto',
-  },
   besideDetailsPanel: {
     transition: `margin ${String(DETAILS_PANEL_TRANSITION.duration)}ms ${DETAILS_PANEL_TRANSITION.easing}`,
   },
-  pagination: {
-    mt: '16px',
-    minHeight: 32,
+  tableColumn: {
+    flex: 1,
+    minHeight: 0,
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  paginationRange: {
-    fontSize: 14,
-    color: 'text.secondary',
-    fontWeight: 'fontWeightLight',
+    flexDirection: 'column',
   },
 } satisfies Record<string, SxProps<Theme>>;

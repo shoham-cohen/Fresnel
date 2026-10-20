@@ -8,8 +8,8 @@ import {
   Controller,
   ParseUUIDPipe,
   NotFoundException,
+  ParseArrayPipe,
 } from '@nestjs/common';
-
 import { NarrativeService } from './narrative.service';
 import { UpdateNarrativeDto } from './dto/update-narrative-dto';
 import { NarrativeResponseDto } from './dto/narrative-response-dto';
@@ -47,23 +47,11 @@ export class NarrativeController {
     return this.narrativeService.findSimulated(query);
   }
 
-  @Get('simulated/:simulationId')
-  async findOneSimulated(
-      @Param('simulationId', new ParseUUIDPipe()) simulationId: string,
-  ): Promise<SimulatedNarrativeResponseDto> {
-    const simulatedNarrative = await this.narrativeService.findOneSimulated(simulationId);
-    
-    if (!simulatedNarrative) {
-      throw new NotFoundException(`Simulated narrative with id ${simulationId} not found`);
-    }
-
-    return simulatedNarrative;
-  }
-
   @Post('simulated')
   createSimulated(
-    @Body() createSimulatedNarrativeDto: CreateSimulatedNarrativeDto,
-  ): Promise<SimulatedNarrativeResponseDto> {
+    @Body(new ParseArrayPipe({ items: CreateSimulatedNarrativeDto }))
+    createSimulatedNarrativeDto: CreateSimulatedNarrativeDto[],
+  ): Promise<SimulatedNarrativeResponseDto[]> {
     return this.narrativeService.createSimulated(createSimulatedNarrativeDto);
   }
 
@@ -76,7 +64,6 @@ export class NarrativeController {
     return narrative;
   }
 
-  // Updates the fields in the body (e.g. { isFlagged: true }) and returns the updated narrative.
   @Patch(':id')
   update(
     @Param('id') id: string,

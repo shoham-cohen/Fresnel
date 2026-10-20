@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import type { FC } from 'react';
 import { NavLink } from 'react-router';
 
 import { navItems } from '@/routes/paths';
@@ -13,9 +14,10 @@ import { UserBadge } from './UserBadge';
 
 export interface NavbarProps {
   userName?: string;
+  onLogout: () => void;
 }
 
-export function Navbar({ userName }: NavbarProps) {
+export const Navbar: FC<NavbarProps> = ({ userName, onLogout }) => {
   return (
     <AppBar position="static" component="header" elevation={0} sx={styles.appBar}>
       <Toolbar disableGutters sx={styles.toolbar}>
@@ -35,9 +37,9 @@ export function Navbar({ userName }: NavbarProps) {
         </Box>
         <Box sx={styles.endSection}>
           <RealityToggle />
-          <UserBadge userName={userName} />
+          <UserBadge userName={userName} onLogout={onLogout} />
         </Box>
       </Toolbar>
     </AppBar>
   );
-}
+};

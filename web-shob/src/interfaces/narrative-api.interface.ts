@@ -1,7 +1,7 @@
 import type { Narrative } from '@/interfaces/narrative.interface';
 
 export type SortDir = 'asc' | 'desc';
-export type Arena = 'israel' | 'arab' | 'intl';
+export type Arena = 'israel' | 'arab' | 'arabic' | 'intl';
 export type NarrativeSortField = 'arena' | 'detectedAt' | 'viewsCount';
 
 export interface NarrativeDto {
