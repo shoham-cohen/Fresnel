@@ -3,9 +3,13 @@ import { Link, Stack } from 'expo-router';
 import { Pressable } from 'react-native';
 
 import { SCREEN_TITLE } from '@/constants/labels';
+import { usePushRegistration } from '@/notifications/usePushRegistration';
 import { colors } from '@/theme';
 
 export default function AppLayout() {
+  // Signed in from here on: register this phone for Push.
+  usePushRegistration();
+
   return (
     <Stack
       screenOptions={{

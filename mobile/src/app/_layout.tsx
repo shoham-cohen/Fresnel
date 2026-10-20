@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 
 import { queryClient } from '@/api/queryClient';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
+import { Loading } from '@/components/Loading';
 
 // Android and iOS are forced to RTL by expo-localization (app.config.ts). Web is not, so set it here.
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -24,7 +25,12 @@ export default function RootLayout() {
 }
 
 function RootNavigator() {
-  const { isSignedIn } = useAuth();
+  const { status, isSignedIn } = useAuth();
+
+  // Restoring the saved session (refresh token → access token) before choosing login or home.
+  if (status === 'restoring') {
+    return <Loading />;
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

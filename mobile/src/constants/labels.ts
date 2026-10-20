@@ -35,3 +35,18 @@ export const SNAPSHOT_LABEL = {
   noData: 'אין נתונים לאירוע',
   errorLoading: 'שגיאה בטעינת נתוני האירוע',
 } as const;
+
+export const LOGIN_LABEL = {
+  signIn: 'כניסה עם SSO',
+  signingIn: 'מתחבר...',
+  failed: 'הכניסה נכשלה. בדקו ש-openport מחובר ונסו שוב.',
+  notConfigured: 'חסרים EXPO_PUBLIC_KEYCLOAK_ISSUER ו-EXPO_PUBLIC_KEYCLOAK_CLIENT_ID ב-.env',
+} as const;
+
+export const PUSH_STATUS_LABEL = {
+  idle: '—',
+  registered: 'פעיל',
+  denied: 'אין הרשאה להתראות',
+  unsupported: 'לא נתמך במכשיר הזה',
+  error: 'הרישום להתראות נכשל',
+} as const;
